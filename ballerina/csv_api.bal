@@ -17,6 +17,7 @@
 import ballerina/jballerina.java;
 
 type CsvConversionError error;
+type UnSupportedOperation error;
 
 public enum OrderType {
     ASC,
@@ -57,6 +58,7 @@ public type FromCSVConfig record {|
 public type ToCSVConfig record {|
     string[]? headers = ();
     string:Char separator = ",";
+    string:Char lineSeparator = "\n";
     boolean skipHeaders = false;
     int skipdataRows = 0;
     int dataRowCount = -1;
@@ -68,13 +70,49 @@ public type ToCSVConfig record {|
     string:Char escapeCharacter = "\\";
 |};
 
-public isolated function fromCsvWithType((string[]|map<anydata>|record{})[] value, FromCSVConfig config, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>)
+public isolated function fromCsvWithType((string[]|map<anydata>|record{})[] csv, FromCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function fromCsvStringWithType(string|byte[]|stream<byte[], error?> s,
         FromCSVConfig config,typedesc<(record{}|map<anydata>|anydata)[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function toCsv(anydata[] value, ToCSVConfig config) returns (string|map<anydata>|record{})[]|CsvConversionError {
-    return error("");
+public isolated function toCsv((anydata[]|map<anydata>|record{})[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 
+    returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+
+public isolated function toCsvString((anydata[]|map<anydata>|record{})[] csv, ToCSVConfig config = {}) returns string|UnSupportedOperation {
+    string csvString = "";
+    foreach anydata[]|map<anydata>|record{} row in csv {
+        if row is anydata[] {
+            foreach anydata cell in row {
+                csvString += check convertToString(cell) + config.separator;
+            }
+            csvString = removeLastIndex(csvString);
+            csvString += config.lineSeparator;
+            continue;
+        } 
+
+        // issue: https://github.com/ballerina-platform/ballerina-lang/issues/42172
+        foreach string cell in (<record {}>row).keys() {
+            csvString += check convertToString(row[cell]) + config.separator;
+        }
+
+        csvString = removeLastIndex(csvString);
+        csvString += config.lineSeparator;
+    }
+
+    csvString = removeLastIndex(csvString);
+    return csvString;
+}
+
+isolated function removeLastIndex(string content) returns string {
+    return content.substring(0, content.length() - 1);
+}
+
+isolated function convertToString(anydata cell) returns string|UnSupportedOperation {
+    if cell is int|string|boolean|float|decimal|() {
+        return cell.toBalString();
+    } else {
+        return error UnSupportedOperation(string `unsupported opration`);
+    }
 }

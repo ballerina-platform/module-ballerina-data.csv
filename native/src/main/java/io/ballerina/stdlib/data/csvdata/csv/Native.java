@@ -54,4 +54,12 @@ public class Native {
         }
         return null;
     }
+
+    public static Object toCsv(BArray csv, BMap<BString, Object> config, BTypedesc type) {
+        try {
+            return CsvTraversal.traverse(csv, config, type.getDescribingType());
+        } catch (Exception e) {
+            return DiagnosticLog.getCsvError(e.getMessage());
+        }
+    }
 }

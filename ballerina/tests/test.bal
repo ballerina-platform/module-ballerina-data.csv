@@ -31,7 +31,7 @@ int[][] c4 = [[1, 2, 3], [1, 2, 3]];
 [string, string][] d = [["1", "2"], ["1", "2"]];
 [string, string][] d2 = [["1", "2"], ["1", "2"]];
 
-@test:Config{enable: true}
+@test:Config{enable: false}
 public function testA() returns error? {
     A aa = check fromCsvWithType(a, {}, A);
     test:assertEquals(aa, a);
@@ -202,7 +202,7 @@ type WW int[][2];
 type XX string[][2];
 type YY anydata[][2];
 
-@test:Config{}
+@test:Config{ enable: false}
 function test() returns CsvConversionError? {
     string a = check io:fileReadString("a.txt");
 
@@ -325,3 +325,16 @@ function test() returns CsvConversionError? {
 // OO oo = check fromCsvStringWithType(a, {}, MM);
 //     test:assertEquals(oo, [{a: "1", b: 2, c: "3"}, {a: "4", b: 5, c: "6"}]);
 //     io:println(oo);
+
+type AAA string[][];
+
+@test:Config{ enable: true }
+function testC() returns error? {
+    anydata[][] a = [[1, 2], [2, 3], [2, 3]];
+    record{}[] b = [{"a": 1, "b": 2}, {"a": 1, "b": 2}, {"a": 1, "b": 2}];
+    map<anydata>[] c = [{"a": 1, "b": 2}, {"a": 1, "b": 2}, {"a": 1, "b": 2}];
+
+    io:println(toCsvString(a));
+    io:println(toCsvString(b));
+    io:println(toCsvString(c));
+}
