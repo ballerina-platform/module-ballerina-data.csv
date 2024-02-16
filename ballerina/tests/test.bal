@@ -31,7 +31,7 @@ int[][] c4 = [[1, 2, 3], [1, 2, 3]];
 [string, string][] d = [["1", "2"], ["1", "2"]];
 [string, string][] d2 = [["1", "2"], ["1", "2"]];
 
-@test:Config{enable: false}
+@test:Config{enable: true }
 public function testA() returns error? {
     A aa = check fromCsvWithType(a, {}, A);
     test:assertEquals(aa, a);
@@ -121,7 +121,7 @@ public function testA() returns error? {
     test:assertEquals(d2c, [["1", "2"], ["1", "2"]]);
 }
 
-@test:Config{enable: false}
+@test:Config{enable: true }
 function testB() returns error? {
     // B2 d2b2 = check fromCsvWithType(d2, {}, B2);
     // test:assertEquals(d2b2, [{"1": "1", "2": "2"}, {"1": "1", "2": "2"}]);
@@ -202,7 +202,7 @@ type WW int[][2];
 type XX string[][2];
 type YY anydata[][2];
 
-@test:Config{ enable: false}
+@test:Config{ enable: true }
 function test() returns CsvConversionError? {
     string a = check io:fileReadString("a.txt");
 

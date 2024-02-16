@@ -19,10 +19,16 @@
 package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.values.*;
+import io.ballerina.stdlib.data.csvdata.io.DataReaderTask;
+import io.ballerina.stdlib.data.csvdata.io.DataReaderThreadPool;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 
 /**
@@ -40,19 +46,29 @@ public class Native {
         }
     }
 
-    public static Object fromCsvStringWithType(Object csv, BMap<BString, Object> config, BTypedesc type) {
+    public static Object fromCsvStringWithType(Environment env, Object csv, BMap<BString, Object> config, BTypedesc type) {
         try {
             Type expType = type.getDescribingType();
             if (csv instanceof BString) {
-                Object a =  CsvParser.parse(new StringReader(((BString) csv).getValue()), expType);
-                return a;
+                return CsvParser.parse(new StringReader(((BString) csv).getValue()), expType);
+            } else if (csv instanceof BArray) {
+                byte[] bytes = ((BArray) csv).getBytes();
+                return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
+                        type.getDescribingType());
+            } else if (csv instanceof BStream) {
+                final BObject iteratorObj = ((BStream) csv).getIteratorObj();
+                final Future future = env.markAsync();
+                DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type);
+                DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
+                return null;
+            } else {
+                return DiagnosticLog.error(DiagnosticErrorCode.UNSUPPORTED_TYPE, expType);
             }
         } catch (BError e) {
             return e;
         } catch (Exception e) {
-            return e;
+            return DiagnosticLog.error(DiagnosticErrorCode.CSV_PARSE_ERROR, e.getMessage());
         }
-        return null;
     }
 
     public static Object toCsv(BArray csv, BMap<BString, Object> config, BTypedesc type) {
