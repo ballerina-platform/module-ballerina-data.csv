@@ -43,19 +43,12 @@ import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
  */
 public class CsvCreator {
 
-    static BMap<BString, Object> initMapValue(Type expectedType) {
+    static Object initRowValue(Type expectedType) {
         switch (expectedType.getTag()) {
             case TypeTags.RECORD_TYPE_TAG:
                 return ValueCreator.createRecordValue((RecordType) expectedType);
             case TypeTags.MAP_TAG:
                 return ValueCreator.createMapValue((MapType) expectedType);
-            default:
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
-        }
-    }
-
-    static BArray initArrayValue(Type expectedType) {
-        switch (expectedType.getTag()) {
             case TypeTags.TUPLE_TAG:
                 return ValueCreator.createTupleValue((TupleType) expectedType);
             case TypeTags.ARRAY_TAG:

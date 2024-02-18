@@ -81,9 +81,8 @@ public class CsvParser {
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
-        // TODO: Need group same level field and keep the hierarchy.
-        ArrayList<String> fieldNames;
         Map<String, Field> fieldHierarchy = new HashMap<>();
+        Map<String, Field> fieldNames = new HashMap<>();
         private char[] charBuff = new char[1024];
         private int charBuffIndex;
         private int index;
@@ -93,6 +92,7 @@ public class CsvParser {
         Type expectedArrayElementType;
         int columnIndex = 0;
         int rowIndex = 0;
+        ArrayType rootArrayType = null;
 
         StateMachine() {
             reset();
@@ -103,12 +103,13 @@ public class CsvParser {
             currentCsvNode = null;
             line = 1;
             column = 0;
-            fieldNames = new ArrayList<>();
             restType = null;
             rootCsvNode = null;
             columnIndex = 0;
             rowIndex = 0;
             fieldHierarchy.clear();
+            fieldNames.clear();
+            rootArrayType = null;
         }
 
         private static boolean isWhitespace(char ch) {
@@ -139,7 +140,8 @@ public class CsvParser {
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
                 return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
             } else {
-                rootCsvNode = ValueCreator.createArrayValue((ArrayType) type);
+                rootArrayType = (ArrayType) type;
+                rootCsvNode = ValueCreator.createArrayValue(rootArrayType);
                 expectedArrayElementType = ((ArrayType) TypeUtils.getReferredType(referredType)).getElementType();
             }
             switch (expectedArrayElementType.getTag()) {
@@ -238,9 +240,6 @@ public class CsvParser {
                     } else if (StateMachine.isWhitespace(ch)) {
                         state = this;
                         continue;
-                    } else if (ch == EOF) {
-                        addHeader(sm);
-                        state = HEADER_END_STATE;
                     } else {
                         sm.append(ch);
                         state = this;
@@ -260,9 +259,7 @@ public class CsvParser {
                     // TODO: Get the other validation into here
                     //TODO: Replace arraysize -1 with
                     // TODO: Can remove using fillers
-                    ArrayType arrayType = (ArrayType) expType;
-                    int size = arrayType.getSize();
-                    validateExpectedArraySize(size, sm.headers.size());
+                    validateExpectedArraySize(((ArrayType) expType).getSize(), sm.headers.size());
                 } else if (expType instanceof MapType) {
                     //ignore
                 } else if (expType instanceof TupleType) {
@@ -302,7 +299,11 @@ public class CsvParser {
                         throw new CsvParserException("Header " + value + " does not match " +
                                 "with any record key in the expected type");
                     }
-                    sm.fieldHierarchy.remove(value);
+                    Field field = sm.fieldHierarchy.get(value);
+                    if (field != null) {
+                        sm.fieldNames.put(value, field);
+                        sm.fieldHierarchy.remove(value);
+                    }
                 }
                 sm.headers.add(value);
             }
@@ -358,24 +359,15 @@ public class CsvParser {
             }
 
             private void initiateNewRowType(StateMachine sm) throws CsvParserException {
-                sm.currentCsvNode = createRowType(sm.expectedArrayElementType);
+                sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
             }
 
             private void finalizeTheRow(StateMachine sm) {
-                int rootArraySize = ((ArrayType)(sm.rootCsvNode.getType())).getSize();
+                int rootArraySize = sm.rootArrayType.getSize();
                 if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
                     sm.rootCsvNode.add(sm.rowIndex, sm.currentCsvNode);
                     sm.rowIndex++;
                 }
-            }
-
-            private Object createRowType(Type expectedType) throws CsvParserException {
-                if (expectedType instanceof RecordType || expectedType instanceof MapType) {
-                    return CsvCreator.initMapValue(expectedType);
-                } else if (expectedType instanceof ArrayType || expectedType instanceof TupleType) {
-                    return CsvCreator.initArrayValue(expectedType);
-                }
-                throw new CsvParserException("Unexpected expected type");
             }
 
             private void addRowValue(StateMachine sm) throws CsvParserException {
@@ -384,9 +376,8 @@ public class CsvParser {
                 Type exptype = sm.expectedArrayElementType;
                 if (exptype instanceof RecordType) {
                     // TODO: These can be make as module level variables
-                    RecordType recordType = ((RecordType) exptype);
-                    Map<String, Field> fields = recordType.getFields();
                     String header = sm.headers.get(sm.columnIndex);
+                    Map<String, Field> fields = sm.fieldNames;
                     if (fields.containsKey(header)) {
                         //TODO: Optimize
                         type = fields.get(header).getFieldType();
