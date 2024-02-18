@@ -43,7 +43,7 @@ import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
  */
 public class CsvCreator {
 
-    static BMap<BString, Object> initRootMapValue(Type expectedType) {
+    static BMap<BString, Object> initMapValue(Type expectedType) {
         switch (expectedType.getTag()) {
             case TypeTags.RECORD_TYPE_TAG:
                 return ValueCreator.createRecordValue((RecordType) expectedType);
@@ -63,17 +63,6 @@ public class CsvCreator {
             default:
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
         }
-    }
-
-    private static String getCurrentFieldPath(CsvParser.StateMachine sm) {
-//        Iterator<String> itr = sm.fieldNames.descendingIterator();
-//
-//        StringBuilder result = new StringBuilder(itr.hasNext() ? itr.next() : "");
-//        while (itr.hasNext()) {
-//            result.append(".").append(itr.next());
-//        }
-//        return result.toString();
-        return "Test";
     }
 
     static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm, BString value, Type type) {

@@ -417,7 +417,7 @@ public class CsvParser {
 
             private Object createRowType(Type expectedType) throws CsvParserException {
                 if (expectedType instanceof RecordType || expectedType instanceof MapType) {
-                    return CsvCreator.initRootMapValue(expectedType);
+                    return CsvCreator.initMapValue(expectedType);
                 } else if (expectedType instanceof ArrayType || expectedType instanceof TupleType) {
                     return CsvCreator.initArrayValue(expectedType);
                 }

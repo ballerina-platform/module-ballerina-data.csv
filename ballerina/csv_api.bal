@@ -37,7 +37,7 @@ public type MappingConfig record {|
 public type FromCSVConfig record {|
     int startNumber = 0;
     int headerStartNumber = 0;
-    int dataStartNumber = 0;
+    int dataStartNumber = 1;
     boolean headers = true;
     string:Char escapeCharacter = "\\";
     boolean ignoreEmptyLines = true;

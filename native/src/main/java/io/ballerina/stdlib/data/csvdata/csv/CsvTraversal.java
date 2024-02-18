@@ -55,14 +55,10 @@ public class CsvTraversal {
         Field currentField;
         Stack<Map<String, Field>> fieldHierarchy = new Stack<>();
         Stack<Type> restType = new Stack<>();
-        Deque<Object> nodesStack = new ArrayDeque<>();
         Deque<String> fieldNames = new ArrayDeque<>();
         BArray rootCsvNode;
-
-        Type rootArray;
         Type expectedArrayElementType;
         Type sourceArrayElementType;
-
         BMap<BString, Object> config;
 
         void reset() {
@@ -70,7 +66,6 @@ public class CsvTraversal {
             currentField = null;
             fieldHierarchy.clear();
             restType.clear();
-            nodesStack.clear();
             fieldNames.clear();
             expectedArrayElementType = null;
             sourceArrayElementType = null;
@@ -248,7 +243,6 @@ public class CsvTraversal {
             this.fieldHierarchy.push(new HashMap<>(recordType.getFields()));
             this.restType.push(recordType.getRestFieldType());
             currentCsvNode = ValueCreator.createRecordValue(recordType);
-            nodesStack.push(currentCsvNode);
             traverseCsvMap(csvElement, expectedType, false);
         }
 
@@ -256,28 +250,23 @@ public class CsvTraversal {
             MapType mapType = (MapType) expectedType;
             this.fieldHierarchy.push(new HashMap<>());
             currentCsvNode = ValueCreator.createMapValue(mapType);
-            nodesStack.push(currentCsvNode);
             traverseCsvMap(csvElement, expectedType, true);
         }
 
         public void traverseCsvElementWithArrayAsExpectedType(Object csvElement, Type expectedType, ArrayType arrayType) {
             // todo Check sizes abnd log errors
-            rootArray = expectedType;
             currentCsvNode = ValueCreator.createArrayValue(arrayType);
-            nodesStack.push(currentCsvNode);
             traverseCsvElementWithArray(csvElement, expectedType);
         }
 
         private void traverseCsvMap(Object csvElement, Type expectedType, boolean mappingType) {
-            Object parentJsonNode = nodesStack.peek();
             if (csvElement instanceof BMap map) {
-                traverseMapValueWithMapAsExpectedType(map, parentJsonNode, mappingType);
+                traverseMapValueWithMapAsExpectedType(map, mappingType, expectedType);
             } else if (csvElement instanceof BArray) {
-                traverseArrayValueWithMapAsExpectedType((BArray) csvElement, parentJsonNode, mappingType, expectedType);
+                traverseArrayValueWithMapAsExpectedType((BArray) csvElement, mappingType, expectedType);
             } else {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CSV_DATA_FORMAT);
             }
-            nodesStack.pop();
         }
 
         private boolean checkExpectedTypeMatchWithHeaders(Type expectedType, String[] headers, BArray csvElement, int arraySize) {
@@ -346,7 +335,7 @@ public class CsvTraversal {
             return false;
         }
 
-        private void traverseArrayValueWithMapAsExpectedType(BArray csvElement, Object parent, boolean mappingType, Type expectedType) {
+        private void traverseArrayValueWithMapAsExpectedType(BArray csvElement, boolean mappingType, Type expectedType) {
             Type fieldType;
             BString key;
             int arraySize = csvElement.size();
@@ -372,7 +361,7 @@ public class CsvTraversal {
                     addFieldInMapType(key);
                     fieldType = ((MapType) expectedType).getConstrainedType();;
                 }
-                addCurrentFieldValue(fieldType, csvElement.get(i - 1), key, parent);
+                addCurrentFieldValue(fieldType, csvElement.get(i - 1), key);
             }
             Map<String, Field> currentField = fieldHierarchy.pop();
             checkOptionalFieldsAndLogError(currentField);
@@ -381,20 +370,21 @@ public class CsvTraversal {
             }
         }
 
-        private void traverseMapValueWithMapAsExpectedType(BMap<BString, Object> map, Object parent, boolean mappingType) {
+        private void traverseMapValueWithMapAsExpectedType(BMap<BString, Object> map, boolean mappingType, Type expType) {
             Type currentFieldType;
             for (BString key : map.getKeys()) {
                 if (!mappingType) {
-//                    if (!isKeyBelongsToNonRestType(map, key)) {
                     if (!isKeyBelongsToNonRestType(map.get(key), key)) {
                         continue;
                     }
                     currentFieldType = TypeUtils.getReferredType(currentField.getFieldType());
                 } else {
                     addFieldInMapType(key);
-                    currentFieldType = TypeUtils.getReferredType(((MapType) ((BMap) parent).getType()).getConstrainedType());
+                    currentFieldType = TypeUtils.getReferredType(
+                        ((MapType) expType).getConstrainedType()
+                    );
                 }
-                addCurrentFieldValue(currentFieldType, map.get(key), key, parent);
+                addCurrentFieldValue(currentFieldType, map.get(key), key);
             }
             Map<String, Field> currentField = fieldHierarchy.pop();
             checkOptionalFieldsAndLogError(currentField);
@@ -421,19 +411,10 @@ public class CsvTraversal {
             fieldNames.push(key.toString());
         }
 
-        private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key, Object parent) {
+        private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key) {
             int currentFieldTypeTag = currentFieldType.getTag();
 
             switch (currentFieldTypeTag) {
-                case TypeTags.MAP_TAG:
-                    // TODO: Check
-                    if (!checkTypeCompatibility(((MapType) currentFieldType).getConstrainedType(), mapValue)) {
-                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, mapValue,
-                                currentFieldType);
-                    }
-                    ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
-                            mapValue);
-                    break;
                 case TypeTags.NULL_TAG:
                 case TypeTags.BOOLEAN_TAG:
                 case TypeTags.INT_TAG:
@@ -444,10 +425,8 @@ public class CsvTraversal {
                     ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()), value);
                     break;
                 default:
-                    //TODO: Check for Arrays
-                    currentCsvNode = traverseCsvElementWithMapOrRecord(mapValue, currentFieldType);
-                    ((BMap<BString, Object>) parent).put(key, currentCsvNode);
-                    currentCsvNode = parent;
+                    // TODO: handle maps and structure values in future
+                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, currentFieldType);
             }
         }
 
