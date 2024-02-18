@@ -340,3 +340,11 @@ function testC() returns error? {
     io:println(toCsvString(b));
     io:println(toCsvString(c));
 }
+
+@test:Config{enable: !enable}
+function t() returns error? {
+    string a = check io:fileReadString("a.txt");
+    AA aa = check fromCsvStringWithType(a, {}, AA);
+    test:assertEquals(aa, [{a: 1, b: 2, c: 3}, {a: 4, b: 5, c: 6}]);
+    io:println(aa);
+}
