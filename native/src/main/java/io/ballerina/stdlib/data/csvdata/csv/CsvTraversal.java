@@ -53,8 +53,8 @@ public class CsvTraversal {
     static class CsvTree {
         Object currentCsvNode;
         Field currentField;
-        Stack<Map<String, Field>> fieldHierarchy = new Stack<>();
-        Stack<Type> restType = new Stack<>();
+        Map<String, Field> fieldHierarchy = new HashMap<>();
+        Type restType;
         Deque<String> fieldNames = new ArrayDeque<>();
         BArray rootCsvNode;
         Type expectedArrayElementType;
@@ -65,7 +65,7 @@ public class CsvTraversal {
             currentCsvNode = null;
             currentField = null;
             fieldHierarchy.clear();
-            restType.clear();
+            restType = null;
             fieldNames.clear();
             expectedArrayElementType = null;
             sourceArrayElementType = null;
@@ -240,15 +240,15 @@ public class CsvTraversal {
 
         public void traverseCsvElementWithRecordAsExpectedType(Object csvElement, Type expectedType) {
             RecordType recordType = (RecordType) expectedType;
-            this.fieldHierarchy.push(new HashMap<>(recordType.getFields()));
-            this.restType.push(recordType.getRestFieldType());
+            this.fieldHierarchy = new HashMap<>(recordType.getFields());
+            this.restType = recordType.getRestFieldType();
             currentCsvNode = ValueCreator.createRecordValue(recordType);
             traverseCsvMap(csvElement, expectedType, false);
         }
 
         public void traverseCsvElementWithMapAsExpectedType(Object csvElement, Type expectedType) {
             MapType mapType = (MapType) expectedType;
-            this.fieldHierarchy.push(new HashMap<>());
+            this.fieldHierarchy = new HashMap<>();
             currentCsvNode = ValueCreator.createMapValue(mapType);
             traverseCsvMap(csvElement, expectedType, true);
         }
@@ -363,11 +363,7 @@ public class CsvTraversal {
                 }
                 addCurrentFieldValue(fieldType, csvElement.get(i - 1), key);
             }
-            Map<String, Field> currentField = fieldHierarchy.pop();
-            checkOptionalFieldsAndLogError(currentField);
-            if (!mappingType) {
-                restType.pop();
-            }
+            checkOptionalFieldsAndLogError(fieldHierarchy);
         }
 
         private void traverseMapValueWithMapAsExpectedType(BMap<BString, Object> map, boolean mappingType, Type expType) {
@@ -386,19 +382,15 @@ public class CsvTraversal {
                 }
                 addCurrentFieldValue(currentFieldType, map.get(key), key);
             }
-            Map<String, Field> currentField = fieldHierarchy.pop();
-            checkOptionalFieldsAndLogError(currentField);
-            if (!mappingType) {
-                restType.pop();
-            }
+            checkOptionalFieldsAndLogError(fieldHierarchy);
         }
 
         private boolean isKeyBelongsToNonRestType(Object value, BString key) {
-            currentField = fieldHierarchy.peek().remove(key.toString());
+            currentField = fieldHierarchy.remove(key.toString());
             if (currentField == null) {
                 // Add to the rest field
-                if (restType.peek() != null) {
-                    Type restFieldType = TypeUtils.getReferredType(restType.peek());
+                if (restType != null) {
+                    Type restFieldType = TypeUtils.getReferredType(restType);
                     addRestField(restFieldType, key, value);
                 }
                 return false;
