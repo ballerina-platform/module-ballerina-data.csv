@@ -34,7 +34,7 @@ public class DataReaderThreadPool {
     private static final int CORE_POOL_SIZE = 0;
     private static final int MAX_POOL_SIZE = 50;
     private static final long KEEP_ALIVE_TIME = 60L;
-    private static final String THREAD_NAME = "bal-data-jsondata-thread";
+    private static final String THREAD_NAME = "bal-data-csv-thread";
     public static final ExecutorService EXECUTOR_SERVICE = new ThreadPoolExecutor(CORE_POOL_SIZE,
             MAX_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new SynchronousQueue<>(), new DataThreadFactory());
 

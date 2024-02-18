@@ -33,7 +33,8 @@ import java.util.ResourceBundle;
  */
 public class DiagnosticLog {
     private static final String ERROR_PREFIX = "error";
-    private static final String ERROR = "Error";
+    private static final String CSV_CONVERSION_ERROR = "CsvConversionError";
+    private static final String UNSUPPORTED_OPERATION_ERROR = "CsvConversionError";
     private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("error", Locale.getDefault());
 
     public static BError error(DiagnosticErrorCode code, Object... args) {
@@ -46,8 +47,12 @@ public class DiagnosticLog {
         return MessageFormat.format(msgKey, args);
     }
 
+    public static BError getCsvError(String message, String errorType) {
+        return ErrorCreator.createError(io.ballerina.stdlib.data.csvdata.utils.ModuleUtils.getModule(),
+                errorType, StringUtils.fromString(message), null, null);
+    }
+
     public static BError getCsvError(String message) {
-        return ErrorCreator.createError(io.ballerina.stdlib.data.csvdata.utils.ModuleUtils.getModule(), ERROR, StringUtils.fromString(message),
-                null, null);
+        return getCsvError(message, CSV_CONVERSION_ERROR);
     }
 }

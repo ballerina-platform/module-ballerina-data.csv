@@ -26,25 +26,15 @@ package io.ballerina.stdlib.data.csvdata.utils;
 public enum DiagnosticErrorCode {
 
     INVALID_TYPE("BDE_0001", "invalid.type"),
-    CSV_ROOT_MISSING("BDE_0002", "csv.root.missing"),
-    INVALID_REST_TYPE("BDE_0003", "invalid.rest.type"),
-    ARRAY_SIZE_MISMATCH("BDE_0004", "array.size.mismatch"),
-    REQUIRED_FIELD_NOT_PRESENT("BDE_0005", "required.field.not.present"),
-    REQUIRED_ATTRIBUTE_NOT_PRESENT("BDE_0006", "required.attribute.not.present"),
-    DUPLICATE_FIELD("BDE_0007", "duplicate.field"),
-    FOUND_ARRAY_FOR_NON_ARRAY_TYPE("BDE_0008", "found.array.for.non.array.type"),
-    EXPECTED_ANYDATA_OR_JSON("BDE_0009", "expected.anydata.or.json"),
-    NAMESPACE_MISMATCH("BDE_0010", "namespace.mismatch"),
-    TYPE_NAME_MISMATCH_WITH_CSV_ELEMENT("BDE_0011", "type.name.mismatch.with.csv.element"),
-    CAN_NOT_READ_STREAM("BDE_0012", "error.cannot.read.stream"),
-    CANNOT_CONVERT_TO_EXPECTED_TYPE("BDE_0013", "cannot.convert.to.expected.type"),
-    UNSUPPORTED_TYPE("BDE_0014", "unsupported.type"),
-    STREAM_BROKEN("BDE_0015", "stream.broken"),
-    CSV_PARSE_ERROR("BDE_0016", "csv.parse.error"),
-    INCOMPATIBLE_TYPE("BDE_0017", "incompatible.error"),
-    INVALID_TYPE_FOR_FIELD("BDE_18", "invalid.type.for.field.error"),
-
-    CSV_PARSER_EXCEPTION("BDE_19", "invalid.type.for.field.error");
+    UNION_TYPES_NOT_ALLOWED("BDE_0002", "union.types.not.allowed.as.expected.type"),
+    INVALID_ARRAY_MEMBER("BDE_0001", "invalid.array.member.in.expected.type"),
+    INVALID_FIELD_IN_CSV("BDE_0001", "cannot.found.field.in.csv"),
+    INVALID_CAST("BDE_0001", "csv.value.cannot.cast.into.expected.type"),
+    INVALID_EXPECTED_TYPE("BDE_0001", "invalid.expected.type"),
+    INVALID_TOKEN("BDE_0001", "invalid.token.while.reading.the.csv.data"),
+    INVALID_CSV_DATA_FORMAT("BDE_0001", "invalid.csv.data.format"),
+    INVALID_EXPECTED_ARRAY_SIZE("BDE_0001", "invalid.expected.array.size"),
+    INVALID_EXPECTED_TUPLE_SIZE("BDE_0001", "invalid.expected.tuple.size");
 
     String diagnosticId;
     String messageKey;

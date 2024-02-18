@@ -508,21 +508,21 @@ public class CsvTraversal {
             });
         }
 
-        private Object convertToBasicType(Object json, Type targetType) {
+        private Object convertToBasicType(Object csv, Type targetType) {
             if (targetType.getTag() == TypeTags.READONLY_TAG) {
-                return json;
+                return csv;
             }
             try {
-                Object value = JsonUtils.convertJSON(json, targetType);
+                Object value = JsonUtils.convertJSON(csv, targetType);
                 if (value instanceof String) {
                     return StringUtils.fromString(value.toString());
                 }
                 return value;
             } catch (Exception e) {
                 if (fieldNames.isEmpty()) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, targetType, json);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, targetType, csv);
                 }
-                throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, json, targetType,
+                throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, csv, targetType,
                        "Test");
             }
         }

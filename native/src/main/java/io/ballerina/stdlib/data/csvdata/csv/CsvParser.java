@@ -61,7 +61,7 @@ public class CsvParser {
             return sm.execute(reader, TypeUtils.getReferredType(type));
         } finally {
             // Need to reset the state machine before leaving. Otherwise, references to the created
-            // JSON values will be maintained and the java GC will not happen properly.
+            // CSV values will be maintained and the java GC will not happen properly.
             sm.reset();
         }
     }
