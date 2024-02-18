@@ -91,10 +91,10 @@ public class CsvTraversal {
             int expectedArraySize = ((ArrayType) referredType).getSize();
             long sourceArraySize = csv.getLength();
             if (expectedArraySize > sourceArraySize) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.ARRAY_SIZE_MISMATCH);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, sourceArraySize);
             }
             if (TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.UNION_TAG) {
-                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA);
+                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
             this.config = config;
             if (TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.RECORD_TYPE_TAG
@@ -136,7 +136,7 @@ public class CsvTraversal {
                     traverseArrayValue(csvElement, csvMember, true);
                     return csvMember;
             }
-            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType, PredefinedTypes.TYPE_ANYDATA);
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
         }
 
         private void traverseArrayValue(Object csvElement, BArray csvMember, boolean tuple) {
@@ -212,7 +212,7 @@ public class CsvTraversal {
                     csvMember.add(index, convertToBasicType(csvElement, arrayElementType));
                     break;
                 default:
-                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType, PredefinedTypes.TYPE_ANYDATA);
+                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType);
             }
         }
 
@@ -233,13 +233,12 @@ public class CsvTraversal {
                     int arrayElementTypeTag = arrayType.getElementType().getTag();
                     // TODO: Only allow string[]
                     if (arrayElementTypeTag != TypeTags.STRING_TAG) {
-                        DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE,
-                                expectedType, PredefinedTypes.TYPE_ANYDATA_ARRAY);
+                        DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
                     }
                     traverseCsvElementWithArrayAsExpectedType(csvElement,expectedType, arrayType);
                     break;
                 default:
-                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType, PredefinedTypes.TYPE_ANYDATA);
+                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }
             return currentCsvNode;
         }
@@ -276,10 +275,7 @@ public class CsvTraversal {
             } else if (csvElement instanceof BArray) {
                 traverseArrayValueWithMapAsExpectedType((BArray) csvElement, parentJsonNode, mappingType, expectedType);
             } else {
-                if (fieldNames.isEmpty()) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, expectedType, csvElement);
-                }
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, "Test");
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CSV_DATA_FORMAT);
             }
             nodesStack.pop();
         }
@@ -362,8 +358,7 @@ public class CsvTraversal {
             }
             boolean conversion = checkExpectedTypeMatchWithHeaders(expectedType, headers, csvElement, arraySize);
             if (!conversion) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, headers.toString(),
-                        csvElement.toString(), "Test");
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csvElement, expectedType);
             }
             // TODO: Add headers from config
             for(int i = 1; i <= arraySize; i++) {
@@ -433,8 +428,8 @@ public class CsvTraversal {
                 case TypeTags.MAP_TAG:
                     // TODO: Check
                     if (!checkTypeCompatibility(((MapType) currentFieldType).getConstrainedType(), mapValue)) {
-                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue,
-                                currentFieldType, "Test");
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, mapValue,
+                                currentFieldType);
                     }
                     ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
                             mapValue);
@@ -498,12 +493,12 @@ public class CsvTraversal {
         private void checkOptionalFieldsAndLogError(Map<String, Field> currentField) {
             currentField.values().forEach(field -> {
                 if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.REQUIRED_FIELD_NOT_PRESENT, field.getFieldName());
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
                 }
                 // TODO: Handle this properly
                 if (!(SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) &&
                         SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL))) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.REQUIRED_FIELD_NOT_PRESENT, field.getFieldName());
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
                 }
             });
         }
@@ -519,11 +514,7 @@ public class CsvTraversal {
                 }
                 return value;
             } catch (Exception e) {
-                if (fieldNames.isEmpty()) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, targetType, csv);
-                }
-                throw DiagnosticLog.error(DiagnosticErrorCode.INCOMPATIBLE_TYPE, csv, targetType,
-                       "Test");
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, targetType);
             }
         }
     }

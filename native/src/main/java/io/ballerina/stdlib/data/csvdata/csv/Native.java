@@ -62,12 +62,12 @@ public class Native {
                 DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
                 return null;
             } else {
-                return DiagnosticLog.error(DiagnosticErrorCode.UNSUPPORTED_TYPE, expType);
+                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TYPE, expType);
             }
         } catch (BError e) {
             return e;
         } catch (Exception e) {
-            return DiagnosticLog.error(DiagnosticErrorCode.CSV_PARSE_ERROR, e.getMessage());
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
         }
     }
 

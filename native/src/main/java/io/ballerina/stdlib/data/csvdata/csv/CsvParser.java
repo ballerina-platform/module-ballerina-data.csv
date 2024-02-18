@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.data.csvdata.csv;
 
-import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -161,7 +160,7 @@ public class CsvParser {
         public Object execute(Reader reader, Type type) throws BError {
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
-                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
+                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
             } else {
                 rootCsvNode = ValueCreator.createArrayValue((ArrayType) type);
                 expectedArrayElementType = ((ArrayType) TypeUtils.getReferredType(referredType)).getElementType();
@@ -184,7 +183,7 @@ public class CsvParser {
                     break;
                 // TODO: Check to add Union types as well
                 default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.CSV_PARSER_EXCEPTION);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
             boolean header = true;
             State currentState;
@@ -204,9 +203,9 @@ public class CsvParser {
                 }
                 return rootCsvNode;
             } catch (IOException e) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.CSV_PARSER_EXCEPTION, e.getMessage());
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             } catch (CsvParserException e) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.CSV_PARSER_EXCEPTION, e.getMessage(), line, column);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             }
         }
 
@@ -301,7 +300,7 @@ public class CsvParser {
                         for (Field field : recordType.getFields().values()) {
                             if (!sm.headers.contains(field.getFieldName())) {
                                 if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
-                                    throw DiagnosticLog.error(DiagnosticErrorCode.REQUIRED_FIELD_NOT_PRESENT, field.getFieldName());
+                                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
                                 }
                             }
                         }
@@ -313,7 +312,7 @@ public class CsvParser {
                     //TODO: Replace arraysize -1 with
                     if (size != -1 && size > sm.headers.size()) {
                         // TODO: Can remove using fillers
-                        throw DiagnosticLog.error(DiagnosticErrorCode.REQUIRED_FIELD_NOT_PRESENT, "Test");
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, sm.headers.size());
                     }
                 } else if (expType instanceof MapType) {
                     //ignore
@@ -321,7 +320,7 @@ public class CsvParser {
                     TupleType tupleType = (TupleType) expType;
                     if (tupleType.getRestType() != null && tupleType.getTupleTypes().size() > sm.headers.size()) {
                         // TODO: Can remove using fillers
-                        throw DiagnosticLog.error(DiagnosticErrorCode.REQUIRED_FIELD_NOT_PRESENT, "Test");
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, sm.headers.size());
                     }
                 } else {
                     throw new CsvParserException("Invalid expected type");

@@ -50,7 +50,7 @@ public class CsvCreator {
             case TypeTags.MAP_TAG:
                 return ValueCreator.createMapValue((MapType) expectedType);
             default:
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType, "map type");
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
         }
     }
 
@@ -61,7 +61,7 @@ public class CsvCreator {
             case TypeTags.ARRAY_TAG:
                 return ValueCreator.createArrayValue((ArrayType) expectedType);
             default:
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType, "list type");
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
         }
     }
 
