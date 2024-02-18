@@ -78,32 +78,21 @@ public class CsvParser {
         private static State NON_STRING_COLUMN_END_STATE = new NonStringColumnEndState();
         private static State MAP_START_STATE = new MapStartState();
         private static State MAP_END_STATE = new MapEndState();
-
         private static String lineBreak = "\n";
 
         Object currentCsvNode;
-        Object currentRow;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
-        Deque<Object> nodesStack;
         // TODO: Need group same level field and keep the hierarchy.
         ArrayList<String> fieldNames;
-
-        private StringBuilder hexBuilder = new StringBuilder(4);
         private char[] charBuff = new char[1024];
         private int charBuffIndex;
 
         private int index;
         private int line;
         private int column;
-        private char currentQuoteChar;
-        Field currentField;
-        Map<String, Field> fieldHierarchy = new HashMap<>();
-        Stack<Type> restType = new Stack<>();
+        Type restType;
         Stack<Type> expectedTypes = new Stack<>();
-        int csvFieldDepth = 0;
-        Stack<Integer> arrayIndexes = new Stack<>();
-        Stack<ParserContexts> parserContexts = new Stack<>();
         Type expectedArrayElementType;
         int columnIndex = 0;
         int rowIndex = 0;
@@ -112,23 +101,14 @@ public class CsvParser {
             reset();
         }
 
-        public enum ParserContexts {
-            MAP,
-            ARRAY
-        }
-
         public void reset() {
             index = 0;
             currentCsvNode = null;
             line = 1;
             column = 0;
-            nodesStack = new ArrayDeque<>();
             fieldNames = new ArrayList<>();
-            fieldHierarchy.clear();
-            currentField = null;
-            restType.clear();
+            restType = null;
             expectedTypes.clear();
-            csvFieldDepth = 0;
             rootCsvNode = null;
             columnIndex = 0;
             rowIndex = 0;
@@ -170,8 +150,7 @@ public class CsvParser {
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedArrayElementType;
                     expectedTypes.push(recordType);
-                    restType.push(recordType.getRestFieldType());
-                    fieldHierarchy = recordType.getFields();
+                    restType = recordType.getRestFieldType();
                     break;
                 case TypeTags.MAP_TAG:
                     expectedTypes.push(expectedArrayElementType);
@@ -179,7 +158,6 @@ public class CsvParser {
                 case TypeTags.ARRAY_TAG:
                 case TypeTags.TUPLE_TAG:
                     expectedTypes.push(expectedArrayElementType);
-                    arrayIndexes.push(0);
                     break;
                 // TODO: Check to add Union types as well
                 default:
