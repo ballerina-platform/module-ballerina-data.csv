@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.validateExpectedArraySize;
+
 /**
  * Convert Csv string to a ballerina record.
  *
@@ -53,11 +55,11 @@ public class CsvParser {
 
     private static final ThreadLocal<StateMachine> tlStateMachine = ThreadLocal.withInitial(StateMachine::new);
 
-    public static Object parse(Reader reader, Type type)
+    public static Object parse(Reader reader, Type type, CsvConfig config)
             throws BError {
         StateMachine sm = tlStateMachine.get();
         try {
-            return sm.execute(reader, TypeUtils.getReferredType(type));
+            return sm.execute(reader, TypeUtils.getReferredType(type), config);
         } finally {
             // Need to reset the state machine before leaving. Otherwise, references to the created
             // CSV values will be maintained and the java GC will not happen properly.
@@ -70,15 +72,12 @@ public class CsvParser {
         private static State HEADER_END_STATE = new HeaderEndState();
         private static State ROW_START_STATE = new RowStartState();
         private static State ROW_END_STATE = new RowEndState();
-        private static State STRING_COLUMN_START_STATE = new StringColumnStartState();
-        private static State STRING_COLUMN_END_STATE = new StringColumnEndState();
-        private static State NON_STRING_COLUMN_START_STATE = new NonStringColumnStartState();
-        private static State NON_STRING_COLUMN_END_STATE = new NonStringColumnEndState();
-        private static State MAP_START_STATE = new MapStartState();
-        private static State MAP_END_STATE = new MapEndState();
+        private static State STRING_VALUE_STATE = new StringValueEscapedCharacterProcessingState();
+        private static State HEADER_NAME_STATE = new HeaderNameEscapedCharacterProcessingState();
         private static char LINE_BREAK = '\n';
 
         Object currentCsvNode;
+        Stack<String> currentEscapeCharacters = new Stack<>();
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
         Map<String, Field> fieldHierarchy = new HashMap<>();
@@ -135,7 +134,7 @@ public class CsvParser {
             return result;
         }
 
-        public Object execute(Reader reader, Type type) throws BError {
+        public Object execute(Reader reader, Type type, CsvConfig config) throws BError {
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
                 return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
@@ -276,12 +275,6 @@ public class CsvParser {
                 }
             }
 
-            private void validateExpectedArraySize(int size, int currentSize) {
-                if (size != -1 && size > currentSize) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, currentSize);
-                }
-            }
-
             private void validateRemainingRecordFields(StateMachine sm) {
                 if (sm.restType == null) {
                     for (Field field : sm.fieldHierarchy.values()) {
@@ -375,54 +368,64 @@ public class CsvParser {
                 Type type;
                 Type exptype = sm.expectedArrayElementType;
                 if (exptype instanceof RecordType) {
-                    // TODO: These can be make as module level variables
-                    String header = sm.headers.get(sm.columnIndex);
-                    Map<String, Field> fields = sm.fieldNames;
-                    if (fields.containsKey(header)) {
-                        //TODO: Optimize
-                        type = fields.get(header).getFieldType();
-                    } else {
-                        Type restType = sm.restType;
-                        if (restType != null) {
-                            type = restType;
-                        } else {
-                            sm.charBuffIndex = 0;
-                            return;
-                        }
-                    }
+                   type = getExpectedRowTypeOfRecord(sm);
                 } else if (exptype instanceof MapType) {
-                    MapType mapType = ((MapType) exptype);
-                    type = mapType.getConstrainedType();
+                    type = ((MapType) exptype).getConstrainedType();
                 } else if (exptype instanceof ArrayType) {
-                    ArrayType arrayType = (ArrayType) exptype;
-                    // TODO: add to a constant
-                    if (arrayType.getSize() != -1 && arrayType.getSize() < sm.columnIndex) {
-                        sm.charBuffIndex = 0;
-                        return;
-                    }
-                    type = arrayType.getElementType();
+                   type = getExpectedRowTypeOfArray(sm, (ArrayType) exptype);
                 } else if (exptype instanceof TupleType) {
-                    TupleType tupleType = (TupleType) exptype;
-                    List<Type> tupleTypes = tupleType.getTupleTypes();
-                    if (tupleTypes.size() > sm.columnIndex) {
-                        type = tupleTypes.get(sm.columnIndex);
-                    } else {
-                        Type restType = sm.restType;
-                        if (restType != null) {
-                            type = restType;
-                        } else {
-                            sm.charBuffIndex = 0;
-                            return;
-                        }
-                    }
+                    type = getExpectedRowTypeOfTuple(sm, (TupleType) exptype);
                 } else {
                     throw new CsvParserException("Unexpected expected type");
                 }
-                CsvCreator.convertAndUpdateCurrentJsonNode(sm, StringUtils.fromString(sm.value()), type);
+
+                if (type != null) {
+                    CsvCreator.convertAndUpdateCurrentJsonNode(sm, StringUtils.fromString(sm.value()), type);
+                }
+            }
+
+            private Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {
+                List<Type> tupleTypes = tupleType.getTupleTypes();
+                if (tupleTypes.size() > sm.columnIndex) {
+                    return tupleTypes.get(sm.columnIndex);
+                } else {
+                    Type restType = sm.restType;
+                    if (restType != null) {
+                        return restType;
+                    } else {
+                        sm.charBuffIndex = 0;
+                        return null;
+                    }
+                }
+            }
+
+            private Type getExpectedRowTypeOfArray(StateMachine sm, ArrayType arrayType) {
+                // TODO: add to a constant
+                if (arrayType.getSize() != -1 && arrayType.getSize() < sm.columnIndex) {
+                    sm.charBuffIndex = 0;
+                    return null;
+                }
+                return arrayType.getElementType();
+            }
+
+            private Type getExpectedRowTypeOfRecord(StateMachine sm) {
+                // TODO: These can be make as module level variables
+                String header = sm.headers.get(sm.columnIndex);
+                Map<String, Field> fields = sm.fieldNames;
+                if (fields.containsKey(header)) {
+                    //TODO: Optimize
+                    return fields.get(header).getFieldType();
+                } else {
+                    Type restType = sm.restType;
+                    if (restType != null) {
+                        return restType;
+                    } else {
+                        sm.charBuffIndex = 0;
+                        return null;
+                    }
+                }
             }
         }
-
-
 
         private static class RowEndState implements State {
             @Override
@@ -431,46 +434,130 @@ public class CsvParser {
             }
         }
 
-        private static class StringColumnStartState implements State {
+        /**
+         * Represents the state where an escaped character is processed in a string value.
+         */
+        private static class StringValueEscapedCharacterProcessingState extends EscapedCharacterProcessingState {
+
+            @Override
+            protected State getSourceState() {
+                return STRING_VALUE_STATE;
+            }
+
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
+                State state = null;
+                char ch;
+                for (; i < count; i++) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    if (String.valueOf(ch) == sm.currentEscapeCharacters.peek()) {
+                        sm.currentEscapeCharacters.pop();
+                        state = ROW_START_STATE;
+                    } else if (ch == EOF) {
+                        throw new CsvParserException("unexpected end of JSON document");
+                    } else {
+                        sm.append(ch);
+                        state = this;
+                        continue;
+                    }
+                    break;
+                }
+                sm.index = i + 1;
+                return state;
+            }
+
+        }
+
+        /**
+         * Represents the state where an escaped character is processed in a field name.
+         */
+        private static class HeaderNameEscapedCharacterProcessingState extends EscapedCharacterProcessingState {
+
+            @Override
+            protected State getSourceState() {
+                return HEADER_NAME_STATE;
+            }
+
+            @Override
+            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
+                State state = null;
+                char ch;
+                for (; i < count; i++) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    if (String.valueOf(ch) == sm.currentEscapeCharacters.peek()) {
+                        sm.currentEscapeCharacters.pop();
+                        state = HEADER_START_STATE;
+                    } else if (ch == EOF) {
+                        throw new CsvParserException("unexpected end of JSON document");
+                    } else {
+                        sm.append(ch);
+                        state = this;
+                        continue;
+                    }
+                    break;
+                }
+                sm.index = i + 1;
+                return state;
             }
         }
 
-        private static class StringColumnEndState implements State {
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
-            }
-        }
+        /**
+         * Represents the state where an escaped character is processed.
+         */
+        private abstract static class EscapedCharacterProcessingState implements State {
 
-        private static class NonStringColumnStartState implements State {
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
-            }
-        }
+            protected abstract State getSourceState();
 
-        private static class NonStringColumnEndState implements State {
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
+                State state = null;
+                char ch;
+                if (i < count) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    switch (ch) {
+                        case '"':
+                            sm.append(QUOTES);
+                            state = this.getSourceState();
+                            break;
+                        case '\\':
+                            sm.append(REV_SOL);
+                            state = this.getSourceState();
+                            break;
+                        case '/':
+                            sm.append(SOL);
+                            state = this.getSourceState();
+                            break;
+                        case 'b':
+                            sm.append(BACKSPACE);
+                            state = this.getSourceState();
+                            break;
+                        case 'f':
+                            sm.append(FORMFEED);
+                            state = this.getSourceState();
+                            break;
+                        case 'n':
+                            sm.append(NEWLINE);
+                            state = this.getSourceState();
+                            break;
+                        case 'r':
+                            sm.append(CR);
+                            state = this.getSourceState();
+                            break;
+                        case 't':
+                            sm.append(HZ_TAB);
+                            state = this.getSourceState();
+                            break;
+                        default:
+                            StateMachine.throwExpected("escaped characters");
+                    }
+                }
+                sm.index = i + 1;
+                return state;
             }
-        }
 
-        private static class MapStartState implements State {
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
-            }
-        }
-
-        private static class MapEndState implements State {
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                return null;
-            }
         }
 
         public static class CsvParserException extends Exception {

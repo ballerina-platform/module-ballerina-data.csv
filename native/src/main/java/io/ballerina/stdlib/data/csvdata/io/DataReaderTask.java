@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.csv.CsvParser;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
@@ -44,12 +45,14 @@ public class DataReaderTask implements Runnable {
     private final BObject iteratorObj;
     private final Future future;
     private final BTypedesc typed;
+    private final CsvConfig config;
 
-    public DataReaderTask(Environment env, BObject iteratorObj, Future future, BTypedesc typed) {
+    public DataReaderTask(Environment env, BObject iteratorObj, Future future, BTypedesc typed, CsvConfig config) {
         this.env = env;
         this.iteratorObj = iteratorObj;
         this.future = future;
         this.typed = typed;
+        this.config = config;
     }
 
     static MethodType resolveNextMethod(BObject iterator) {
@@ -81,7 +84,8 @@ public class DataReaderTask implements Runnable {
         ResultConsumer<Object> resultConsumer = new ResultConsumer<>(future);
         try (var byteBlockSteam = new BallerinaByteBlockInputStream(env, iteratorObj, resolveNextMethod(iteratorObj),
                 resolveCloseMethod(iteratorObj), resultConsumer)) {
-            Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam), typed.getDescribingType());
+            Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam),
+                        typed.getDescribingType(), this.config);
             future.complete(result);
         } catch (Exception e) {
             future.complete(DiagnosticLog.getCsvError("Error occurred while reading the stream: " + e.getMessage()));

@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.io.DataReaderTask;
 import io.ballerina.stdlib.data.csvdata.io.DataReaderThreadPool;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
@@ -40,7 +41,7 @@ public class Native {
 
     public static Object fromCsvWithType(BArray csv, BMap<BString, Object> config, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, config, type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvUtils.createFromCsvConfiguration(config), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
@@ -50,15 +51,17 @@ public class Native {
         try {
             Type expType = type.getDescribingType();
             if (csv instanceof BString) {
-                return CsvParser.parse(new StringReader(((BString) csv).getValue()), expType);
+                return CsvParser.parse(new StringReader(((BString) csv).getValue()),
+                        expType, CsvUtils.createFromCsvConfiguration(config));
             } else if (csv instanceof BArray) {
                 byte[] bytes = ((BArray) csv).getBytes();
                 return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
-                        type.getDescribingType());
+                        type.getDescribingType(), CsvUtils.createFromCsvConfiguration(config));
             } else if (csv instanceof BStream) {
                 final BObject iteratorObj = ((BStream) csv).getIteratorObj();
                 final Future future = env.markAsync();
-                DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type);
+                DataReaderTask task = new DataReaderTask(env, iteratorObj, future,
+                        type, CsvUtils.createFromCsvConfiguration(config));
                 DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
                 return null;
             } else {
@@ -73,7 +76,7 @@ public class Native {
 
     public static Object toCsv(BArray csv, BMap<BString, Object> config, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, config, type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvUtils.createToCsvConfiguration(config), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

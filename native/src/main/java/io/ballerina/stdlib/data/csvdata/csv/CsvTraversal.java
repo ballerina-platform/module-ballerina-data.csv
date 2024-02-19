@@ -27,10 +27,13 @@ import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.runtime.api.utils.TypeUtils;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 
 import java.util.*;
+
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.validateExpectedArraySize;
 
 /**
  * Convert Csv value to a ballerina record.
@@ -39,7 +42,7 @@ import java.util.*;
  */
 public class CsvTraversal {
     private static final ThreadLocal<CsvTree> tlCsvTree = ThreadLocal.withInitial(CsvTree::new);
-    public static Object traverse(BArray csv, BMap<BString, Object> config, Type type) {
+    public static Object traverse(BArray csv, CsvConfig config, Type type) {
         CsvTree csvTree = tlCsvTree.get();
         try {
             return csvTree.traverseCsv(csv, config, type);
@@ -59,7 +62,7 @@ public class CsvTraversal {
         BArray rootCsvNode;
         Type expectedArrayElementType;
         Type sourceArrayElementType;
-        BMap<BString, Object> config;
+        CsvConfig config;
 
         void reset() {
             currentCsvNode = null;
@@ -72,7 +75,8 @@ public class CsvTraversal {
         }
 
         @SuppressWarnings("unchecked")
-        public Object traverseCsv(BArray csv, BMap<BString, Object> config, Type type) {
+        public Object traverseCsv(BArray csv, CsvConfig config, Type type) {
+            this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             // TODO: add root level node configurations
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
@@ -84,14 +88,11 @@ public class CsvTraversal {
             // TODO: Handle the array size count
             sourceArrayElementType = csv.getElementType();
             int expectedArraySize = ((ArrayType) referredType).getSize();
-            long sourceArraySize = csv.getLength();
-            if (expectedArraySize > sourceArraySize) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, sourceArraySize);
-            }
+            int sourceArraySize = (int) csv.getLength();
+            validateExpectedArraySize(expectedArraySize, sourceArraySize);
             if (TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.UNION_TAG) {
                 return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
-            this.config = config;
             if (TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.RECORD_TYPE_TAG
                     || TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.TABLE_TAG
                     || TypeUtils.getReferredType(expectedArrayElementType).getTag() == TypeTags.MAP_TAG) {
@@ -115,6 +116,34 @@ public class CsvTraversal {
             for (int i = 0; i < length; i++) {
                 rootCsvNode.append(traverseCsvElementWithArray(csv.get(i), expectedArrayType));
             }
+        }
+
+        public Object traverseCsvElementWithMapOrRecord(Object csvElement, Type expectedType) {
+            switch (expectedType.getTag()) {
+                case TypeTags.RECORD_TYPE_TAG:
+                    RecordType recordType = (RecordType) expectedType;
+                    this.fieldHierarchy = new HashMap<>(recordType.getFields());
+                    this.restType = recordType.getRestFieldType();
+                    currentCsvNode = ValueCreator.createRecordValue(recordType);
+                    traverseCsvMap(csvElement, expectedType, false);
+                    break;
+                case TypeTags.MAP_TAG:
+                    MapType mapType = (MapType) expectedType;
+                    this.fieldHierarchy = new HashMap<>();
+                    currentCsvNode = ValueCreator.createMapValue(mapType);
+                    traverseCsvMap(csvElement, expectedType, true);
+                    break;
+//                case TypeTags.TABLE_TAG:
+//                    //TODO: Check
+//                    TableType tableType = (TableType) expectedType;
+//                    this.fieldHierarchy = new HashMap<>();
+//                    currentCsvNode = ValueCreator.createT(tableType);
+//                    traverseCsvMap(csvElement, expectedType, true);
+//                    break;
+                default:
+                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+            }
+            return currentCsvNode;
         }
 
         public Object traverseCsvElementWithArray(Object csvElement, Type expectedType) {
@@ -209,54 +238,6 @@ public class CsvTraversal {
                 default:
                     DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType);
             }
-        }
-
-        public Object traverseCsvElementWithMapOrRecord(Object csvElement, Type expectedType) {
-            switch (expectedType.getTag()) {
-                case TypeTags.RECORD_TYPE_TAG:
-                    traverseCsvElementWithRecordAsExpectedType(csvElement, expectedType);
-                    break;
-                case TypeTags.MAP_TAG:
-                    traverseCsvElementWithMapAsExpectedType(csvElement, expectedType);
-                    break;
-                case TypeTags.TABLE_TAG:
-                    //TODO: Check
-                    traverseCsvElementWithMapAsExpectedType(csvElement, expectedType);
-                    break;
-                case TypeTags.ARRAY_TAG:
-                    ArrayType arrayType = (ArrayType) expectedType;
-                    int arrayElementTypeTag = arrayType.getElementType().getTag();
-                    // TODO: Only allow string[]
-                    if (arrayElementTypeTag != TypeTags.STRING_TAG) {
-                        DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
-                    }
-                    traverseCsvElementWithArrayAsExpectedType(csvElement,expectedType, arrayType);
-                    break;
-                default:
-                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
-            }
-            return currentCsvNode;
-        }
-
-        public void traverseCsvElementWithRecordAsExpectedType(Object csvElement, Type expectedType) {
-            RecordType recordType = (RecordType) expectedType;
-            this.fieldHierarchy = new HashMap<>(recordType.getFields());
-            this.restType = recordType.getRestFieldType();
-            currentCsvNode = ValueCreator.createRecordValue(recordType);
-            traverseCsvMap(csvElement, expectedType, false);
-        }
-
-        public void traverseCsvElementWithMapAsExpectedType(Object csvElement, Type expectedType) {
-            MapType mapType = (MapType) expectedType;
-            this.fieldHierarchy = new HashMap<>();
-            currentCsvNode = ValueCreator.createMapValue(mapType);
-            traverseCsvMap(csvElement, expectedType, true);
-        }
-
-        public void traverseCsvElementWithArrayAsExpectedType(Object csvElement, Type expectedType, ArrayType arrayType) {
-            // todo Check sizes abnd log errors
-            currentCsvNode = ValueCreator.createArrayValue(arrayType);
-            traverseCsvElementWithArray(csvElement, expectedType);
         }
 
         private void traverseCsvMap(Object csvElement, Type expectedType, boolean mappingType) {
