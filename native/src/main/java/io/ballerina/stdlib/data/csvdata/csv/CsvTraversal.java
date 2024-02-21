@@ -21,18 +21,15 @@ package io.ballerina.stdlib.data.csvdata.csv;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
-import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
-import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 
@@ -208,7 +205,8 @@ public class CsvTraversal {
                 if (index >= expectedSize) {
                     break;
                 }
-                addValuesToArrayType(csvElement.get(i), getArrayOrTupleMemberType(type, index), index);
+                addValuesToArrayType(csvElement.get(i),
+                        getArrayOrTupleMemberType(type, index), index, currentCsvNode, config);
                 index++;
             }
         }
@@ -219,16 +217,8 @@ public class CsvTraversal {
                 if (index >= expectedSize) {
                     break;
                 }
-                addValuesToArrayType(v, getArrayOrTupleMemberType(type, index), index);
+                addValuesToArrayType(v, getArrayOrTupleMemberType(type, index), index, currentCsvNode, config);
                 index++;
-            }
-        }
-
-        private int getTheActualExpectedType(Type type) {
-            if (type instanceof TupleType) {
-                return ((TupleType) type).getTupleTypes().size();
-            } else {
-                return ((ArrayType) type).getSize();
             }
         }
 
@@ -245,22 +235,6 @@ public class CsvTraversal {
                 return null;
             }
             return ((ArrayType) type).getElementType();
-        }
-
-        private void addValuesToArrayType(Object csvElement, Type arrayElementType, int index) {
-            switch (arrayElementType.getTag()) {
-                case TypeTags.NULL_TAG:
-                case TypeTags.BOOLEAN_TAG:
-                case TypeTags.INT_TAG:
-                case TypeTags.FLOAT_TAG:
-                case TypeTags.DECIMAL_TAG:
-                case TypeTags.STRING_TAG:
-                case TypeTags.XML_TAG:
-                    ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, arrayElementType, config));
-                    break;
-                default:
-                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType);
-            }
         }
 
         private void traverseCsvMap(Object csvElement, Type expectedType, boolean mappingType) {
@@ -437,41 +411,6 @@ public class CsvTraversal {
                     }
                     break;
             }
-        }
-
-        private boolean checkTypeCompatibility(Type constraintType, Object csv) {
-            if (csv instanceof BMap) {
-                BMap<BString, Object> map = (BMap<BString, Object>) csv;
-                for (BString key : map.getKeys()) {
-                    if (!checkTypeCompatibility(constraintType, map.get(key))) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if ((csv instanceof BString && constraintType.getTag() == TypeTags.STRING_TAG)
-                    || (csv instanceof Long && constraintType.getTag() == TypeTags.INT_TAG)
-                    || (csv instanceof BDecimal && constraintType.getTag() == TypeTags.DECIMAL_TAG)
-                    || (csv instanceof Double && (constraintType.getTag() == TypeTags.FLOAT_TAG
-                    || constraintType.getTag() == TypeTags.DECIMAL_TAG))
-                    || (Boolean.class.isInstance(csv) && constraintType.getTag() == TypeTags.BOOLEAN_TAG)
-                    || (csv == null && constraintType.getTag() == TypeTags.NULL_TAG)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        private void checkOptionalFieldsAndLogError(Map<String, Field> currentField) {
-            currentField.values().forEach(field -> {
-                if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
-                }
-                // TODO: Handle this properly
-                if (!(SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) &&
-                        SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL))) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
-                }
-            });
         }
 
         private void setRootCsvNode(Type referredType, Type type) {

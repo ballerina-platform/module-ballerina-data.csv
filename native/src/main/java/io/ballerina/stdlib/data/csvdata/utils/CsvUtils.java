@@ -1,6 +1,10 @@
 package io.ballerina.stdlib.data.csvdata.utils;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.flags.SymbolFlags;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -11,6 +15,8 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.csv.CsvTraversal;
 import io.ballerina.stdlib.data.csvdata.csv.QueryParser;
+
+import java.util.Map;
 
 public class CsvUtils {
     public static CsvConfig createFromCsvConfiguration(BMap<BString, Object> config) {
@@ -148,6 +154,66 @@ public class CsvUtils {
             return value;
         } catch (Exception e) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, targetType);
+        }
+    }
+
+    public static void checkOptionalFieldsAndLogError(Map<String, Field> currentField) {
+        currentField.values().forEach(field -> {
+            if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
+            }
+            // TODO: Handle this properly
+            if (!(SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) &&
+                    SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL))) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
+            }
+        });
+    }
+
+    public static boolean checkTypeCompatibility(Type constraintType, Object csv) {
+        if (csv instanceof BMap) {
+            BMap<BString, Object> map = (BMap<BString, Object>) csv;
+            for (BString key : map.getKeys()) {
+                if (!checkTypeCompatibility(constraintType, map.get(key))) {
+                    return false;
+                }
+            }
+            return true;
+        } else if ((csv instanceof BString && constraintType.getTag() == TypeTags.STRING_TAG)
+                || (csv instanceof Long && constraintType.getTag() == TypeTags.INT_TAG)
+                || (csv instanceof BDecimal && constraintType.getTag() == TypeTags.DECIMAL_TAG)
+                || (csv instanceof Double && (constraintType.getTag() == TypeTags.FLOAT_TAG
+                || constraintType.getTag() == TypeTags.DECIMAL_TAG))
+                || (Boolean.class.isInstance(csv) && constraintType.getTag() == TypeTags.BOOLEAN_TAG)
+                || (csv == null && constraintType.getTag() == TypeTags.NULL_TAG)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static void addValuesToArrayType(Object csvElement, Type arrayElementType, int index,
+                                      Object currentCsvNode, CsvConfig config) {
+        switch (arrayElementType.getTag()) {
+            case TypeTags.NULL_TAG:
+            case TypeTags.BOOLEAN_TAG:
+            case TypeTags.INT_TAG:
+            case TypeTags.FLOAT_TAG:
+            case TypeTags.DECIMAL_TAG:
+            case TypeTags.STRING_TAG:
+            case TypeTags.XML_TAG:
+                ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, arrayElementType, config));
+                break;
+            default:
+                DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType);
+        }
+    }
+
+    public static int getTheActualExpectedType(Type type) {
+        if (type instanceof TupleType) {
+            return ((TupleType) type).getTupleTypes().size();
+        } else {
+            return ((ArrayType) type).getSize();
         }
     }
 
