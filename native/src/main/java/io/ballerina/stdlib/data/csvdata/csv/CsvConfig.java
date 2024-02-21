@@ -8,24 +8,24 @@ import java.util.ArrayList;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.*;
 
 public class CsvConfig {
-    long startNumber = 0;
-    long headerStartNumber = 0;
-    long dataStartNumber = 1;
-    boolean headers = true;
-    char escapeCharacter = '\\';
-    boolean ignoreEmptyLines = true;
-    char separator = ',';
-    String quote = "\"";
-    boolean skipHeaders = false;
-    long skipDataRows = 0;
-    long dataRowCount = -1;
-    Object orderBy = new ArrayList<>();
-    Object skipColumns = null;
-    Object customHeader = null;
-    boolean suppressEscaping = false;
-    Object nullValue = null;
-    Object root = null;
-    char lineSeparator = '\n';
+    public long startNumber = 0;
+    public long headerStartNumber = 0;
+    public long dataStartNumber = 1;
+    public boolean headers = true;
+    public char escapeCharacter = '\\';
+    public boolean ignoreEmptyLines = true;
+    public char separator = ',';
+    public String quote = "\"";
+    public boolean skipHeaders = false;
+    public long skipDataRows = 0;
+    public long dataRowCount = -1;
+    public Object orderBy = new ArrayList<>();
+    public Object skipColumns = null;
+    public Object customHeader = null;
+    public boolean suppressEscaping = false;
+    public Object nullValue = null;
+    public Object root = null;
+    public char lineSeparator = '\n';
 
 
     private CsvConfig(boolean headers, char escapeCharacter, boolean ignoreEmptyLines,

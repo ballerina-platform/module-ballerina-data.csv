@@ -24,4 +24,11 @@ public class Constants {
         public static BString ROOT = StringUtils.fromString("root");
         public static BString LINE_SEPARATOR = StringUtils.fromString("lineSeparator");
     }
+
+    public static class OrderConfigs {
+        public static BString COLUMN = StringUtils.fromString("column");
+        public static BString COLUMN_ORDER = StringUtils.fromString("columnOrder");
+        public static BString ASC = StringUtils.fromString("ASC");
+        public static BString DESC = StringUtils.fromString("DESC");
+    }
 }

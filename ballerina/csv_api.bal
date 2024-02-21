@@ -35,24 +35,23 @@ public type MappingConfig record {|
 |};
 
 public type FromCSVConfig record {|
-    int startNumber = 0;
-    int headerStartNumber = 0;
-    int dataStartNumber = 1;
-    boolean headers = true;
-    string:Char escapeCharacter = "\\";
-    boolean ignoreEmptyLines = true;
-    string:Char separator = ",";
-    string quote = "\"";
-    boolean skipHeaders = false;
-    int skipdataRows = 0;
-    int dataRowCount = -1;
-    ColumnOrder|ColumnOrder[] orderBy = [];
-    string|int|string[]|int[]? skipColumns = ();
-    string[]|int[]? customheader = ();
-    boolean suppressEscaping = false;
-    MappingConfig mappingConfig = {};
-    anydata nullValue = ();
-    string? root = ();
+    int startNumber = 0; // done - 1
+    int headerStartNumber = 0; // done - 1
+    int dataStartNumber = 1; // done - 1
+    boolean headers = true; // done - 1
+    string:Char escapeCharacter = "\\"; // done - 1
+    boolean ignoreEmptyLines = true; // done - 1
+    string:Char separator = ","; // done - 1
+    string quote = "\""; // done - 1
+    boolean skipHeaders = false; // done - 1
+    int skipdataRows = 0; // done - 1
+    int dataRowCount = -1; // done - 1
+    ColumnOrder|ColumnOrder[]? orderBy = ();// done - 1
+    string|int|string[]|int[]? skipColumns = (); // done - 1
+    string[]|int[]? customheader = ();  // done - 1
+    boolean suppressEscaping = false; // done - 1
+    // MappingConfig mappingConfig = {};
+    anydata nullValue = (); // done - 1
 |};
 
 public type ToCSVConfig record {|

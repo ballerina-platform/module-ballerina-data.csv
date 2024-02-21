@@ -27,14 +27,15 @@ public enum DiagnosticErrorCode {
 
     INVALID_TYPE("BDE_0001", "invalid.type"),
     UNION_TYPES_NOT_ALLOWED("BDE_0002", "union.types.not.allowed.as.expected.type"),
-    INVALID_ARRAY_MEMBER("BDE_0001", "invalid.array.member.in.expected.type"),
-    INVALID_FIELD_IN_CSV("BDE_0001", "cannot.found.field.in.csv"),
-    INVALID_CAST("BDE_0001", "csv.value.cannot.cast.into.expected.type"),
-    INVALID_EXPECTED_TYPE("BDE_0001", "invalid.expected.type"),
-    INVALID_TOKEN("BDE_0001", "invalid.token.while.reading.the.csv.data"),
-    INVALID_CSV_DATA_FORMAT("BDE_0001", "invalid.csv.data.format"),
-    INVALID_EXPECTED_ARRAY_SIZE("BDE_0001", "invalid.expected.array.size"),
-    INVALID_EXPECTED_TUPLE_SIZE("BDE_0001", "invalid.expected.tuple.size");
+    INVALID_ARRAY_MEMBER("BDE_0003", "invalid.array.member.in.expected.type"),
+    INVALID_FIELD_IN_CSV("BDE_0004", "cannot.found.field.in.csv"),
+    INVALID_CAST("BDE_0005", "csv.value.cannot.cast.into.expected.type"),
+    INVALID_EXPECTED_TYPE("BDE_0006", "invalid.expected.type"),
+    INVALID_TOKEN("BDE_0007", "invalid.token.while.reading.the.csv.data"),
+    INVALID_CSV_DATA_FORMAT("BDE_0008", "invalid.csv.data.format"),
+    INVALID_EXPECTED_ARRAY_SIZE("BDE_0009", "invalid.expected.array.size"),
+    INVALID_EXPECTED_TUPLE_SIZE("BDE_0010", "invalid.expected.tuple.size"),
+    INVALID_SKIP_COLUMN_QUERY("BDE_0011", "invalid.skip.column.query");
 
     String diagnosticId;
     String messageKey;

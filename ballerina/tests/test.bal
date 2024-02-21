@@ -343,8 +343,6 @@ function testC() returns error? {
 
 @test:Config{enable: !enable}
 function t() returns error? {
-    string a = check io:fileReadString("a.txt");
-    AA aa = check fromCsvStringWithType(a, {}, AA);
-    test:assertEquals(aa, [{a: 1, b: 2, c: 3}, {a: 4, b: 5, c: 6}]);
-    io:println(aa);
+    A aa = check fromCsvWithType(a, {}, A);
+    test:assertEquals(aa, a);
 }

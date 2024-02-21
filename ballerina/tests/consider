@@ -1,3 +1,11 @@
 array size wenas, oter, inner, both
 AA -> QQ
 unions -. inp and output
+empty csv, csv with only headers
+null values in both data and headers
+table
+record {
+    int|string
+} kind of tests
+
+int can be unsigned32 as well, in that case in the java siode we need to check, isNumber and is not Decimal
