@@ -32,6 +32,7 @@ import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -66,17 +67,17 @@ public class FromString {
     }};
     private static final UnionType JSON_TYPE_WITH_BASIC_TYPES = TypeCreator.createUnionType(BASIC_JSON_MEMBER_TYPES);
 
-    public static Object fromStringWithType(BString string, BTypedesc typed) {
+    public static Object fromStringWithType(BString string, CsvConfig config, BTypedesc typed) {
         Type expType = typed.getDescribingType();
 
         try {
-            return fromStringWithType(string, expType);
+            return fromStringWithType(string, expType, config);
         } catch (NumberFormatException e) {
             return returnError(string.getValue(), expType.toString());
         }
     }
 
-    public static Object fromStringWithType(BString string, Type expType) {
+    public static Object fromStringWithType(BString string, Type expType, CsvConfig config) {
         String value = string.getValue();
         try {
             switch (expType.getTag()) {
@@ -91,13 +92,13 @@ public class FromString {
                 case TypeTags.BOOLEAN_TAG:
                     return stringToBoolean(value);
                 case TypeTags.NULL_TAG:
-                    return stringToNull(value);
+                    return stringToNull(value, config);
                 case TypeTags.UNION_TAG:
-                    return stringToUnion(string, (UnionType) expType);
+                    return stringToUnion(string, (UnionType) expType, config);
                 case TypeTags.JSON_TAG:
-                    return stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES);
+                    return stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config);
                 case TypeTags.TYPE_REFERENCED_TYPE_TAG:
-                    return fromStringWithType(string, ((ReferenceType) expType).getReferredType());
+                    return fromStringWithType(string, ((ReferenceType) expType).getReferredType(), config);
                 default:
                     return returnError(value, expType.toString());
             }
@@ -132,21 +133,28 @@ public class FromString {
         return returnError(value, "boolean");
     }
 
-    private static Object stringToNull(String value) throws NumberFormatException {
+    private static Object stringToNull(String value, CsvConfig config) throws NumberFormatException {
+        Object nullValue = config.nullValue;
+        if (nullValue != null && StringUtils.getStringValue(nullValue).equalsIgnoreCase(value)) {
+            return nullValue;
+        }
         if ("null".equalsIgnoreCase(value) || "()".equalsIgnoreCase(value)) {
+            if (nullValue != null) {
+                return nullValue;
+            }
             return null;
         }
         return returnError(value, "()");
     }
 
-    private static Object stringToUnion(BString string, UnionType expType) throws NumberFormatException {
+    private static Object stringToUnion(BString string, UnionType expType, CsvConfig config) throws NumberFormatException {
         List<Type> memberTypes = expType.getMemberTypes();
         memberTypes.sort(Comparator.comparingInt(t -> TYPE_PRIORITY_ORDER.getOrDefault(
                 TypeUtils.getReferredType(t).getTag(), Integer.MAX_VALUE)));
         boolean isStringExpType = false;
         for (Type memberType : memberTypes) {
             try {
-                Object result = fromStringWithType(string, memberType);
+                Object result = fromStringWithType(string, memberType, config);
                 if (result instanceof BString) {
                     isStringExpType = true;
                     continue;

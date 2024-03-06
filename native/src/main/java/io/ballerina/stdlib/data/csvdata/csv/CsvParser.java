@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.validateExpectedArraySize;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
 
 /**
  * Convert Csv string to a ballerina record.
@@ -91,7 +91,10 @@ public class CsvParser {
         Type expectedArrayElementType;
         int columnIndex = 0;
         int rowIndex = 0;
+        int lineNumber = 0;
         ArrayType rootArrayType = null;
+        CsvConfig config = null;
+        ArrayList<Integer> skipColumnIndexes = new ArrayList<>();
 
         StateMachine() {
             reset();
@@ -109,6 +112,8 @@ public class CsvParser {
             fieldHierarchy.clear();
             fieldNames.clear();
             rootArrayType = null;
+            config = null;
+            lineNumber = 0;
         }
 
         private static boolean isWhitespace(char ch) {
@@ -134,7 +139,16 @@ public class CsvParser {
             return result;
         }
 
+        private void clear() {
+            this.charBuffIndex = 0;
+        }
+
+        private String peek() {
+            return new String(this.charBuff, 0, this.charBuffIndex);
+        }
+
         public Object execute(Reader reader, Type type, CsvConfig config) throws BError {
+            this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
                 return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
@@ -161,7 +175,7 @@ public class CsvParser {
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
-            boolean header = true;
+            boolean header = config.headers;
             State currentState;
             if (header) {
                 currentState = HEADER_START_STATE;
@@ -181,6 +195,8 @@ public class CsvParser {
                 if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
                     throw new CsvParserException("Invalid token found");
                 }
+
+                sortCsvData(rootCsvNode, config);
                 return rootCsvNode;
             } catch (IOException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
@@ -222,19 +238,35 @@ public class CsvParser {
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
                 char ch;
                 State state = HEADER_START_STATE;
-                //TODO: Add separator here
                 //TODO: If the header is not present make the headers and fieldnames to be default values
-                char separator = ',';
+                char separator = sm.config.separator;
+                boolean skipHeaders = sm.config.skipHeaders;
+                Object customHeader = sm.config.customHeader;
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
-                    if (ch == separator) {
+
+                    if (ignoreHeader(sm)) {
+                        sm.lineNumber++;
+                        continue;
+                    }
+                    if (skipHeaders || customHeader != null) {
+                        if (sm.isEndOfTheRow(ch)) {
+                            checkAndAddCustomHeaders(sm.headers, customHeader, sm.config.skipHeaders);
+                            sm.lineNumber++;
+                            state = HEADER_END_STATE;
+                            break;
+                        }
+                        continue;
+                    } else if (ch == separator) {
                         addHeader(sm);
                         sm.columnIndex++;
+                        continue;
                     } else if (sm.isEndOfTheRow(ch)) {
                         addHeader(sm);
                         finalizeHeaders(sm);
                         sm.columnIndex = 0;
+                        sm.lineNumber++;
                         state = HEADER_END_STATE;
                     } else if (StateMachine.isWhitespace(ch)) {
                         state = this;
@@ -248,6 +280,17 @@ public class CsvParser {
                 }
                 sm.index = i + 1;
                 return state;
+            }
+
+            private void checkAndAddCustomHeaders(ArrayList<String> headers, Object customHeader, boolean skipHeaders) {
+                if (skipHeaders || headers == null) {
+                    return;
+                }
+
+                BArray customHeaders = (BArray) customHeader;
+                for (int i = 0; i < customHeaders.size(); i++) {
+                    headers.add(StringUtils.getStringValue(customHeaders.get(i)));
+                }
             }
 
             private void finalizeHeaders(StateMachine sm) throws CsvParserException {
@@ -283,6 +326,15 @@ public class CsvParser {
                         }
                     }
                 }
+            }
+
+            private boolean ignoreHeader(StateMachine sm) {
+                int lineNumber = sm.lineNumber;
+                if (lineNumber < sm.config.headerStartNumber
+                        || lineNumber < sm.config.startNumber) {
+                    return true;
+                }
+                return false;
             }
 
             private void addHeader(StateMachine sm) throws CsvParserException {
@@ -321,23 +373,35 @@ public class CsvParser {
                 State state = ROW_START_STATE;
                 //TODO: Add separator here
                 char separator = ',';
+                updateHeaders(sm);
 
                 // TODO: Ignore this in future
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+
+                    if (calculateNumberOfRows(sm.config.dataRowCount, sm.rowIndex, sm.config.skipDataRows)) {
+                        sm.rowIndex++;
+                        sm.lineNumber++;
+                        break;
+                    }
+                    if (sm.rowIndex < sm.config.skipDataRows) {
+                        if (sm.isEndOfTheRow(ch)) {
+                            sm.lineNumber++;
+                            sm.rowIndex++;
+                        }
+                        continue;
+                    }
+
                     //TODO: Handle empty values and create again and again
                     if (sm.currentCsvNode == null) {
                         initiateNewRowType(sm);
                     }
                     if (ch == separator) {
                         addRowValue(sm);
-                        sm.columnIndex++;
                     } else if (sm.isEndOfTheRow(ch)) {
-                        addRowValue(sm);
-                        finalizeTheRow(sm);
-                        sm.columnIndex = 0;
-                        sm.currentCsvNode = null;
+                        sm.lineNumber++;
+                        handleCsvRow(sm);
                         if (ch == EOF) {
                             state = ROW_END_STATE;
                         }
@@ -349,6 +413,41 @@ public class CsvParser {
                 }
                 sm.index = i + 1;
                 return state;
+            }
+
+            private void updateHeaders(StateMachine sm) {
+                if (!sm.config.headers || sm.config.skipHeaders){
+                    return;
+                }
+                List<String> updatedHeaders = Arrays.asList(
+                        QueryParser.parse(sm.config.skipColumns, sm.headers.toArray(new String[]{})));
+                generateSkipColumnIndexes(updatedHeaders, sm);
+            }
+
+            private void generateSkipColumnIndexes(List<String> updatedHeaders, StateMachine sm) {
+                String header;
+                ArrayList<String> copyOfHeaders = new ArrayList<>();
+                for (int i = 0; i < sm.headers.size(); i++) {
+                    header = sm.headers.get(i);
+                    if (!updatedHeaders.contains(header)) {
+                        sm.skipColumnIndexes.add(i);
+                        continue;
+                    }
+                    copyOfHeaders.add(header);
+                }
+                sm.headers = copyOfHeaders;
+            }
+
+            private void handleCsvRow(StateMachine sm) throws CsvParserException {
+                if (ignoreRow(sm)) {
+                    sm.clear();
+                    sm.columnIndex = 0;
+                    return;
+                }
+                addRowValue(sm);
+                finalizeTheRow(sm);
+                sm.columnIndex = 0;
+                sm.currentCsvNode = null;
             }
 
             private void initiateNewRowType(StateMachine sm) throws CsvParserException {
@@ -367,6 +466,11 @@ public class CsvParser {
                 // TODO: Can convert all at once by storing in a Object[]
                 Type type;
                 Type exptype = sm.expectedArrayElementType;
+
+                if (checkColumnIsSkippedOrNot(sm)) {
+                    return;
+                }
+
                 if (exptype instanceof RecordType) {
                    type = getExpectedRowTypeOfRecord(sm);
                 } else if (exptype instanceof MapType) {
@@ -380,8 +484,27 @@ public class CsvParser {
                 }
 
                 if (type != null) {
-                    CsvCreator.convertAndUpdateCurrentJsonNode(sm, StringUtils.fromString(sm.value()), type);
+                    CsvCreator.convertAndUpdateCurrentJsonNode(sm, StringUtils.fromString(sm.value()), type, sm.config);
                 }
+                sm.columnIndex++;
+            }
+
+            private boolean checkColumnIsSkippedOrNot(StateMachine sm) {
+                return sm.skipColumnIndexes.contains(sm.columnIndex);
+            }
+
+            private boolean ignoreRow(StateMachine sm) {
+                String value = sm.peek();
+                int rowNumber = sm.rowIndex + 1;
+                if (sm.config.ignoreEmptyLines && value.isEmpty()) {
+                    return true;
+                }
+                if (rowNumber < sm.config.dataStartNumber
+                        || rowNumber < sm.config.startNumber) {
+                    sm.rowIndex++;
+                    return true;
+                }
+                return false;
             }
 
             private Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {

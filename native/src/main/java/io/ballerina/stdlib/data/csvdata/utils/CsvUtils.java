@@ -16,7 +16,10 @@ import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.csv.CsvTraversal;
 import io.ballerina.stdlib.data.csvdata.csv.QueryParser;
 
+import java.util.Arrays;
 import java.util.Map;
+
+import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 
 public class CsvUtils {
     public static CsvConfig createFromCsvConfiguration(BMap<BString, Object> config) {
@@ -31,6 +34,32 @@ public class CsvUtils {
         if (size != -1 && size > currentSize) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, currentSize);
         }
+    }
+
+    public static boolean isBasicType(Type type) {
+        switch (type.getTag()) {
+            case TypeTags.INT_TAG:
+            case TypeTags.STRING_TAG:
+            case TypeTags.BOOLEAN_TAG:
+            case TypeTags.DECIMAL_TAG:
+            case TypeTags.FLOAT_TAG:
+            case TypeTags.NULL_TAG:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static void sortCsvData(BArray rootCsvNode, CsvConfig config) {
+        Object orderConfiguration = config.orderBy;
+        if (orderConfiguration == null) {
+            return;
+        }
+
+        Object[] arrayValues = rootCsvNode.getValues();
+        Arrays.sort(arrayValues, (value1, value2) -> compareCsvColumns(
+                value1, value2, constructSortingColumnNames(orderConfiguration))
+        );
     }
 
     public static int compareCsvColumns(Object row1, Object row2, SortConfigurations[] sortConfigurations) {
@@ -165,12 +194,13 @@ public class CsvUtils {
             // TODO: Handle this properly
             if (!(SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) &&
                     SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL))) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
+//                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
             }
         });
     }
 
     public static boolean checkTypeCompatibility(Type constraintType, Object csv) {
+        // TODO: Remove this
         if (csv instanceof BMap) {
             BMap<BString, Object> map = (BMap<BString, Object>) csv;
             for (BString key : map.getKeys()) {
@@ -180,7 +210,7 @@ public class CsvUtils {
             }
             return true;
         } else if ((csv instanceof BString && constraintType.getTag() == TypeTags.STRING_TAG)
-                || (csv instanceof Long && constraintType.getTag() == TypeTags.INT_TAG)
+                || (csv instanceof Long && constraintType.getTag() == INT_TAG)
                 || (csv instanceof BDecimal && constraintType.getTag() == TypeTags.DECIMAL_TAG)
                 || (csv instanceof Double && (constraintType.getTag() == TypeTags.FLOAT_TAG
                 || constraintType.getTag() == TypeTags.DECIMAL_TAG))
@@ -197,7 +227,7 @@ public class CsvUtils {
         switch (arrayElementType.getTag()) {
             case TypeTags.NULL_TAG:
             case TypeTags.BOOLEAN_TAG:
-            case TypeTags.INT_TAG:
+            case INT_TAG:
             case TypeTags.FLOAT_TAG:
             case TypeTags.DECIMAL_TAG:
             case TypeTags.STRING_TAG:

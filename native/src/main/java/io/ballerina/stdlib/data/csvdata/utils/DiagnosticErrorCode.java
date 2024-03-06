@@ -35,7 +35,8 @@ public enum DiagnosticErrorCode {
     INVALID_CSV_DATA_FORMAT("BDE_0008", "invalid.csv.data.format"),
     INVALID_EXPECTED_ARRAY_SIZE("BDE_0009", "invalid.expected.array.size"),
     INVALID_EXPECTED_TUPLE_SIZE("BDE_0010", "invalid.expected.tuple.size"),
-    INVALID_SKIP_COLUMN_QUERY("BDE_0011", "invalid.skip.column.query");
+    INVALID_SKIP_COLUMN_QUERY("BDE_0011", "invalid.skip.column.query"),
+    INVALID_TYPE_FOR_FIELD("BDE_0012", "invalid.type.for.field");
 
     String diagnosticId;
     String messageKey;

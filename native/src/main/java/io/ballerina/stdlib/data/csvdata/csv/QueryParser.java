@@ -22,8 +22,8 @@ public class QueryParser {
     private static Set<String> exclusiveHeaders = new HashSet<>();
     private static ArrayList<String> columns = null;
     private static String elementSeparatorRegex = "(?![^(]*\\))";
-    private static String alphanumericRegex = "[0-9A-Za-z]";
-    private static String rangeRegex = "[0-9A-Za-z]:[0-9A-Za-z]";
+    private static String alphanumericRegex = "\\w*";
+    private static String rangeRegex = "\\w*:\\w*";
 
     private void reset() {
         inclusiveHeaders = new HashSet<>();

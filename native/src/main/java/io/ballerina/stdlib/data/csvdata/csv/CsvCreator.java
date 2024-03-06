@@ -58,9 +58,10 @@ public class CsvCreator {
         }
     }
 
-    static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm, BString value, Type type) {
+    static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
+                                                  BString value, Type type, CsvConfig config) {
         Object currentJson = sm.currentCsvNode;
-        Object convertedValue = convertToExpectedType(value, type);
+        Object convertedValue = convertToExpectedType(value, type, config);
         if (convertedValue instanceof BError) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, type, value);
         }
@@ -89,10 +90,10 @@ public class CsvCreator {
         }
     }
 
-    private static Object convertToExpectedType(BString value, Type type) {
+    private static Object convertToExpectedType(BString value, Type type, CsvConfig config) {
         if (type.getTag() == TypeTags.ANYDATA_TAG) {
-            return FromString.fromStringWithType(value, PredefinedTypes.TYPE_JSON);
+            return FromString.fromStringWithType(value, PredefinedTypes.TYPE_JSON, config);
         }
-        return FromString.fromStringWithType(value, type);
+        return FromString.fromStringWithType(value, type, config);
     }
 }

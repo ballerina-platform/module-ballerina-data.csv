@@ -35,23 +35,23 @@ public type MappingConfig record {|
 |};
 
 public type FromCSVConfig record {|
-    int startNumber = 0; // done - 1
-    int headerStartNumber = 0; // done - 1
-    int dataStartNumber = 1; // done - 1
-    boolean headers = true; // done - 1
-    string:Char escapeCharacter = "\\"; // done - 1
-    boolean ignoreEmptyLines = true; // done - 1
-    string:Char separator = ","; // done - 1
-    string quote = "\""; // done - 1
-    boolean skipHeaders = false; // done - 1
-    int skipdataRows = 0; // done - 1
-    int dataRowCount = -1; // done - 1
-    ColumnOrder|ColumnOrder[]? orderBy = ();// done - 1
-    string|int|string[]|int[]? skipColumns = (); // done - 1
-    string[]|int[]? customheader = ();  // done - 1
-    boolean suppressEscaping = false; // done - 1
+    int startNumber = 0; // done
+    int headerStartNumber = 0; // done
+    int dataStartNumber = 1; // done
+    boolean headers = true; // done
+    string:Char escapeCharacter = "\\";
+    boolean ignoreEmptyLines = true; // done
+    string:Char separator = ","; // done
+    string quote = "\"";
+    boolean skipHeaders = false; // done
+    int skipdataRows = 0; // done
+    int dataRowCount = -1; // done
+    ColumnOrder|ColumnOrder[]? orderBy = (); // done
+    string|int|string[]|int[]? skipColumns = ();
+    string[]|int[]? customheader = (); // done
+    boolean suppressEscaping = false;
     // MappingConfig mappingConfig = {};
-    anydata nullValue = (); // done - 1
+    anydata nullValue = (); // done
 |};
 
 public type ToCSVConfig record {|
@@ -73,7 +73,7 @@ public isolated function fromCsvWithType((string[]|map<anydata>|record{})[] csv,
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function fromCsvStringWithType(string|byte[]|stream<byte[], error?> s,
-        FromCSVConfig config,typedesc<(record{}|map<anydata>|anydata)[]> t = <>)
+        FromCSVConfig config = {} ,typedesc<(record{}|map<anydata>|anydata)[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function toCsv((anydata[]|map<anydata>|record{})[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 

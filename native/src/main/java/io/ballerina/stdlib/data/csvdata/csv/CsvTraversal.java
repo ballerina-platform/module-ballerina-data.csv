@@ -21,12 +21,7 @@ package io.ballerina.stdlib.data.csvdata.csv;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.MapType;
-import io.ballerina.runtime.api.types.RecordType;
-import io.ballerina.runtime.api.types.TupleType;
-import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
@@ -79,7 +74,7 @@ public class CsvTraversal {
         @SuppressWarnings("unchecked")
         public Object traverseCsv(BArray csv, CsvConfig config, Type type) {
             this.config = config;
-            sourceArrayElementType = csv.getElementType();
+            sourceArrayElementType = TypeUtils.getReferredType(csv.getElementType());
             Type referredType = TypeUtils.getReferredType(type);
             int expectedArraySize = ((ArrayType) referredType).getSize();
             int sourceArraySize = (int) csv.getLength();
@@ -88,7 +83,7 @@ public class CsvTraversal {
             validateExpectedArraySize(expectedArraySize, sourceArraySize);
 
             traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv);
-            sortCsvData();
+            sortCsvData(rootCsvNode, config);
             return rootCsvNode;
         }
 
@@ -106,7 +101,7 @@ public class CsvTraversal {
                             sourceArraySize : expectedArraySize, csv, expectedArrayElementType);
                     break;
                 default:
-                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
         }
 
@@ -148,7 +143,8 @@ public class CsvTraversal {
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
                     this.restType = recordType.getRestFieldType();
-                    currentCsvNode = ValueCreator.createRecordValue(recordType);
+                    // TODO: check for package ID
+                    currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
                     traverseCsvMap(csvElement, expectedType, false);
                     break;
                 case TypeTags.MAP_TAG:
@@ -164,7 +160,7 @@ public class CsvTraversal {
 //                    traverseCsvMap(csvElement, expectedType, true);
 //                    break;
                 default:
-                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }
             return currentCsvNode;
         }
@@ -183,7 +179,7 @@ public class CsvTraversal {
                     traverseArrayValue(csvElement, tupleType);
                     break;
                 default:
-                    return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }
             return currentCsvNode;
         }
@@ -313,16 +309,21 @@ public class CsvTraversal {
         }
 
         private void traverseArrayValueWithMapAsExpectedType(BArray csvElement, boolean mappingType, Type expectedType) {
-            Type fieldType;
-            BString key;
             int arraySize = csvElement.size();
             String[] headers = new String[arraySize];
             headers = createHeaders(headers, config);
-            boolean conversion = checkExpectedTypeMatchWithHeaders(expectedType, headers, csvElement, arraySize);
-            if (!conversion) {
+            boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(
+                    expectedType, headers, csvElement, arraySize);
+            if (!headersMatchWithExpType) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csvElement, expectedType);
             }
             // TODO: Add headers from config
+            addValuesToMapType(csvElement, arraySize, mappingType, expectedType);
+        }
+
+        private void addValuesToMapType(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
+            Type fieldType;
+            BString key;
             for(int i = 1; i <= arraySize; i++) {
                 key = StringUtils.fromString(String.valueOf(i));
                 if (!mappingType) {
@@ -334,7 +335,7 @@ public class CsvTraversal {
                     addFieldInMapType(key);
                     fieldType = ((MapType) expectedType).getConstrainedType();;
                 }
-                addCurrentFieldValue(fieldType, csvElement.get(i - 1), key);
+                addCurrentFieldValue(fieldType, csvElement.get(i - 1), key, mappingType);
             }
             checkOptionalFieldsAndLogError(fieldHierarchy);
         }
@@ -353,7 +354,7 @@ public class CsvTraversal {
                         ((MapType) expType).getConstrainedType()
                     );
                 }
-                addCurrentFieldValue(currentFieldType, map.get(key), key);
+                addCurrentFieldValue(currentFieldType, map.get(key), key, mappingType);
             }
             checkOptionalFieldsAndLogError(fieldHierarchy);
         }
@@ -376,7 +377,7 @@ public class CsvTraversal {
             fieldNames.push(key.toString());
         }
 
-        private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key) {
+        private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key, boolean isMapType) {
             int currentFieldTypeTag = currentFieldType.getTag();
 
             switch (currentFieldTypeTag) {
@@ -386,12 +387,35 @@ public class CsvTraversal {
                 case TypeTags.FLOAT_TAG:
                 case TypeTags.DECIMAL_TAG:
                 case TypeTags.STRING_TAG:
+                    if (checkTypeCompatibility(currentFieldType, mapValue)) {
+                        ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
+                                convertToBasicType(mapValue, currentFieldType, config));
+                        return;
+                    }
+                    if (!isMapType) {
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
+                    }
+                    return;
+                case TypeTags.UNION_TAG:
+                    boolean isCompatible = false;
+                    for (Type memberType: ((UnionType) currentFieldType).getMemberTypes()) {
+                        if (!isBasicType(memberType)) {
+                            isCompatible = false;
+                            break;
+                        }
+                        if (checkTypeCompatibility(memberType, mapValue)) {
+                            isCompatible = true;
+                        }
+                    }
+                    if (!isCompatible) {
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
+                    }
                     ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
                             convertToBasicType(mapValue, currentFieldType, config));
                     break;
                 default:
                     // TODO: handle maps and structure values in future
-                    DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, currentFieldType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
             }
         }
 
@@ -410,28 +434,34 @@ public class CsvTraversal {
                         ((BMap<BString, Object>) currentCsvNode).put(key, csvMember);
                     }
                     break;
+                case TypeTags.UNION_TAG:
+                    boolean isCompatible = false;
+                    for (Type memberType: ((UnionType) restFieldType).getMemberTypes()) {
+                        if (!isBasicType(memberType)) {
+                            isCompatible = false;
+                            break;
+                        }
+                        if (checkTypeCompatibility(memberType, csvMember)) {
+                            isCompatible = true;
+                        }
+                    }
+                    if (isCompatible) {
+                        ((BMap<BString, Object>) currentCsvNode)
+                                .put(key, convertToBasicType(csvMember, restFieldType, config));
+                    }
+                    break;
+                default:
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, csvMember, key);
             }
         }
 
         private void setRootCsvNode(Type referredType, Type type) {
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
-                DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
             } else {
                 rootCsvNode = ValueCreator.createArrayValue((ArrayType) referredType);
-                expectedArrayElementType = ((ArrayType) TypeUtils.getReferredType(referredType)).getElementType();
+                expectedArrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
             }
-        }
-
-        private void sortCsvData() {
-            Object orderConfiguration = config.orderBy;
-            if (orderConfiguration == null) {
-                return;
-            }
-
-            Object[] arrayValues = rootCsvNode.getValues();
-            Arrays.sort(arrayValues, (value1, value2) -> compareCsvColumns(
-                    value1, value2, constructSortingColumnNames(orderConfiguration))
-            );
         }
     }
 }
