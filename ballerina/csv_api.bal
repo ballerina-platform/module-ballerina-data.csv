@@ -69,19 +69,19 @@ public type ToCSVConfig record {|
     string:Char escapeCharacter = "\\";
 |};
 
-public isolated function fromCsvWithType((string[]|map<anydata>|record{})[] csv, FromCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>)
+public isolated function fromCsvWithType((string[]|map<anydata>)[] csv, FromCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function fromCsvStringWithType(string|byte[]|stream<byte[], error?> s,
         FromCSVConfig config = {} ,typedesc<(record{}|map<anydata>|anydata)[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function toCsv((anydata[]|map<anydata>|record{})[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 
+public isolated function toCsv((anydata[]|map<anydata>)[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function toCsvString((anydata[]|map<anydata>|record{})[] csv, ToCSVConfig config = {}) returns string|UnSupportedOperation {
+public isolated function toCsvString((anydata[]|map<anydata>)[] csv, ToCSVConfig config = {}) returns string|UnSupportedOperation {
     string csvString = "";
-    foreach anydata[]|map<anydata>|record{} row in csv {
+    foreach anydata[]|map<anydata> row in csv {
         if row is anydata[] {
             foreach anydata cell in row {
                 csvString += check convertToString(cell) + config.separator;

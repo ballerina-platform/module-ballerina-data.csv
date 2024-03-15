@@ -42,6 +42,7 @@ map<boolean?> bm2 = {b1, b2, b3, n1, n3};
 map<boolean|int?> bm3 = {b1, b2, b3, b4, i1};
 map<()> bm4 = {n1, n3};
 map<boolean?> bm5 = {b1, b2, b3, b4:true};
+
 map<int> m5 = {i1, i2, i3, i4, i5, i6};
 map<float> m6 = {f1, f2, f3, f4,  f5, f6, f7};
 map<decimal> m7 = {d1, d2, d3, d4};
@@ -62,9 +63,23 @@ string[] arr9 = [s1, s2, s3];
 anydata[] arr10 = [b1, b2, b3, b4,  n1, n2, n3, i1, i2, i3, i4, i5, i6, i7, i8, f1, f2, f3, f4, f5, f6, f7, f8];
 json[] arr11 = [b1, b2, b3, b4,  n1, n2, n3, i1, i2, i3, i4, i5, i6, i7, i8, f1, f2, f3, f4, f5, f6, f7, f8];
 
-[boolean, boolean] tup1 = [b1, b2];
-[boolean?, boolean?, boolean?, boolean?, boolean?] tup2 = [b1, b2, b3, n1, n3];
-[boolean|int?, boolean|int?, boolean|int?, boolean|int?, boolean|int?] tup3 = [b1, b2, b3, b4, i1];
+[boolean, boolean] bt1 = [b1, b2];
+[boolean, boolean, boolean, boolean] bt2 = [b1, b2, b1, b2];
+[boolean?, boolean?, boolean?, boolean?, boolean?] bt3 = [b1, b2, b3, n1, n3];
+[boolean|int?, boolean|int?, boolean|int?, boolean|int?, boolean|int?] bt4 = [b1, b2, b3, b4, i1];
+[boolean...] bt5 = [b1, b2];
+
+[string, string] st1 = [s1, s2];
+[string, string, string, string] st2 = [s1, s2, s3, s2];
+[string...] st3 = [s1, s2];
+[string, string, string...] st4 = [s1, s2, s3, s2];
+
+[string?, string?, string?, string?, string?] st5 = [s1, s2, s3, n1, n3];
+[string|int?, string|int?, string|int?, string|int?, string|int?] st6 = [s1, s2, s3, n1, i1];
+[string?...] st7 = [s1, s2];
+[string...] st8 = [];
+[string, string, string] st9 = [s1, s2, s3];
+
 [(), ()] tup4 = [n1, n3];
 [int, int, int, int, int, int] tup5 = [i1, i2, i3, i4, i5, i6];
 [float, float, float, float, float, float, float] tup6 = [f1, f2, f3, f4, f5, f6, f7];

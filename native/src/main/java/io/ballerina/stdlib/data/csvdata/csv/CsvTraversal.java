@@ -54,6 +54,7 @@ public class CsvTraversal {
         Object currentCsvNode;
         Field currentField;
         Map<String, Field> fieldHierarchy = new HashMap<>();
+        Map<String, Field> headerFieldHierarchy = new HashMap<>();
         Type restType;
         Deque<String> fieldNames = new ArrayDeque<>();
         BArray rootCsvNode;
@@ -65,6 +66,7 @@ public class CsvTraversal {
             currentCsvNode = null;
             currentField = null;
             fieldHierarchy.clear();
+            headerFieldHierarchy.clear();
             restType = null;
             fieldNames.clear();
             expectedArrayElementType = null;
@@ -142,6 +144,7 @@ public class CsvTraversal {
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
+                    this.headerFieldHierarchy = new HashMap<>(recordType.getFields());
                     this.restType = recordType.getRestFieldType();
                     // TODO: check for package ID
                     currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
@@ -252,26 +255,33 @@ public class CsvTraversal {
             }
             Type type = csvElement.getType();
             if (type instanceof TupleType) {
-                return checkExpectedTypeMatchWithHeadersForTuple(expectedType, headers, (TupleType) type, arraySize);
+                return checkExpectedTypeMatchWithHeadersForTuple(expectedType, headers, (TupleType) type);
             } else {
                 return checkExpectedTypeMatchWithHeadersForArray(expectedType,
                         headers, csvElement.getElementType(), arraySize);
             }
         }
 
-        private boolean checkExpectedTypeMatchWithHeadersForTuple(Type expectedType, String[] headers, TupleType tupleType, int arraySize) {
+        private boolean checkExpectedTypeMatchWithHeadersForTuple(Type expectedType, String[] headers, TupleType tupleType) {
+            Type type;
             List<Type> tupleTypes = tupleType.getTupleTypes();
             Type tupleRestType = tupleType.getRestType();
 
             if (expectedType instanceof RecordType) {
-                if (this.restType != null && this.restType.getTag() == TypeTags.ANYDATA_TAG) {
+                if (this.restType != null
+                        && (this.restType.getTag() == TypeTags.ANYDATA_TAG
+                        || this.restType.getTag() == TypeTags.JSON_TAG)) {
                     return true;
                 }
 
-                for (int i = 0; i < tupleTypes.size(); i++) {
-                    Type type = tupleTypes.get(i);
+                for (int i = 0; i < headers.length; i++) {
+                    if (i >= tupleTypes.size()) {
+                        type = tupleRestType;
+                    } else {
+                        type = tupleTypes.get(i);
+                    }
                     String header = headers[i];
-                    Field field = this.fieldHierarchy.get(header);
+                    Field field = this.headerFieldHierarchy.remove(header);
 
                     if (field != null) {
                         if (type.getTag() != field.getFieldType().getTag()) {
@@ -280,9 +290,15 @@ public class CsvTraversal {
                         continue;
                     }
 
-                    if (tupleRestType != null && this.restType == tupleRestType) {
+                    if ((tupleRestType != null && (type == this.restType ||this.restType == tupleRestType))) {
                         continue;
                     }
+
+                    if (isHeaderFieldsEmpty(this.headerFieldHierarchy)) {
+                        continue;
+                    }
+
+
                     return false;
                 }
                 return true;
@@ -315,7 +331,7 @@ public class CsvTraversal {
             boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(
                     expectedType, headers, csvElement, arraySize);
             if (!headersMatchWithExpType) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csvElement, expectedType);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP, csvElement, expectedType);
             }
             // TODO: Add headers from config
             addValuesToMapType(csvElement, arraySize, mappingType, expectedType);
@@ -387,6 +403,9 @@ public class CsvTraversal {
                 case TypeTags.FLOAT_TAG:
                 case TypeTags.DECIMAL_TAG:
                 case TypeTags.STRING_TAG:
+                case TypeTags.JSON_TAG:
+                case TypeTags.ANYDATA_TAG:
+                case TypeTags.ANY_TAG:
                     if (checkTypeCompatibility(currentFieldType, mapValue)) {
                         ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
                                 convertToBasicType(mapValue, currentFieldType, config));
@@ -397,22 +416,21 @@ public class CsvTraversal {
                     }
                     return;
                 case TypeTags.UNION_TAG:
-                    boolean isCompatible = false;
                     for (Type memberType: ((UnionType) currentFieldType).getMemberTypes()) {
                         if (!isBasicType(memberType)) {
-                            isCompatible = false;
-                            break;
+                            throw DiagnosticLog.error(DiagnosticErrorCode
+                                    .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
                         }
                         if (checkTypeCompatibility(memberType, mapValue)) {
-                            isCompatible = true;
+                            ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
+                                    convertToBasicType(mapValue, memberType, config));
+                            return;
                         }
                     }
-                    if (!isCompatible) {
-                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
+                    if (isMapType) {
+                        return;
                     }
-                    ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()),
-                            convertToBasicType(mapValue, currentFieldType, config));
-                    break;
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
                 default:
                     // TODO: handle maps and structure values in future
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, mapValue, key);
@@ -423,33 +441,33 @@ public class CsvTraversal {
             switch (restFieldType.getTag()) {
                 case TypeTags.ANYDATA_TAG:
                 case TypeTags.JSON_TAG:
-                    ((BMap<BString, Object>) currentCsvNode).put(key, csvMember);
-                    break;
                 case TypeTags.BOOLEAN_TAG:
                 case TypeTags.INT_TAG:
                 case TypeTags.FLOAT_TAG:
                 case TypeTags.DECIMAL_TAG:
                 case TypeTags.STRING_TAG:
                     if (checkTypeCompatibility(restFieldType, csvMember)) {
-                        ((BMap<BString, Object>) currentCsvNode).put(key, csvMember);
+                        ((BMap<BString, Object>) currentCsvNode)
+                                .put(key,  convertToBasicType(csvMember, restFieldType, config));
                     }
                     break;
                 case TypeTags.UNION_TAG:
-                    boolean isCompatible = false;
                     for (Type memberType: ((UnionType) restFieldType).getMemberTypes()) {
                         if (!isBasicType(memberType)) {
-                            isCompatible = false;
-                            break;
+                            throw DiagnosticLog.error(DiagnosticErrorCode
+                                    .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
                         }
                         if (checkTypeCompatibility(memberType, csvMember)) {
-                            isCompatible = true;
+                            ((BMap<BString, Object>) currentCsvNode)
+                                    .put(key, convertToBasicType(csvMember, memberType, config));
+                            break;
                         }
                     }
-                    if (isCompatible) {
-                        ((BMap<BString, Object>) currentCsvNode)
-                                .put(key, convertToBasicType(csvMember, restFieldType, config));
-                    }
                     break;
+                case TypeTags.INTERSECTION_TAG:
+                    for (Type memberType: ((IntersectionType) restFieldType).getConstituentTypes()) {
+                        //
+                    }
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, csvMember, key);
             }

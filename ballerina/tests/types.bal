@@ -608,6 +608,49 @@ type StringRecord14 record {|
     string...;
 |};
 
+type StringRecord15 record {|
+    string defaultableField = "";
+    string? nillableField = ();
+    string requiredField;
+    string...;
+|};
+
+type StringRecord16 record {|
+    string?...;
+|};
+
+type StringRecord17 record {|
+    int...;
+|};
+
+type StringRecord18 record {|
+    string b2;
+    int?...;
+|};
+
+type StringRecord19 record {
+    string s1 = "";
+    string s2 = "";
+};
+
+type StringRecord20 record {|
+    string s1 = "";
+    string s2 = "";
+|};
+
+type StringRecord21 record {
+};
+
+type StringRecord22 record {|
+    string s1 = "";
+    string s2 = "";
+    json...;
+|};
+
+type StringRecord23 record {|
+    json...;
+|};
+
 type JsonRecord1 record {
     json j1;
     json j2;
@@ -788,7 +831,7 @@ type AnydataRecord14 record {|
     anydata...;
 |};
 
-type CustomeRecord1 record {
+type CustomRecord1 record {
     int i1;
     int i2;
     string s1;
@@ -803,7 +846,7 @@ type CustomeRecord1 record {
     decimal d2;
 };
 
-type CustomeRecord2 record {|
+type CustomRecord2 record {|
     int i1;
     int i2;
     string s1;
@@ -818,7 +861,7 @@ type CustomeRecord2 record {|
     decimal d2;
 |};
 
-type CustomeRecord3 record {|
+type CustomRecord3 record {|
     int i1;
     string s1;
     boolean b1;
@@ -827,7 +870,7 @@ type CustomeRecord3 record {|
     decimal d1;
 |};
 
-type CustomeRecord4 record {
+type CustomRecord4 record {
     int i1;
     string s1;
     boolean b1;
@@ -836,7 +879,7 @@ type CustomeRecord4 record {
     decimal d1;
 };
 
-type CustomeRecord5 record {
+type CustomRecord5 record {
     int i1;
     string s1;
     boolean b1;
@@ -847,7 +890,7 @@ type CustomeRecord5 record {
     string? nillableField = ();
 };
 
-type CustomeRecord6 record {|
+type CustomRecord6 record {|
     int i1;
     string s1;
     boolean b1;
@@ -858,7 +901,7 @@ type CustomeRecord6 record {|
     anydata? nillableField = ();
 |};
 
-type CustomeRecord7 record {
+type CustomRecord7 record {
     int i1;
     string s1;
     boolean b1;
@@ -870,7 +913,7 @@ type CustomeRecord7 record {
     anydata requiredField;
 };
 
-type CustomeRecord8 record {|
+type CustomRecord8 record {|
     int i1;
     string s1;
     boolean b1;
@@ -882,7 +925,7 @@ type CustomeRecord8 record {|
     anydata requiredField;
 |};
 
-type CustomeRecord9 record {|
+type CustomRecord9 record {|
     int i1;
     string s1;
     boolean b1;
@@ -892,11 +935,11 @@ type CustomeRecord9 record {|
     string...;
 |};
 
-type CustomeRecord10 record {|
+type CustomRecord10 record {|
     string...;
 |};
 
-type CustomeRecord11 record {|
+type CustomRecord11 record {|
     int i1;
     string s1;
     boolean b1;
@@ -908,7 +951,7 @@ type CustomeRecord11 record {|
     string...;
 |};
 
-type CustomeRecord12 record {|
+type CustomRecord12 record {|
     int i1;
     string s1;
     boolean b1;
@@ -921,16 +964,97 @@ type CustomeRecord12 record {|
     string...;
 |};
 
-type CustomeRecord13 record {|
+type CustomRecord13 record {|
     anydata defaultableField = "";
     anydata? nillableField = ();
     string...;
 |};
 
-type CustomeRecord14 record {|
+type CustomRecord14 record {|
     anydata defaultableField = "";
     anydata? nillableField = ();
     anydata requiredField;
+    string...;
+|};
+
+type CustomRecord15 record {|
+    string '1;
+    string '2;
+|};
+
+type CustomRecord16 record {|
+    string '1;
+    string '2;
+    string '3;
+    string '4;
+|};
+
+type CustomRecord17 record {
+    string '1;
+    string '2;
+};
+
+type CustomRecord18 record {
+    string '1;
+    string '2;
+    string '3;
+    string '4;
+};
+
+type CustomRecord19 record {
+    string '1;
+    string '2;
+    string '3 = "";
+    string '4 = "";
+};
+
+type CustomRecord20 record {
+    string '1;
+};
+
+type CustomRecord21 record {|
+    string '1;
+    json...;
+|};
+
+type CustomRecord22 record {|
+    string '1;
+    string...;
+|};
+
+type CustomRecord23 record {|
+    string '1;
+    string a = "";
+    string...;
+|};
+
+type CustomRecord24 record {|
+    string '1;
+    string '2 = "";
+    string...;
+|};
+
+type CustomRecord25 record {|
+    int '1;
+    string...;
+|};
+
+type CustomRecord26 record {|
+    string '1;
+    int...;
+|};
+
+type CustomRecord27 record {|
+    int i1;
+    string s1;
+    boolean b1;
+    () n1;
+    float f1;
+    decimal d1;
+    anydata a1;
+    json j1;
+    anydata defaultableField = "";
+    anydata? nillableField = ();
     string...;
 |};
 
@@ -938,6 +1062,11 @@ type BooleanTuple1 [boolean, boolean, boolean, boolean];
 type BooleanTuple2 [boolean, boolean];
 type BooleanTuple3 [boolean, boolean...];
 type BooleanTuple4 [boolean...];
+type NillableBooleanTuple5 [boolean?, boolean?, boolean?, boolean?, boolean?];
+type NillableBooleanTuple6 [boolean?, boolean?];
+type NillableBooleanTuple7 [boolean?, boolean?, boolean?...];
+type NillableBooleanTuple8 [boolean?...];
+type NillableIntBooleanTuple9 [int|boolean?, int|boolean?...];
 
 type NilTuple1 [(), (), ()];
 type NilTuple2 [(), ()];
@@ -959,7 +1088,7 @@ type DecimalTuple2 [decimal, decimal];
 type DecimalTuple3 [decimal, decimal...];
 type DecimalTuple4 [decimal...];
 
-type StringTuple1 [string, string, string];
+type StringTuple1 [string, string, string, string];
 type StringTuple2 [string, string];
 type StringTuple3 [string, string...];
 type StringTuple4 [string...];
@@ -993,6 +1122,10 @@ type IntegerArray4 int[2];
 type IntegerArray5 int[3];
 type IntegerArray6 int[4];
 
+type StringArray string[];
+type NillableStringArray string?[];
+type NillableIntOrUnionStringArray (int|string?)[];
+
 type StringArray1 string[];
 type StringArray2 string[2];
 type StringArray3 string[];
@@ -1014,11 +1147,15 @@ type DecimalArray4 decimal[2];
 type DecimalArray5 decimal[3];
 type DecimalArray6 decimal[4];
 
-type BooleanArray1 boolean[];
+type BooleanArray boolean[];
+type NillableBooleanArray boolean?[];
+type NillableIntOrUnionBooleanArray (int|boolean?)[];
+
 type BooleanArray2 boolean[2];
-type BooleanArray3 boolean[];
-type BooleanArray4 boolean[2];
-type BooleanArray5 boolean[3];
+type BooleanArray3 boolean[3];
+
+type BooleanArray4 boolean[];
+type BooleanArray5 boolean[2];
 type BooleanArray6 boolean[4];
 
 type NilArray1 ()[];
@@ -1051,12 +1188,15 @@ type CustomArray6 CustomTuple2[4];
 
 type IntegerMap map<int>;
 type StringMap map<string>;
+type NillableIntUnionStringMap map<string|int?>;
+type IntUnionStringMap map<int|string>;
+
 type DecimalMap map<decimal>;
 type FloatMap map<float>;
 type BooleanMap map<boolean>;
-type NillableBooleanMap map<boolean>;
-type NillableIntUnionBooleanMap map<boolean>;
-type IntUnionBooleanMap map<boolean>;
+type NillableBooleanMap map<boolean?>;
+type NillableIntUnionBooleanMap map<boolean|int?>;
+type IntUnionBooleanMap map<int|boolean>;
 type NilMap map<()>;
 type JsonMap map<json>;
 type AnydataMap map<anydata>;
@@ -1239,6 +1379,16 @@ type StringRecord13Array StringRecord13[];
 type ClosedStringRecord13Array StringRecord13[3];
 type StringRecord14Array StringRecord14[];
 type ClosedStringRecord14Array StringRecord14[3];
+type StringRecord15Array StringRecord15[];
+type StringRecord16Array StringRecord16[];
+type StringRecord17Array StringRecord17[];
+type StringRecord18Array StringRecord18[];
+type StringRecord19Array StringRecord19[];
+type StringRecord20Array StringRecord20[];
+type StringRecord21Array StringRecord21[];
+type StringRecord22Array StringRecord22[];
+type StringRecord23Array StringRecord23[];
+
 type JsonRecord1Array JsonRecord1[];
 type ClosedJsonRecord1Array JsonRecord1[3];
 type JsonRecord2Array JsonRecord2[];
@@ -1295,34 +1445,49 @@ type AnydataRecord13Array AnydataRecord13[];
 type ClosedAnydataRecord13Array AnydataRecord13[3];
 type AnydataRecord14Array AnydataRecord14[];
 type ClosedAnydataRecord14Array AnydataRecord14[3];
-type CustomeRecord1Array CustomeRecord1[];
-type ClosedCustomeRecord1Array CustomeRecord1[3];
-type CustomeRecord2Array CustomeRecord2[];
-type ClosedCustomeRecord2Array CustomeRecord2[3];
-type CustomeRecord3Array CustomeRecord3[];
-type ClosedCustomeRecord3Array CustomeRecord3[3];
-type CustomeRecord4Array CustomeRecord4[];
-type ClosedCustomeRecord4Array CustomeRecord4[3];
-type CustomeRecord5Array CustomeRecord5[];
-type ClosedCustomeRecord5Array CustomeRecord5[3];
-type CustomeRecord6Array CustomeRecord6[];
-type ClosedCustomeRecord6Array CustomeRecord6[3];
-type CustomeRecord7Array CustomeRecord7[];
-type ClosedCustomeRecord7Array CustomeRecord7[3];
-type CustomeRecord8Array CustomeRecord8[];
-type ClosedCustomeRecord8Array CustomeRecord8[3];
-type CustomeRecord9Array CustomeRecord9[];
-type ClosedCustomeRecord9Array CustomeRecord9[3];
-type CustomeRecord10Array CustomeRecord10[];
-type ClosedCustomeRecord10Array CustomeRecord10[3];
-type CustomeRecord11Array CustomeRecord11[];
-type ClosedCustomeRecord11Array CustomeRecord11[3];
-type CustomeRecord12Array CustomeRecord12[];
-type ClosedCustomeRecord12Array CustomeRecord12[3];
-type CustomeRecord13Array CustomeRecord13[];
-type ClosedCustomeRecord13Array CustomeRecord13[3];
-type CustomeRecord14Array CustomeRecord14[];
-type ClosedCustomeRecord14Array CustomeRecord14[3];
+type CustomRecord1Array CustomRecord1[];
+type ClosedCustomRecord1Array CustomRecord1[3];
+type CustomRecord2Array CustomRecord2[];
+type ClosedCustomRecord2Array CustomRecord2[3];
+type CustomRecord3Array CustomRecord3[];
+type ClosedCustomRecord3Array CustomRecord3[3];
+type CustomRecord4Array CustomRecord4[];
+type ClosedCustomRecord4Array CustomRecord4[3];
+type CustomRecord5Array CustomRecord5[];
+type ClosedCustomRecord5Array CustomRecord5[3];
+type CustomRecord6Array CustomRecord6[];
+type ClosedCustomRecord6Array CustomRecord6[3];
+type CustomRecord7Array CustomRecord7[];
+type ClosedCustomRecord7Array CustomRecord7[3];
+type CustomRecord8Array CustomRecord8[];
+type ClosedCustomRecord8Array CustomRecord8[3];
+type CustomRecord9Array CustomRecord9[];
+type ClosedCustomRecord9Array CustomRecord9[3];
+type CustomRecord10Array CustomRecord10[];
+type ClosedCustomRecord10Array CustomRecord10[3];
+type CustomRecord11Array CustomRecord11[];
+type ClosedCustomRecord11Array CustomRecord11[3];
+type CustomRecord12Array CustomRecord12[];
+type ClosedCustomRecord12Array CustomRecord12[3];
+type CustomRecord13Array CustomRecord13[];
+type ClosedCustomRecord13Array CustomRecord13[3];
+type CustomRecord14Array CustomRecord14[];
+type ClosedCustomRecord14Array CustomRecord14[3];
+
+type CustomRecord15Array CustomRecord15[];
+type CustomRecord16Array CustomRecord16[];
+type CustomRecord17Array CustomRecord17[];
+type CustomRecord18Array CustomRecord18[];
+type CustomRecord19Array CustomRecord19[];
+type CustomRecord20Array CustomRecord20[];
+type CustomRecord21Array CustomRecord21[];
+type CustomRecord22Array CustomRecord22[];
+type CustomRecord23Array CustomRecord23[];
+type CustomRecord24Array CustomRecord24[];
+type CustomRecord25Array CustomRecord25[];
+type CustomRecord26Array CustomRecord26[];
+type CustomRecord27Array CustomRecord27[];
+
 type BooleanTuple1Array BooleanTuple1[];
 type ClosedBooleanTuple1Array BooleanTuple1[3];
 type BooleanTuple2Array BooleanTuple2[];
@@ -1331,6 +1496,13 @@ type BooleanTuple3Array BooleanTuple3[];
 type ClosedBooleanTuple3Array BooleanTuple3[3];
 type BooleanTuple4Array BooleanTuple4[];
 type ClosedBooleanTuple4Array BooleanTuple4[3];
+
+type NillableBooleanTuple5Array NillableBooleanTuple5[];
+type NillableBooleanTuple6Array NillableBooleanTuple6[];
+type NillableBooleanTuple7Array NillableBooleanTuple7[];
+type NillableBooleanTuple8Array NillableBooleanTuple8[];
+type NillableIntBooleanTuple9Array NillableIntBooleanTuple9[];
+
 type NilTuple1Array NilTuple1[];
 type ClosedNilTuple1Array NilTuple1[3];
 type NilTuple2Array NilTuple2[];
@@ -1371,6 +1543,7 @@ type StringTuple3Array StringTuple3[];
 type ClosedStringTuple3Array StringTuple3[3];
 type StringTuple4Array StringTuple4[];
 type ClosedStringTuple4Array StringTuple4[3];
+
 type AnydataTuple1Array AnydataTuple1[];
 type ClosedAnydataTuple1Array AnydataTuple1[3];
 type AnydataTuple2Array AnydataTuple2[];
@@ -1412,6 +1585,11 @@ type ClosedIntegerArray5Array IntegerArray5[3];
 type IntegerArray6Array IntegerArray5[];
 type ClosedIntegerArray6Array IntegerArray5[3];
 type StringArray1Array StringArray1[];
+
+type StringArrayArray StringArray[];
+type NillableStringArrayArray NillableStringArray[];
+type NillableIntOrUnionStringArrayArray NillableIntOrUnionStringArray[];
+
 type ClosedStringArray1Array StringArray1[3];
 type StringArray2Array StringArray2[];
 type ClosedStringArray2Array StringArray2[3];
@@ -1447,8 +1625,14 @@ type DecimalArray5Array DecimalArray5[];
 type ClosedDecimalArray5Array DecimalArray5[3];
 type DecimalArray6Array DecimalArray5[];
 type ClosedDecimalArray6Array DecimalArray5[3];
-type BooleanArray1Array BooleanArray1[];
-type ClosedBooleanArray1Array BooleanArray1[3];
+
+type BooleanArrayArray BooleanArray[];
+type ClosedBooleanArrayArray BooleanArray[3];
+
+type NillableBooleanArrayArray NillableBooleanArray[];
+type NillableIntOrUnionBooleanArrayArray NillableIntOrUnionBooleanArray[];
+
+
 type BooleanArray2Array BooleanArray2[];
 type ClosedBooleanArray2Array BooleanArray2[3];
 type BooleanArray3Array BooleanArray3[];
@@ -1510,6 +1694,9 @@ type ClosedCustomArray6Array CustomArray5[3];
 type IntegerMapArray IntegerMap[];
 type ClosedIntegerMapArray IntegerMap[3];
 type StringMapArray StringMap[];
+type NillableIntUnionStringMapArray NillableIntUnionStringMap[];
+type IntUnionStringMapArray IntUnionStringMap[]; 
+
 type ClosedStringMapArray StringMap[3];
 type DecimalMapArray DecimalMap[];
 type ClosedDecimalMapArray DecimalMap[3];

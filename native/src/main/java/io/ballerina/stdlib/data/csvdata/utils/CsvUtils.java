@@ -2,16 +2,11 @@ package io.ballerina.stdlib.data.csvdata.utils;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
-import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.TupleType;
-import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BArray;
-import io.ballerina.runtime.api.values.BDecimal;
-import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.utils.ValueUtils;
+import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.csv.CsvTraversal;
 import io.ballerina.stdlib.data.csvdata.csv.QueryParser;
@@ -44,6 +39,8 @@ public class CsvUtils {
             case TypeTags.DECIMAL_TAG:
             case TypeTags.FLOAT_TAG:
             case TypeTags.NULL_TAG:
+            case TypeTags.JSON_TAG:
+            case TypeTags.ANYDATA_TAG:
                 return true;
             default:
                 return false;
@@ -169,19 +166,12 @@ public class CsvUtils {
     }
 
     public static Object convertToBasicType(Object csv, Type targetType, CsvConfig config) {
-        if (targetType.getTag() == TypeTags.READONLY_TAG) {
-            return csv;
+        if (csv == null) {
+            csv = config.nullValue;
         }
         try {
-            Object value = JsonUtils.convertJSON(csv, targetType);
-            if (value == null) {
-                return config.nullValue;
-            }
-            if (value instanceof String) {
-                return StringUtils.fromString(value.toString());
-            }
-            return value;
-        } catch (Exception e) {
+            return ValueUtils.convert(csv, targetType);
+        } catch (BError e) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, targetType);
         }
     }
@@ -191,35 +181,35 @@ public class CsvUtils {
             if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
             }
-            // TODO: Handle this properly
-            if (!(SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED) &&
-                    SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL))) {
-//                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
-            }
         });
     }
 
-    public static boolean checkTypeCompatibility(Type constraintType, Object csv) {
-        // TODO: Remove this
-        if (csv instanceof BMap) {
-            BMap<BString, Object> map = (BMap<BString, Object>) csv;
-            for (BString key : map.getKeys()) {
-                if (!checkTypeCompatibility(constraintType, map.get(key))) {
-                    return false;
-                }
+    public static boolean isHeaderFieldsEmpty(Map<String, Field> currentField) {
+        for (Field field: currentField.values()) {
+            if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
+                return false;
             }
-            return true;
-        } else if ((csv instanceof BString && constraintType.getTag() == TypeTags.STRING_TAG)
-                || (csv instanceof Long && constraintType.getTag() == INT_TAG)
-                || (csv instanceof BDecimal && constraintType.getTag() == TypeTags.DECIMAL_TAG)
-                || (csv instanceof Double && (constraintType.getTag() == TypeTags.FLOAT_TAG
-                || constraintType.getTag() == TypeTags.DECIMAL_TAG))
-                || (Boolean.class.isInstance(csv) && constraintType.getTag() == TypeTags.BOOLEAN_TAG)
-                || (csv == null && constraintType.getTag() == TypeTags.NULL_TAG)) {
+        }
+        return true;
+    }
+
+    public static boolean checkTypeCompatibility(Type constraintType, Object csv) {
+        int tag = constraintType.getTag();
+        if ((csv instanceof BString && (tag == TypeTags.STRING_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv instanceof Long && (tag == INT_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv instanceof BDecimal && (tag == TypeTags.DECIMAL_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv instanceof Double && ((tag == TypeTags.FLOAT_TAG
+                || tag == TypeTags.DECIMAL_TAG) || isJsonOrAnyDataOrAny(tag)))
+                || (Boolean.class.isInstance(csv) && (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv == null && (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)))) {
             return true;
         } else {
             return false;
         }
+    }
+
+    private static boolean isJsonOrAnyDataOrAny(int tag) {
+        return tag == TypeTags.JSON_TAG || tag == TypeTags.ANYDATA_TAG || tag == TypeTags.ANY_TAG;
     }
 
     public static void addValuesToArrayType(Object csvElement, Type arrayElementType, int index,
@@ -227,21 +217,40 @@ public class CsvUtils {
         switch (arrayElementType.getTag()) {
             case TypeTags.NULL_TAG:
             case TypeTags.BOOLEAN_TAG:
-            case INT_TAG:
+            case TypeTags.INT_TAG:
             case TypeTags.FLOAT_TAG:
             case TypeTags.DECIMAL_TAG:
             case TypeTags.STRING_TAG:
-            case TypeTags.XML_TAG:
-                ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, arrayElementType, config));
+            case TypeTags.JSON_TAG:
+            case TypeTags.ANYDATA_TAG:
+            case TypeTags.ANY_TAG:
+                if (checkTypeCompatibility(arrayElementType, csvElement)) {
+                    ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, arrayElementType, config));
+                    return;
+                }
                 break;
-            default:
-                DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, arrayElementType);
+            case TypeTags.UNION_TAG:
+                for (Type memberType: ((UnionType) arrayElementType).getMemberTypes()) {
+                    if (!isBasicType(memberType)) {
+                        throw DiagnosticLog.error(DiagnosticErrorCode
+                                .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
+                    }
+                    if (checkTypeCompatibility(memberType, csvElement)) {
+                        ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, memberType, config));
+                        return;
+                    }
+                }
         }
+        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_ARRAY, csvElement, index, arrayElementType);
     }
 
     public static int getTheActualExpectedType(Type type) {
         if (type instanceof TupleType) {
-            return ((TupleType) type).getTupleTypes().size();
+            TupleType tupleType = (TupleType) type;
+            if (tupleType.getRestType() != null) {
+                return -1;
+            }
+            return tupleType.getTupleTypes().size();
         } else {
             return ((ArrayType) type).getSize();
         }

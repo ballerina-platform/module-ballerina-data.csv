@@ -36,7 +36,10 @@ public enum DiagnosticErrorCode {
     INVALID_EXPECTED_ARRAY_SIZE("BDE_0009", "invalid.expected.array.size"),
     INVALID_EXPECTED_TUPLE_SIZE("BDE_0010", "invalid.expected.tuple.size"),
     INVALID_SKIP_COLUMN_QUERY("BDE_0011", "invalid.skip.column.query"),
-    INVALID_TYPE_FOR_FIELD("BDE_0012", "invalid.type.for.field");
+    INVALID_TYPE_FOR_FIELD("BDE_0012", "invalid.type.for.field"),
+    INVALID_TYPE_FOR_ARRAY("BDE_0013", "invalid.type.for.array"),
+    INVALID_CONVERSION_FOR_ARRAY_TO_MAP("BDE_0014", "invalid.conversion.for.array.to.map"),
+    EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0015", "expected.type.can.only.contains.basic.types");
 
     String diagnosticId;
     String messageKey;
