@@ -31,9 +31,7 @@
 // [string, string][] d = [["1", "2"], ["1", "2"]];
 // [string, string][] d2 = [["1", "2"], ["1", "2"]];
 
-// boolean enable = true;
-
-// @test:Config{enable }
+// @test:Config{enable: enableTest}
 // public function testA() returns error? {
 //     A aa = check fromCsvWithType(a, {}, A);
 //     test:assertEquals(aa, a);
@@ -123,7 +121,7 @@
 //     test:assertEquals(d2c, [["1", "2"], ["1", "2"]]);
 // }
 
-// @test:Config{enable }
+// @test:Config{enable: enableTest}
 // function testB() returns error? {
 //     // B2 d2b2 = check fromCsvWithType(d2, {}, B2);
 //     // test:assertEquals(d2b2, [{"1": "1", "2": "2"}, {"1": "1", "2": "2"}]);
@@ -204,8 +202,8 @@
 // type XX string[][2];
 // type YY anydata[][2];
 
-// @test:Config{ enable }
-// function test() returns CsvConversionError? {
+// @test:Config{enable: enableTest}
+// function test1() returns CsvConversionError? {
 //     string a = check io:fileReadString("a.txt");
 
 //     AA aa = check fromCsvStringWithType(a, {}, AA);
@@ -330,7 +328,7 @@
 
 // type AAA string[][];
 
-// @test:Config{ enable }
+// @test:Config{enable: enableTest}
 // function testC() returns error? {
 //     anydata[][] a = [[1, 2], [2, 3], [2, 3]];
 //     record{}[] b = [{"a": 1, "b": 2}, {"a": 1, "b": 2}, {"a": 1, "b": 2}];
@@ -341,7 +339,9 @@
 //     io:println(toCsvString(c));
 // }
 
-// @test:Config{enable: !enable}
+// boolean enableTest = true;
+
+// @test:Config{enable: !enableTest}
 // function t() returns error? {
 //     string a = check io:fileReadString("a.txt");
 //     AA aa = check fromCsvStringWithType(a, {}, AA);

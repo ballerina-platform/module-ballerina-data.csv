@@ -120,3 +120,40 @@ var booleanRecordArray = [
 var booleanRecordArray2 = [
     {},{}
 ];
+
+string csvStringWithBooleanValues1 = string `
+b1,b2,b3,b4
+true,false,true,false
+`;
+
+string csvStringWithBooleanValues2 = string `
+b1,b2,b3,b4,b5
+true,false, true,false,true
+`;
+
+string csvStringWithBooleanValues3 = string `
+b1,b2,b3
+true, false,true
+`;
+
+string csvStringWithBooleanValues4 = string `
+b1,b2,b3,b4
+true,(), (),false
+`;
+
+string csvStringWithBooleanValues5 = string `
+b1,b2,b3,b4
+
+true,false,true,1
+`;
+
+string csvStringWithBooleanValues6 = string `
+b1,b2
+(),()
+
+`;
+
+string csvStringWithBooleanValues7 = string `
+b1,b2,b3,b4
+${b1},${b2},(),${b4}
+`;

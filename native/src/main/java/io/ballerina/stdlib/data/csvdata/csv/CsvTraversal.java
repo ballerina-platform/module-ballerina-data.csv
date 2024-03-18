@@ -61,6 +61,7 @@ public class CsvTraversal {
         Type expectedArrayElementType;
         Type sourceArrayElementType;
         CsvConfig config;
+        String[] headers= null;
 
         void reset() {
             currentCsvNode = null;
@@ -71,6 +72,7 @@ public class CsvTraversal {
             fieldNames.clear();
             expectedArrayElementType = null;
             sourceArrayElementType = null;
+            headers = null;
         }
 
         @SuppressWarnings("unchecked")
@@ -211,8 +213,21 @@ public class CsvTraversal {
         }
 
         private void constructArrayValuesFromMap(BMap<BString, Object> map, Type type, int expectedSize) {
+            int size = map.size();
+            BString[] keys = new BString[size];
             int index = 0;
-            for (Object v: map.values()) {
+            if (config.customHeader == null) {
+                keys = map.getKeys();
+            } else {
+                if (this.headers == null) {
+                    this.headers = createHeaders(new String[size], config);
+                }
+                for (int i = 0; i < size; i++) {
+                    keys[i] = StringUtils.fromString(this.headers[i]);
+                }
+            }
+            for (BString key: keys) {
+                Object v = map.get(key);
                 if (index >= expectedSize) {
                     break;
                 }
@@ -246,8 +261,8 @@ public class CsvTraversal {
             }
         }
 
-        private boolean checkExpectedTypeMatchWithHeaders(Type expectedType, String[] headers, BArray csvElement, int arraySize) {
-            if (arraySize < headers.length) {
+        private boolean checkExpectedTypeMatchWithHeaders(Type expectedType, BArray csvElement, int arraySize) {
+            if (arraySize < this.headers.length) {
                 return false;
             }
             if (expectedType instanceof MapType) {
@@ -255,14 +270,13 @@ public class CsvTraversal {
             }
             Type type = csvElement.getType();
             if (type instanceof TupleType) {
-                return checkExpectedTypeMatchWithHeadersForTuple(expectedType, headers, (TupleType) type);
+                return checkExpectedTypeMatchWithHeadersForTuple(expectedType, (TupleType) type);
             } else {
-                return checkExpectedTypeMatchWithHeadersForArray(expectedType,
-                        headers, csvElement.getElementType(), arraySize);
+                return checkExpectedTypeMatchWithHeadersForArray(expectedType, csvElement.getElementType(), arraySize);
             }
         }
 
-        private boolean checkExpectedTypeMatchWithHeadersForTuple(Type expectedType, String[] headers, TupleType tupleType) {
+        private boolean checkExpectedTypeMatchWithHeadersForTuple(Type expectedType, TupleType tupleType) {
             Type type;
             List<Type> tupleTypes = tupleType.getTupleTypes();
             Type tupleRestType = tupleType.getRestType();
@@ -274,13 +288,13 @@ public class CsvTraversal {
                     return true;
                 }
 
-                for (int i = 0; i < headers.length; i++) {
+                for (int i = 0; i < this.headers.length; i++) {
                     if (i >= tupleTypes.size()) {
                         type = tupleRestType;
                     } else {
                         type = tupleTypes.get(i);
                     }
-                    String header = headers[i];
+                    String header = this.headers[i];
                     Field field = this.headerFieldHierarchy.remove(header);
 
                     if (field != null) {
@@ -306,7 +320,7 @@ public class CsvTraversal {
             return false;
         }
 
-        private boolean checkExpectedTypeMatchWithHeadersForArray(Type expectedType, String[] headers, Type arrayType, int arraySize) {
+        private boolean checkExpectedTypeMatchWithHeadersForArray(Type expectedType, Type arrayType, int arraySize) {
             arrayType = TypeUtils.getReferredType(arrayType);
             if (expectedType instanceof RecordType) {
                 if (this.restType != null && (this.restType == arrayType
@@ -314,8 +328,8 @@ public class CsvTraversal {
                     return true;
                 }
 
-                for (int i = 0; i < headers.length; i++) {
-                    if (!this.fieldHierarchy.containsKey(headers[i])) {
+                for (int i = 0; i < this.headers.length; i++) {
+                    if (!this.fieldHierarchy.containsKey(this.headers[i])) {
                         return false;
                     }
                 }
@@ -327,9 +341,10 @@ public class CsvTraversal {
         private void traverseArrayValueWithMapAsExpectedType(BArray csvElement, boolean mappingType, Type expectedType) {
             int arraySize = csvElement.size();
             String[] headers = new String[arraySize];
-            headers = createHeaders(headers, config);
-            boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(
-                    expectedType, headers, csvElement, arraySize);
+            if (this.headers == null) {
+                this.headers = createHeaders(headers, config);
+            }
+            boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(expectedType, csvElement, arraySize);
             if (!headersMatchWithExpType) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP, csvElement, expectedType);
             }
@@ -340,8 +355,11 @@ public class CsvTraversal {
         private void addValuesToMapType(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
             Type fieldType;
             BString key;
+
+            // TODO: Canges the logic with headers parameter
             for(int i = 1; i <= arraySize; i++) {
-                key = StringUtils.fromString(String.valueOf(i));
+//                key = StringUtils.fromString(String.valueOf(i));
+                key = StringUtils.fromString(this.headers[i - 1]);
                 if (!mappingType) {
                     if (!isKeyBelongsToNonRestType(csvElement.get(i-1), key)) {
                         continue;

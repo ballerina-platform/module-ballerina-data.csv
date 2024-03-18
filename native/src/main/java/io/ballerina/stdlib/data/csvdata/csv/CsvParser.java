@@ -151,11 +151,11 @@ public class CsvParser {
             this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
-                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
             } else {
                 rootArrayType = (ArrayType) type;
                 rootCsvNode = ValueCreator.createArrayValue(rootArrayType);
-                expectedArrayElementType = ((ArrayType) TypeUtils.getReferredType(referredType)).getElementType();
+                expectedArrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
             }
             switch (expectedArrayElementType.getTag()) {
                 // TODO: Handle readonly and singleton type as expType.

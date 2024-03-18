@@ -1114,6 +1114,7 @@ type CustomTuple3 [string, int, decimal, float, (), boolean, anydata, json, stri
 type CustomTuple4 [string...];
 type CustomTuple5 [string, int, decimal, float, (), boolean, anydata, json, anydata...];
 type CustomTuple6 [anydata...];
+type CustomTuple7 [int, string, boolean, (), float, decimal, json, anydata, string...];
 
 type IntegerArray1 int[];
 type IntegerArray2 int[2];
@@ -1571,6 +1572,8 @@ type ClosedCustomTuple4Array CustomTuple4[3];
 type CustomTuple5Array CustomTuple5[];
 type ClosedCustomTuple5Array CustomTuple5[3];
 type CustomTuple6Array CustomTuple6[];
+type CustomTuple7Array CustomTuple7[];
+
 type ClosedCustomTuple6Array CustomTuple6[3];
 type IntegerArray1Array IntegerArray1[];
 type ClosedIntegerArray1Array IntegerArray1[3];

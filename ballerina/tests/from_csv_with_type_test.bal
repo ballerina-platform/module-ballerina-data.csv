@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
     BooleanRecord1Array|CsvConversionError bm1br1 = fromCsvWithType([bm1, bm1], {}, BooleanRecord1Array);
     test:assertTrue(bm1br1 is CsvConversionError);
@@ -192,7 +192,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
     test:assertEquals((<CsvConversionError>bm5br8).message(), generateErrorMessageForMissingRequiredField("requiredField"));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
     BooleanRecord9Array|CsvConversionError bm1br9 = fromCsvWithType([bm1, bm1], {}, BooleanRecord9Array);
     test:assertTrue(bm1br9 is CsvConversionError);
@@ -449,7 +449,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForMapAndMapAsExpectedType() {
     BooleanMapArray|CsvConversionError bm1bma = fromCsvWithType([bm1, bm1], {}, BooleanMapArray);
     test:assertEquals(bm1bma, [
@@ -721,7 +721,7 @@ function testFromCsvWithTypeForMapAndMapAsExpectedType() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     BooleanArrayArray|CsvConversionError bm1ba = fromCsvWithType([bm1, bm1], {}, BooleanArrayArray);
     test:assertEquals(bm1ba, [
@@ -884,7 +884,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     test:assertEquals((<CsvConversionError>bm5sa).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "string"));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     BooleanTuple1Array|CsvConversionError bm1bt = fromCsvWithType([bm1, bm1], {}, BooleanTuple1Array);
     test:assertEquals(bm1bt, [
@@ -1227,7 +1227,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertEquals((<CsvConversionError>bm5s3t).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "string"));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
     StringRecord1Array|CsvConversionError st1sr1 = fromCsvWithType([st1, st1], {}, StringRecord1Array);
     test:assertTrue(st1sr1 is CsvConversionError);
@@ -1482,7 +1482,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType2() {
     StringRecord1Array|CsvConversionError st3sr1 = fromCsvWithType([st3, st3], {}, StringRecord1Array);
     test:assertTrue(st3sr1 is CsvConversionError);
@@ -1697,7 +1697,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType2() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     StringTuple1Array|CsvConversionError st1st1 = fromCsvWithType([st1, st1], {}, StringTuple1Array);
     test:assertEquals(st1st1, [
@@ -1859,7 +1859,7 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     test:assertEquals((<CsvConversionError>st4bta).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "boolean"));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndMapAsExpectedType() {
     StringMapArray|CsvConversionError st1sma = fromCsvWithType([st1, st1], {}, StringMapArray);
     test:assertEquals(st1sma , [
@@ -2030,7 +2030,7 @@ function testFromCsvWithTypeForTupleAndMapAsExpectedType() {
     ]));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
     StringArrayArray|CsvConversionError st1saa = fromCsvWithType([st1, st1], {}, StringArrayArray);
     test:assertEquals(st1saa , [
@@ -2185,44 +2185,113 @@ function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
     test:assertEquals((<CsvConversionError>st3dda).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
 }
 
-@test:Config {enable}
+@test:Config {enable: enable}
 function testFromCsvWithTypeFunctionWithTypeCompatibility() {
     var value = {i1, i2, s1, s2, b1, b2, n1, n2, f1, f2, d1, d2, j1: b1, a1: d1, j2: b2, a2: d2};
-    CustomRecord27Array|CsvConversionError stcr27 = fromCsvWithType([value, value, value], {}, CustomRecord27Array);
-    test:assertEquals(stcr27 , [
+    var value2 = {i1, s1, b1, n1, f1, d1, j1: b1, a1: d1, s2, s3, j2: b2, a2: d2};
+    var value3 = {i1, s1, b1, n1, f1, d1, j1: b1, a1: d1, s2, s3};
+
+    CustomRecord27Array|CsvConversionError vcr27a = fromCsvWithType([value, value, value], {}, CustomRecord27Array);
+    test:assertEquals(vcr27a , [
         {i1, s1, s2, b1, n1, f1, d1, j1: b1, a1: d1, defaultableField: "", nillableField: ()},
         {i1, s1, s2, b1, n1, f1, d1, j1: b1, a1: d1, defaultableField: "", nillableField: ()},
         {i1, s1, s2, b1, n1, f1, d1, j1: b1, a1: d1, defaultableField: "", nillableField: ()}
     ]);
-}
 
-boolean enable = !true;
+    CustomTuple7Array|CsvConversionError v2ct7a = fromCsvWithType([value2, value2, value2], {}, CustomTuple7Array);
+    test:assertTrue(v2ct7a is CsvConversionError);
+    test:assertEquals((<CsvConversionError>v2ct7a).message(), generateErrorMessageForInvalidValueForArrayType("false", "10", "string"));
 
-@test:Config {enable: !enable}
-function test() {
-    BooleanTuple1Array|CsvConversionError bm1bt = fromCsvWithType([bm1, bm1], {}, BooleanTuple1Array);
-    test:assertEquals(bm1bt, [
-        [true, false, false, false],
-        [true, false, false, false]
+    CustomTuple7Array|CsvConversionError v3ct7a = fromCsvWithType([value3, value3, value3], {}, CustomTuple7Array);
+    test:assertEquals(v3ct7a , [
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3]
+    ]);
+
+    AnydataArray1Array|CsvConversionError v3anyd1a = fromCsvWithType([value3, value3, value3], {}, AnydataArray1Array);
+    test:assertEquals(v3anyd1a , [
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
+        [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3]
+    ]);
+
+    AnydataMapArray|CsvConversionError vanydma = fromCsvWithType([value, value, value], {}, AnydataMapArray);
+    test:assertEquals(vanydma , [
+        value,
+        value,
+        value
+    ]);
+
+    JsonMapArray|CsvConversionError vjma = fromCsvWithType([value, value, value], {}, JsonMapArray);
+    test:assertEquals(vjma , [
+        value,
+        value,
+        value
+    ]);
+
+    record{|int...;|}[]|CsvConversionError irrma = fromCsvWithType([{a: 1}, {a: i1, b: i2}, {a: i1, b: i2, c: s1}]);
+    test:assertEquals(irrma , [
+        {a:1},
+        {a: i1, b: i2},
+        {a: i1, b: i2}
+    ]);
+
+    record{|decimal...;|}[]|CsvConversionError drra = fromCsvWithType([{a: d1}, {a: d2, b: d3}, {a: d4, b: f2, c: s1, d: f3}]);
+    test:assertTrue(drra is record{|decimal...;|}[]);
+    test:assertEquals(drra , [
+        {a: d1},
+        {a: d2, b: d3},
+        {a: d4, b: -3.21d, d: <decimal>f3}
+    ]);
+
+    record{|string...;|}[]|CsvConversionError srra = fromCsvWithType([{a: "string"}, {c: 1, a: s1, b: s2}, {a: b1, b: s3, c: d1}]);
+    test:assertEquals(srra , [
+        {a: "string"},
+        {a: s1, b: s2},
+        {b: s3}
+    ]);
+
+    record{|float...;|}[]|CsvConversionError frra = fromCsvWithType([{a: 1.2, b: 1.2f}, {a: d2, b: d3}, {a: d4, b: f2, c: s1}]);
+    test:assertEquals(frra , [
+        {a: 1.2, b: 1.2},
+        {a: <float>d2, b: <float>d3},
+        {a: <float>d4, b: f2}
+    ]);
+
+    record{|float a; decimal b;|}[]|CsvConversionError fdc1a = fromCsvWithType([{a: d1, b: d2}, {a: f1, b: f2}, {a: d2, b: f2}, {a: f2, b: d2}]);
+    test:assertEquals(fdc1a , [
+        {a: <float>d1, b: d2}, 
+        {a: f1, b: <decimal>f2}, 
+        {a: <float>d2, b: <decimal>f2}, 
+        {a: f2, b: d2}
+    ]);
+
+    record{|float a; decimal ...;|}[]|CsvConversionError fdc2a = fromCsvWithType([{a: d1, b: d2}, {a: f1, b: f2}, {a: d2, b: f2}, {a: f2, b: d2}]);
+    test:assertEquals(fdc2a , [
+        {a: <float>d1, b: d2}, 
+        {a: f1, b: <decimal>f2}, 
+        {a: <float>d2, b: <decimal>f2}, 
+        {a: f2, b: d2}
+    ]);
+
+    record{|decimal b; float...;|}[]|CsvConversionError fdc3a = fromCsvWithType([{a: d1, b: d2}, {a: f1, b: f2}, {a: d2, b: f2}, {a: f2, b: d2}]);
+    test:assertEquals(fdc3a , [
+        {a: <float>d1, b: d2}, 
+        {a: f1, b: <decimal>f2}, 
+        {a: <float>d2, b: <decimal>f2}, 
+        {a: f2, b: d2}
     ]);
 }
 
-function generateErrorMessageForMissingRequiredField(string 'field) returns string {
-    return string `no matching header value is found for the required field '${'field}'`;
-}
+// boolean enable = true;
 
-function generateErrorMessageForInvalidCast(string value, string 'type) returns string {
-    return string `value '${value}' cannot be cast into '${'type}'`;
-}
-
-function generateErrorMessageForInvalidFieldType(string value, string 'key) returns string {
-    return string `no mapping type found for value '${value}' in key '${'key}'`;
-}
-
-function generateErrorMessageForInvalidValueForArrayType(string value, string index, string arrayType) returns string {
-    return string `value '${value}' in index '${index}' is not compatible with array type '${arrayType}'`;
-}
-
-function generateErrorMessageForInvalidHeaders(string value, string 'type) returns string{
-    return string `value '${value}' cannot be cast into '${'type}', because fields in '${'type}' or the provided expected headers are not matching with the '${value}'`;
+@test:Config {enable: !enable}
+function testTemp1() {
+    // record{|float...;|}[]|CsvConversionError frra = fromCsvWithType([{a: d2, b: d3}]);
+    // test:assertEquals(frra , [
+    //     {a: 1.2, b: 1.2},
+    //     {},
+    //     {a: d4, b: f2}
+    // ]);
 }

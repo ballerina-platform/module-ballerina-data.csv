@@ -73,7 +73,7 @@ public isolated function fromCsvWithType((string[]|map<anydata>)[] csv, FromCSVC
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function fromCsvStringWithType(string|byte[]|stream<byte[], error?> s,
-        FromCSVConfig config = {} ,typedesc<(record{}|map<anydata>|anydata)[]> t = <>)
+        FromCSVConfig config = {} ,typedesc<(map<anydata>|anydata)[]> t = <>)
     returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function toCsv((anydata[]|map<anydata>)[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 

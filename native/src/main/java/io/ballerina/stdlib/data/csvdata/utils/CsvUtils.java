@@ -197,9 +197,10 @@ public class CsvUtils {
         int tag = constraintType.getTag();
         if ((csv instanceof BString && (tag == TypeTags.STRING_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Long && (tag == INT_TAG || isJsonOrAnyDataOrAny(tag)))
-                || (csv instanceof BDecimal && (tag == TypeTags.DECIMAL_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv instanceof BDecimal && ((tag == TypeTags.DECIMAL_TAG
+                        || tag == TypeTags.FLOAT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Double && ((tag == TypeTags.FLOAT_TAG
-                || tag == TypeTags.DECIMAL_TAG) || isJsonOrAnyDataOrAny(tag)))
+                        || tag == TypeTags.DECIMAL_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (Boolean.class.isInstance(csv) && (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv == null && (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)))) {
             return true;
