@@ -123,32 +123,45 @@ var booleanRecordArray2 = [
 
 string csvStringWithBooleanValues1 = string `
 b1,b2,b3,b4
+true,false,true,false 
+true,false, true,false
 true,false,true,false
 `;
 
 string csvStringWithBooleanValues2 = string `
 b1,b2,b3,b4,b5
 true,false, true,false,true
-`;
+true,false, true,false,true`;
 
 string csvStringWithBooleanValues3 = string `
-b1,b2,b3
+        b1,b2,b3
+${" "}${" "}
 true, false,true
+${" "}
+    TRUE, FALSE,()
+${" "}
+
+true, true,FALSE
+ 
 `;
 
 string csvStringWithBooleanValues4 = string `
-b1,b2,b3,b4
-true,(), (),false
+      b1,b2,b3,b4
+    true,(), (),0
+ 1,(), null,false
+
 `;
 
 string csvStringWithBooleanValues5 = string `
 b1,b2,b3,b4
 
-true,false,true,1
+true,false,true,2
+
+true,false,true,3
 `;
 
 string csvStringWithBooleanValues6 = string `
-b1,b2
+b2,b3
 (),()
 
 `;

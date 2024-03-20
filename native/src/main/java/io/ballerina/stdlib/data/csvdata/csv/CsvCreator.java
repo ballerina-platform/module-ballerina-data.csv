@@ -21,11 +21,7 @@ package io.ballerina.stdlib.data.csvdata.csv;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.ArrayType;
-import io.ballerina.runtime.api.types.MapType;
-import io.ballerina.runtime.api.types.RecordType;
-import io.ballerina.runtime.api.types.TupleType;
-import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -35,6 +31,8 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.FromString;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
+
+import java.util.Map;
 
 /**
  * Create objects for partially parsed csv.
@@ -46,7 +44,7 @@ public class CsvCreator {
     static Object initRowValue(Type expectedType) {
         switch (expectedType.getTag()) {
             case TypeTags.RECORD_TYPE_TAG:
-                return ValueCreator.createRecordValue((RecordType) expectedType);
+                return ValueCreator.createRecordValue(expectedType.getPackage(), expectedType.getName());
             case TypeTags.MAP_TAG:
                 return ValueCreator.createMapValue((MapType) expectedType);
             case TypeTags.TUPLE_TAG:
@@ -59,35 +57,52 @@ public class CsvCreator {
     }
 
     static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
-                                                  BString value, Type type, CsvConfig config) {
-        Object currentJson = sm.currentCsvNode;
+                                                  BString value, Type type, CsvConfig config, Type exptype) {
+        Object currentCsv = sm.currentCsvNode;
         Object convertedValue = convertToExpectedType(value, type, config);
         if (convertedValue instanceof BError) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, type, value);
+            if (ignoreIncompatibilityErrorsForMaps(sm, type, exptype)) {
+                return null;
+            }
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, value, type);
         }
 
-        Type currentCsvNodeType = TypeUtils.getType(currentJson);
+        Type currentCsvNodeType = TypeUtils.getType(currentCsv);
         switch (currentCsvNodeType.getTag()) {
             case TypeTags.MAP_TAG:
             case TypeTags.RECORD_TYPE_TAG:
-                ((BMap<BString, Object>) currentJson).put(StringUtils.fromString(sm.headers.get(sm.columnIndex)),
+                ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(sm.headers.get(sm.columnIndex)),
                         convertedValue);
-                return currentJson;
+                return currentCsv;
             case TypeTags.ARRAY_TAG:
                 // Handle projection in array.
                 ArrayType arrayType = (ArrayType) currentCsvNodeType;
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < sm.columnIndex) {
-                    return currentJson;
+                    return currentCsv;
                 }
-                ((BArray) currentJson).add(sm.columnIndex, convertedValue);
-                return currentJson;
+                ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
+                return currentCsv;
             case TypeTags.TUPLE_TAG:
-                ((BArray) currentJson).add(sm.columnIndex, convertedValue);
-                return currentJson;
+                ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
+                return currentCsv;
             default:
                 return convertedValue;
         }
+    }
+
+    private static boolean ignoreIncompatibilityErrorsForMaps(CsvParser.StateMachine sm, Type type, Type exptype) {
+        if (exptype.getTag() == TypeTags.RECORD_TYPE_TAG) {
+            String header = sm.headers.get(sm.columnIndex);
+            Map<String, Field> fields = sm.fieldNames;
+            if (fields.containsKey(header)) {
+                return false;
+            }
+            return true;
+        } else if (exptype.getTag() == TypeTags.MAP_TAG) {
+            return true;
+        }
+        return false;
     }
 
     private static Object convertToExpectedType(BString value, Type type, CsvConfig config) {

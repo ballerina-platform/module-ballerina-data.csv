@@ -114,10 +114,16 @@ public class CsvParser {
             rootArrayType = null;
             config = null;
             lineNumber = 0;
+            expectedArrayElementType = null;
+            headers = new ArrayList<>();
+            currentEscapeCharacters = new Stack<>();
+            charBuff = new char[1024];
+            charBuffIndex = 0;
+            skipColumnIndexes = new ArrayList<>();
         }
 
         private static boolean isWhitespace(char ch) {
-            return ch == SPACE || ch == HZ_TAB || ch == CR;
+            return ch == SPACE || ch == HZ_TAB || ch == CR || ch == NEWLINE;
         }
 
         private static void throwExpected(String... chars) throws CsvParserException {
@@ -251,7 +257,7 @@ public class CsvParser {
                         continue;
                     }
                     if (skipHeaders || customHeader != null) {
-                        if (sm.isEndOfTheRow(ch)) {
+                        if (!sm.peek().isEmpty() && sm.isEndOfTheRow(ch)) {
                             checkAndAddCustomHeaders(sm.headers, customHeader, sm.config.skipHeaders);
                             sm.lineNumber++;
                             state = HEADER_END_STATE;
@@ -262,7 +268,7 @@ public class CsvParser {
                         addHeader(sm);
                         sm.columnIndex++;
                         continue;
-                    } else if (sm.isEndOfTheRow(ch)) {
+                    } else if (!sm.peek().isEmpty() && sm.isEndOfTheRow(ch)) {
                         addHeader(sm);
                         finalizeHeaders(sm);
                         sm.columnIndex = 0;
@@ -340,10 +346,6 @@ public class CsvParser {
             private void addHeader(StateMachine sm) throws CsvParserException {
                 String value = sm.value();
                 if (sm.expectedArrayElementType instanceof RecordType) {
-                    if (validateHeaderValueWithRecordFields(sm, value)) {
-                        throw new CsvParserException("Header " + value + " does not match " +
-                                "with any record key in the expected type");
-                    }
                     Field field = sm.fieldHierarchy.get(value);
                     if (field != null) {
                         sm.fieldNames.put(value, field);
@@ -354,8 +356,7 @@ public class CsvParser {
             }
 
             private boolean validateHeaderValueWithRecordFields(StateMachine sm, String value) {
-                return sm.restType != null && sm.restType.getTag() != TypeTags.ANYDATA_TAG
-                        && !sm.fieldHierarchy.containsKey(StringUtils.fromString(value));
+                return sm.fieldHierarchy.containsKey(value) || sm.restType != null;
             }
         }
 
@@ -403,6 +404,7 @@ public class CsvParser {
                         sm.lineNumber++;
                         handleCsvRow(sm);
                         if (ch == EOF) {
+                            checkOptionalFieldsAndLogError(sm.fieldHierarchy);
                             state = ROW_END_STATE;
                         }
                     } else if (StateMachine.isWhitespace(ch)) {
@@ -484,7 +486,8 @@ public class CsvParser {
                 }
 
                 if (type != null) {
-                    CsvCreator.convertAndUpdateCurrentJsonNode(sm, StringUtils.fromString(sm.value()), type, sm.config);
+                    CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                            StringUtils.fromString(sm.value()), type, sm.config, exptype);
                 }
                 sm.columnIndex++;
             }
