@@ -135,7 +135,7 @@ true,false, true,false,true`;
 
 string csvStringWithBooleanValues3 = string `
         b1,b2,b3
-${" "}${" "}
+${" "}${"\t"}
 true, false,true
 ${" "}
     TRUE, FALSE,()
