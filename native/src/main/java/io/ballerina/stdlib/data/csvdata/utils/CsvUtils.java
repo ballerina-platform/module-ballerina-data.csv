@@ -3,12 +3,11 @@ package io.ballerina.stdlib.data.csvdata.utils;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
-import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
-import io.ballerina.stdlib.data.csvdata.csv.CsvTraversal;
+import io.ballerina.stdlib.data.csvdata.csv.CsvParser;
 import io.ballerina.stdlib.data.csvdata.csv.QueryParser;
 
 import java.util.Arrays;

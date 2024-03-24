@@ -1841,14 +1841,14 @@ function testFromCsvStringWithTypeCompatibility() {
     ]);
 }
 
-boolean enable = true;
+// boolean enable = true;
 
-@test:Config {enable: !enable}
-function test() {
-    NillableBooleanTuple5|CsvConversionError cbv1bt5 = fromCsvStringWithType(csvStringWithBooleanValues1);
-    test:assertEquals(cbv1bt5, [
-        [true, false, true, false],
-        [true, false, true, false],
-        [true, false, true, false]
-    ]);
-}
+// @test:Config {enable: !enable}
+// function test() {
+//     NillableBooleanTuple5|CsvConversionError cbv1bt5 = fromCsvStringWithType(csvStringWithBooleanValues1);
+//     test:assertEquals(cbv1bt5, [
+//         [true, false, true, false],
+//         [true, false, true, false],
+//         [true, false, true, false]
+//     ]);
+// }

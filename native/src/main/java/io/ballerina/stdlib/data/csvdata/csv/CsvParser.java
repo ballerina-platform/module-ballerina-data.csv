@@ -181,12 +181,13 @@ public class CsvParser {
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
             }
-            boolean header = config.headers;
+
             State currentState;
-            if (header) {
+            if (config.headers) {
                 currentState = HEADER_START_STATE;
             } else {
                 currentState = ROW_START_STATE;
+                addFieldNamesForNonHeaderState();
             }
             try {
                 char[] buff = new char[1024];
@@ -211,6 +212,12 @@ public class CsvParser {
             }
         }
 
+        private void  addFieldNamesForNonHeaderState() {
+            for (Map.Entry<String, Field> entry: this.fieldHierarchy.entrySet()) {
+                this.fieldNames.put(entry.getKey(), entry.getValue());
+            }
+        }
+
         private void append(char ch) {
             try {
                 this.charBuff[this.charBuffIndex] = ch;
@@ -222,7 +229,7 @@ public class CsvParser {
             }
         }
 
-        private boolean isEndOfTheRow(char ch) {
+        private boolean isNewLineOrEof(char ch) {
             return ch == NEWLINE || ch == EOF;
         }
 
@@ -256,19 +263,29 @@ public class CsvParser {
                         sm.lineNumber++;
                         continue;
                     }
-                    if (skipHeaders || customHeader != null) {
-                        if (!sm.peek().isEmpty() && sm.isEndOfTheRow(ch)) {
-                            checkAndAddCustomHeaders(sm.headers, customHeader, sm.config.skipHeaders);
+                    if (customHeader != null) {
+                        if (isEndOfTheRow(sm, ch, true)) {
+                            checkAndAddCustomHeaders(sm, customHeader);
                             sm.lineNumber++;
                             state = HEADER_END_STATE;
                             break;
                         }
                         continue;
-                    } else if (ch == separator) {
+                    }
+                    if (skipHeaders) {
+                        if (isEndOfTheRow(sm, ch, true)) {
+                            sm.lineNumber++;
+                            state = HEADER_END_STATE;
+                            break;
+                        }
+                        continue;
+                    }
+
+                    if (ch == separator) {
                         addHeader(sm);
                         sm.columnIndex++;
                         continue;
-                    } else if (!sm.peek().isEmpty() && sm.isEndOfTheRow(ch)) {
+                    } else if (isEndOfTheRow(sm, ch)) {
                         addHeader(sm);
                         finalizeHeaders(sm);
                         sm.columnIndex = 0;
@@ -288,14 +305,21 @@ public class CsvParser {
                 return state;
             }
 
-            private void checkAndAddCustomHeaders(ArrayList<String> headers, Object customHeader, boolean skipHeaders) {
-                if (skipHeaders || headers == null) {
+            private void checkAndAddCustomHeaders(StateMachine sm, Object customHeader) {
+                if (customHeader == null) {
                     return;
                 }
 
                 BArray customHeaders = (BArray) customHeader;
                 for (int i = 0; i < customHeaders.size(); i++) {
-                    headers.add(StringUtils.getStringValue(customHeaders.get(i)));
+                    String header = StringUtils.getStringValue(customHeaders.get(i));
+                    Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
+                    sm.headers.add(header);
+                    if (fieldHierarchy.containsKey(header)) {
+                        Field field = fieldHierarchy.get(header);
+                        sm.fieldNames.put(header, field);
+                        fieldHierarchy.remove(header);
+                    }
                 }
             }
 
@@ -354,10 +378,6 @@ public class CsvParser {
                 }
                 sm.headers.add(value);
             }
-
-            private boolean validateHeaderValueWithRecordFields(StateMachine sm, String value) {
-                return sm.fieldHierarchy.containsKey(value) || sm.restType != null;
-            }
         }
 
         private static class HeaderEndState implements State {
@@ -372,8 +392,7 @@ public class CsvParser {
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
                 char ch;
                 State state = ROW_START_STATE;
-                //TODO: Add separator here
-                char separator = ',';
+                char separator = sm.config.separator;
                 updateHeaders(sm);
 
                 // TODO: Ignore this in future
@@ -387,7 +406,7 @@ public class CsvParser {
                         break;
                     }
                     if (sm.rowIndex < sm.config.skipDataRows) {
-                        if (sm.isEndOfTheRow(ch)) {
+                        if (isEndOfTheRow(sm, ch)) {
                             sm.lineNumber++;
                             sm.rowIndex++;
                         }
@@ -400,11 +419,11 @@ public class CsvParser {
                     }
                     if (ch == separator) {
                         addRowValue(sm);
-                    } else if (sm.isEndOfTheRow(ch)) {
+                    } else if (isEndOfTheRow(sm, ch)) {
                         sm.lineNumber++;
                         handleCsvRow(sm);
+                        checkOptionalFieldsAndLogError(sm.fieldHierarchy);
                         if (ch == EOF) {
-                            checkOptionalFieldsAndLogError(sm.fieldHierarchy);
                             state = ROW_END_STATE;
                         }
                     } else if (StateMachine.isWhitespace(ch)) {
@@ -418,7 +437,7 @@ public class CsvParser {
             }
 
             private void updateHeaders(StateMachine sm) {
-                if (!sm.config.headers || sm.config.skipHeaders){
+                if (!sm.config.headers || sm.config.skipHeaders) {
                     return;
                 }
                 List<String> updatedHeaders = Arrays.asList(
@@ -536,7 +555,7 @@ public class CsvParser {
 
             private Type getExpectedRowTypeOfRecord(StateMachine sm) {
                 // TODO: These can be make as module level variables
-                String header = sm.headers.get(sm.columnIndex);
+                String header = CsvCreator.getHeaderValueForColumnIndex(sm);
                 Map<String, Field> fields = sm.fieldNames;
                 if (fields.containsKey(header)) {
                     //TODO: Optimize
@@ -684,6 +703,14 @@ public class CsvParser {
                 return state;
             }
 
+        }
+
+        public static boolean isEndOfTheRow(CsvParser.StateMachine sm, char ch) {
+            return isEndOfTheRow(sm, ch, false);
+        }
+
+        public static boolean isEndOfTheRow(CsvParser.StateMachine sm, char ch, boolean hasHeaderSkipConfig) {
+            return (ch == EOF || hasHeaderSkipConfig || !sm.peek().isEmpty()) && sm.isNewLineOrEof(ch);
         }
 
         public static class CsvParserException extends Exception {

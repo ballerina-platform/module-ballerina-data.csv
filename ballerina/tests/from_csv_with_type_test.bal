@@ -2286,12 +2286,12 @@ function testFromCsvWithTypeFunctionWithTypeCompatibility() {
 
 // boolean enable = true;
 
-@test:Config {enable: !enable}
-function testTemp1() {
+// @test:Config {enable: !enable}
+// function testTemp1() {
     // record{|float...;|}[]|CsvConversionError frra = fromCsvWithType([{a: d2, b: d3}]);
     // test:assertEquals(frra , [
     //     {a: 1.2, b: 1.2},
     //     {},
     //     {a: d4, b: f2}
     // ]);
-}
+// }

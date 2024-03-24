@@ -64,7 +64,6 @@ public type ToCSVConfig record {|
     ColumnOrder|ColumnOrder[] orderBy = [];
     string|int|string[]|int[]? skipColumns = ();
     boolean suppressEscaping = false;
-    MappingConfig mappingConfig = {};
     anydata nullValue = ();
     string:Char escapeCharacter = "\\";
 |};

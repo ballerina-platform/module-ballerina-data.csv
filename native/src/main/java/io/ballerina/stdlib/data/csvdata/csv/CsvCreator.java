@@ -71,7 +71,7 @@ public class CsvCreator {
         switch (currentCsvNodeType.getTag()) {
             case TypeTags.MAP_TAG:
             case TypeTags.RECORD_TYPE_TAG:
-                ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(sm.headers.get(sm.columnIndex)),
+                ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(getHeaderValueForColumnIndex(sm)),
                         convertedValue);
                 return currentCsv;
             case TypeTags.ARRAY_TAG:
@@ -91,9 +91,21 @@ public class CsvCreator {
         }
     }
 
+    public static String getHeaderValueForColumnIndex(CsvParser.StateMachine sm) {
+        if (sm.config.skipHeaders || !sm.config.headers) {
+            String header = String.valueOf(sm.columnIndex + 1);
+            Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
+            if (fieldHierarchy.containsKey(header)) {
+                fieldHierarchy.remove(header);
+            }
+            return header;
+        }
+        return sm.headers.get(sm.columnIndex);
+    }
+
     private static boolean ignoreIncompatibilityErrorsForMaps(CsvParser.StateMachine sm, Type type, Type exptype) {
         if (exptype.getTag() == TypeTags.RECORD_TYPE_TAG) {
-            String header = sm.headers.get(sm.columnIndex);
+            String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;
             if (fields.containsKey(header)) {
                 return false;

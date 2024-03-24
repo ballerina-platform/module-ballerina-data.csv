@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class QueryParser {
-    private static String columnSeparator = ",";
     private static String rangeSeparator = ":";
     private static String exclamationCharacter = "!";
     private static String astrix = "*";
