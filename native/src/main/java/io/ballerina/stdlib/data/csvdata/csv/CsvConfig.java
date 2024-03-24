@@ -2,6 +2,8 @@ package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
 import java.util.ArrayList;
 
@@ -44,6 +46,25 @@ public class CsvConfig {
         this.suppressEscaping = suppressEscaping;
         this.nullValue = nullValue;
         this.lineSeparator = lineSeparator;
+        updateDependentConfigurations();
+    }
+
+    private void updateDependentConfigurations() {
+        if (!this.headers) {
+            this.skipHeaders = false;
+        }
+        if (this.startNumber > this.headerStartNumber) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "startNumber parameter cannot be greater than headerStartNumber parameter");
+        }
+        if (this.headerStartNumber > this.dataStartNumber) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "headerStartNumber parameter cannot be greater than dataStartNumber parameter");
+        }
+        if (this.startNumber > this.dataStartNumber) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "startNumber parameter cannot be greater than dataStartNumber parameter");
+        }
     }
 
     private CsvConfig(long startNumber, long headerStartNumber, long dataStartNumber,
@@ -68,6 +89,7 @@ public class CsvConfig {
         this.suppressEscaping = suppressEscaping;
         this.nullValue = nullValue;
         this.root = root;
+        updateDependentConfigurations();
     }
 
     public CsvConfig() {

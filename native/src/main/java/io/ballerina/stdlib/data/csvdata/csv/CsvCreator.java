@@ -32,6 +32,9 @@ import io.ballerina.stdlib.data.csvdata.FromString;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -92,7 +95,7 @@ public class CsvCreator {
     }
 
     public static String getHeaderValueForColumnIndex(CsvParser.StateMachine sm) {
-        if (sm.config.skipHeaders || !sm.config.headers) {
+        if (sm.config.customHeader == null &&  (sm.config.skipHeaders || !sm.config.headers)) {
             String header = String.valueOf(sm.columnIndex + 1);
             Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
             if (fieldHierarchy.containsKey(header)) {
@@ -101,6 +104,44 @@ public class CsvCreator {
             return header;
         }
         return sm.headers.get(sm.columnIndex);
+    }
+
+    public static void updateHeaders(CsvParser.StateMachine sm) {
+        List<String> updatedHeaders = Arrays.asList(
+                QueryParser.parse(sm.config.skipColumns, sm.headers.toArray(new String[]{})));
+        generateSkipColumnIndexes(updatedHeaders, sm);
+    }
+
+    public static void generateSkipColumnIndexes(List<String> updatedHeaders, CsvParser.StateMachine sm) {
+        String header;
+        ArrayList<String> copyOfHeaders = new ArrayList<>();
+        for (int i = 0; i < sm.headers.size(); i++) {
+            header = sm.headers.get(i);
+            if (!updatedHeaders.contains(header)) {
+                sm.skipColumnIndexes.add(i);
+                continue;
+            }
+            copyOfHeaders.add(header);
+        }
+        sm.headers = copyOfHeaders;
+    }
+
+    public static void checkAndAddCustomHeaders(CsvParser.StateMachine sm, Object customHeader) {
+        if (customHeader == null) {
+            return;
+        }
+
+        BArray customHeaders = (BArray) customHeader;
+        for (int i = 0; i < customHeaders.size(); i++) {
+            String header = StringUtils.getStringValue(customHeaders.get(i));
+            Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
+            sm.headers.add(header);
+            if (fieldHierarchy.containsKey(header)) {
+                Field field = fieldHierarchy.get(header);
+                sm.fieldNames.put(header, field);
+                fieldHierarchy.remove(header);
+            }
+        }
     }
 
     private static boolean ignoreIncompatibilityErrorsForMaps(CsvParser.StateMachine sm, Type type, Type exptype) {

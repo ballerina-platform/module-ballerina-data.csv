@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
+import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.checkAndAddCustomHeaders;
+import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.updateHeaders;
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
 
 /**
@@ -186,6 +188,10 @@ public class CsvParser {
             if (config.headers) {
                 currentState = HEADER_START_STATE;
             } else {
+                if (config.customHeader != null) {
+                    checkAndAddCustomHeaders(this, config.customHeader);
+                    updateHeaders(this);
+                }
                 currentState = ROW_START_STATE;
                 addFieldNamesForNonHeaderState();
             }
@@ -255,26 +261,32 @@ public class CsvParser {
                 char separator = sm.config.separator;
                 boolean skipHeaders = sm.config.skipHeaders;
                 Object customHeader = sm.config.customHeader;
+                boolean headerStart = false;
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
-
+                    if (!(isWhitespace(ch) && sm.isNewLineOrEof(ch))) {
+                        headerStart = true;
+                    }
                     if (ignoreHeader(sm)) {
                         sm.lineNumber++;
                         continue;
                     }
                     if (customHeader != null) {
-                        if (isEndOfTheRow(sm, ch, true)) {
+                        if (headerStart && sm.isNewLineOrEof(ch)) {
                             checkAndAddCustomHeaders(sm, customHeader);
                             sm.lineNumber++;
+                            updateHeaders(sm);
                             state = HEADER_END_STATE;
                             break;
                         }
                         continue;
                     }
                     if (skipHeaders) {
-                        if (isEndOfTheRow(sm, ch, true)) {
+                        if (headerStart && sm.isNewLineOrEof(ch)) {
                             sm.lineNumber++;
+                            sm.addFieldNamesForNonHeaderState();
+                            updateHeaders(sm);
                             state = HEADER_END_STATE;
                             break;
                         }
@@ -290,6 +302,7 @@ public class CsvParser {
                         finalizeHeaders(sm);
                         sm.columnIndex = 0;
                         sm.lineNumber++;
+                        updateHeaders(sm);
                         state = HEADER_END_STATE;
                     } else if (StateMachine.isWhitespace(ch)) {
                         state = this;
@@ -303,24 +316,6 @@ public class CsvParser {
                 }
                 sm.index = i + 1;
                 return state;
-            }
-
-            private void checkAndAddCustomHeaders(StateMachine sm, Object customHeader) {
-                if (customHeader == null) {
-                    return;
-                }
-
-                BArray customHeaders = (BArray) customHeader;
-                for (int i = 0; i < customHeaders.size(); i++) {
-                    String header = StringUtils.getStringValue(customHeaders.get(i));
-                    Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
-                    sm.headers.add(header);
-                    if (fieldHierarchy.containsKey(header)) {
-                        Field field = fieldHierarchy.get(header);
-                        sm.fieldNames.put(header, field);
-                        fieldHierarchy.remove(header);
-                    }
-                }
             }
 
             private void finalizeHeaders(StateMachine sm) throws CsvParserException {
@@ -393,7 +388,6 @@ public class CsvParser {
                 char ch;
                 State state = ROW_START_STATE;
                 char separator = sm.config.separator;
-                updateHeaders(sm);
 
                 // TODO: Ignore this in future
                 for (; i < count; i++) {
@@ -434,29 +428,6 @@ public class CsvParser {
                 }
                 sm.index = i + 1;
                 return state;
-            }
-
-            private void updateHeaders(StateMachine sm) {
-                if (!sm.config.headers || sm.config.skipHeaders) {
-                    return;
-                }
-                List<String> updatedHeaders = Arrays.asList(
-                        QueryParser.parse(sm.config.skipColumns, sm.headers.toArray(new String[]{})));
-                generateSkipColumnIndexes(updatedHeaders, sm);
-            }
-
-            private void generateSkipColumnIndexes(List<String> updatedHeaders, StateMachine sm) {
-                String header;
-                ArrayList<String> copyOfHeaders = new ArrayList<>();
-                for (int i = 0; i < sm.headers.size(); i++) {
-                    header = sm.headers.get(i);
-                    if (!updatedHeaders.contains(header)) {
-                        sm.skipColumnIndexes.add(i);
-                        continue;
-                    }
-                    copyOfHeaders.add(header);
-                }
-                sm.headers = copyOfHeaders;
             }
 
             private void handleCsvRow(StateMachine sm) throws CsvParserException {
@@ -706,11 +677,7 @@ public class CsvParser {
         }
 
         public static boolean isEndOfTheRow(CsvParser.StateMachine sm, char ch) {
-            return isEndOfTheRow(sm, ch, false);
-        }
-
-        public static boolean isEndOfTheRow(CsvParser.StateMachine sm, char ch, boolean hasHeaderSkipConfig) {
-            return (ch == EOF || hasHeaderSkipConfig || !sm.peek().isEmpty()) && sm.isNewLineOrEof(ch);
+            return (ch == EOF || !sm.peek().isEmpty()) && sm.isNewLineOrEof(ch);
         }
 
         public static class CsvParserException extends Exception {

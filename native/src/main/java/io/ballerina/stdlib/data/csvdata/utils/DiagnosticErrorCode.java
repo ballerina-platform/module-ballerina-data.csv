@@ -39,7 +39,8 @@ public enum DiagnosticErrorCode {
     INVALID_TYPE_FOR_FIELD("BDE_0012", "invalid.type.for.field"),
     INVALID_TYPE_FOR_ARRAY("BDE_0013", "invalid.type.for.array"),
     INVALID_CONVERSION_FOR_ARRAY_TO_MAP("BDE_0014", "invalid.conversion.for.array.to.map"),
-    EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0015", "expected.type.can.only.contains.basic.types");
+    INVALID_CONFIGURATIONS( "BDE_0015", "invalid.configurations"),
+    EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0016", "expected.type.can.only.contains.basic.types");
 
     String diagnosticId;
     String messageKey;
