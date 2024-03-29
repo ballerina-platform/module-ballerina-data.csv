@@ -1,9 +1,11 @@
 FromCSVConfig config1 = {
-    startNumber: 1
+    startNumber: 1,
+    skipHeaders: true
 };
 
 FromCSVConfig config2 = {
-    startNumber: 2
+    startNumber: 2,
+    skipHeaders: true
 };
 
 FromCSVConfig config3 = {

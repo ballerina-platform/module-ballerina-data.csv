@@ -53,7 +53,19 @@ public class CsvConfig {
         if (!this.headers) {
             this.skipHeaders = false;
         }
-        if (this.startNumber > this.headerStartNumber) {
+        if (this.startNumber < 0) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "startNumber parameter cannot be lower than 0");
+        }
+        if (!this.skipHeaders && this.headerStartNumber < 0) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "headerStartNumber parameter cannot be lower than 0");
+        }
+        if (this.startNumber < 0) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                    "dataStartNumber parameter cannot be lower than 0");
+        }
+        if (!this.skipHeaders && this.startNumber > this.headerStartNumber) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
                     "startNumber parameter cannot be greater than headerStartNumber parameter");
         }

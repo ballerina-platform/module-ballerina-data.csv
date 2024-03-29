@@ -229,7 +229,7 @@ string csvStringData6 = string `
 
                         1, string3, 0, 1.23, 1.23, ()
                         1, string4, 1, -6.51, -6.51, ()
-                        
+
                         1, string5, true, 3, 3, ()`;
 
 string csvStringData7 = string `

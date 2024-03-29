@@ -2,7 +2,25 @@ import ballerina/test;
 
 @test:Config{enable}
 function testStartNumbers() {
-    
+    record{}[]|CsvConversionError v1 = fromCsvStringWithType(csvStringData1, config1);
+    if v1 is record{}[] {
+        test:assertEquals((<record{}[]>v1).length(), 5);
+    }
+    test:assertEquals(v1, [
+        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+        {'1: 1, '2: "string2", '3: false, '4: 0, '5: 0, '6: null},
+        {'1: 1, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 1, '2: "string4", '3: 1, '4: -6.51, '5: -6.51, '6: ()},
+        {'1: 1, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+    ]);
+
+    record{}[]|CsvConversionError v2 = fromCsvStringWithType(csvStringData1, config2);
+    test:assertEquals(v2, [
+        {a: 1, b: "string2", c: false, d: 0, e: 0, f: null},
+        {a: 1, b: "string3", c: 0, d: 1.23, e: 1.23, f: ()},
+        {a: 1, b: "string4", c: 1, d: -6.51, e: -6.51, f: ()},
+        {a: 1, b: "string5", c: true, d: 3, e: 3, f: ()}
+    ]);
 }
 
 @test:Config{enable} 
