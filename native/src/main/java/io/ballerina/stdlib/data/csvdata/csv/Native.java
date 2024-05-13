@@ -24,7 +24,8 @@ import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.io.DataReaderTask;
 import io.ballerina.stdlib.data.csvdata.io.DataReaderThreadPool;
-import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
+import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
@@ -38,35 +39,10 @@ import java.io.StringReader;
  * @since 0.1.0
  */
 public class Native {
-
-    public static Object fromCsvWithType(BArray csv, BMap<BString, Object> config, BTypedesc type) {
+    public static Object parseStringToRecord(BString csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvUtils.createFromCsvConfiguration(config), type.getDescribingType());
-        } catch (Exception e) {
-            return DiagnosticLog.getCsvError(e.getMessage());
-        }
-    }
-
-    public static Object fromCsvStringWithType(Environment env, Object csv, BMap<BString, Object> config, BTypedesc type) {
-        try {
-            Type expType = type.getDescribingType();
-            if (csv instanceof BString) {
-                return CsvParser.parse(new StringReader(((BString) csv).getValue()),
-                        expType, CsvUtils.createFromCsvConfiguration(config));
-            } else if (csv instanceof BArray) {
-                byte[] bytes = ((BArray) csv).getBytes();
-                return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
-                        type.getDescribingType(), CsvUtils.createFromCsvConfiguration(config));
-            } else if (csv instanceof BStream) {
-                final BObject iteratorObj = ((BStream) csv).getIteratorObj();
-                final Future future = env.markAsync();
-                DataReaderTask task = new DataReaderTask(env, iteratorObj, future,
-                        type, CsvUtils.createFromCsvConfiguration(config));
-                DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
-                return null;
-            } else {
-                return DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TYPE, expType);
-            }
+            return CsvParser.parse(new StringReader(csv.getValue()),
+                    type.getDescribingType(), CsvConfig.createParserToRecordOptions(options));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -74,11 +50,125 @@ public class Native {
         }
     }
 
-    public static Object toCsv(BArray csv, BMap<BString, Object> config, BTypedesc type) {
+    public static Object parseBytesToRecord(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvUtils.createToCsvConfiguration(config), type.getDescribingType());
+            byte[] bytes = csv.getBytes();
+                return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
+                        type.getDescribingType(), CsvConfig.createParserToRecordOptions(options));
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
+        }
+    }
+
+    public static Object parseStreamToRecord(Environment env, BStream csv,
+                                             BMap<BString, Object> options, BTypedesc type) {
+        try {
+            final BObject iteratorObj = csv.getIteratorObj();
+            final Future future = env.markAsync();
+            DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
+                    CsvConfig.createParserToRecordOptions(options));
+            DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
+            return null;
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
+        }
+    }
+    public static Object parseStringToList(BString csv, BMap<BString, Object> options, BTypedesc type) {
+        try {
+            return CsvParser.parse(new StringReader(csv.getValue()),
+                    type.getDescribingType(), CsvConfig.createParseOptions(options));
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
+        }
+    }
+    public static Object parseBytesToList(BArray csv, BMap<BString, Object> options, BTypedesc type) {
+        try {
+            byte[] bytes = csv.getBytes();
+                return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
+                        type.getDescribingType(), CsvConfig.createParseOptions(options));
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
+        }
+    }
+    public static Object parseStreamToList(Environment env, BStream csv,
+                                           BMap<BString, Object> options, BTypedesc type) {
+        try {
+            final BObject iteratorObj = csv.getIteratorObj();
+            final Future future = env.markAsync();
+            DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
+                    CsvConfig.createParseOptions(options));
+            DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
+            return null;
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, type);
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static Object parseRecordAsRecordType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
+        try {
+            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
     }
+    public static Object parseRecordAsListType(BArray csv, BArray customHeaders,
+                                               BMap<BString, Object> options, BTypedesc type) {
+        try {
+            options.put(Constants.ConfigConstants.CUSTOM_HEADERS, customHeaders);
+            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
+        } catch (Exception e) {
+            return DiagnosticLog.getCsvError(e.getMessage());
+        }
+    }
+
+    public static Object parseListAsRecordType(BArray csv, Object customHeaders,
+                                               BMap<BString, Object> options, BTypedesc type) {
+        try {
+            options.put(Constants.ConfigConstants.CUSTOM_HEADERS, customHeaders);
+            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
+        } catch (Exception e) {
+            return DiagnosticLog.getCsvError(e.getMessage());
+        }
+    }
+
+    public static Object parseListAsListType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
+        try {
+            return CsvTraversal.traverse(csv, CsvConfig.createOptions(options), type.getDescribingType());
+        } catch (Exception e) {
+            return DiagnosticLog.getCsvError(e.getMessage());
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//    public static Object fromCsvWithType(BArray csv, BMap<BString, Object> config, BTypedesc type) {
+//        try {
+//            return CsvTraversal.traverse(csv, CsvUtils.createFromCsvConfiguration(config), type.getDescribingType());
+//        } catch (Exception e) {
+//            return DiagnosticLog.getCsvError(e.getMessage());
+//        }
+//    }
+
+//
+//    public static Object toCsv(BArray csv, BMap<BString, Object> config, BTypedesc type) {
+//        try {
+//            return CsvTraversal.traverse(csv, CsvUtils.createToCsvConfiguration(config), type.getDescribingType());
+//        } catch (Exception e) {
+//            return DiagnosticLog.getCsvError(e.getMessage());
+//        }
+//    }
 }

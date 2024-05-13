@@ -16,101 +16,41 @@
 
 import ballerina/jballerina.java;
 
-type CsvConversionError error;
-type UnSupportedOperation error;
 
-public enum OrderType {
-    ASC,
-    DESC
-};
+public isolated function parseStringToRecord(string s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public type ColumnOrder record {|
-    int|string column;
-    OrderType columnOrder = ASC;
-|};
+public isolated function parseBytesToRecord(byte[] s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public type MappingConfig record {|
-    string keyValueSeparator = ":";
-    string elementSeparator = ";";
-|};
+public isolated function parseStreamToRecord(stream<byte[], error?> s,
+            parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public type FromCSVConfig record {|
-    int startNumber = 0; // done
-    int headerStartNumber = 0; // done
-    int dataStartNumber = 1; // done
-    boolean headers = true; // done
-    string:Char escapeCharacter = "\\";
-    boolean ignoreEmptyLines = true; // done
-    string:Char separator = ","; // done
-    string quote = "\"";
-    boolean skipHeaders = false; // done
-    int skipdataRows = 0; // done
-    int dataRowCount = -1; // done
-    ColumnOrder|ColumnOrder[]? orderBy = (); // done
-    string|int|string[]|int[]? skipColumns = ();
-    string[]|int[]? customheader = (); // done
-    boolean suppressEscaping = false;
-    // MappingConfig mappingConfig = {};
-    anydata nullValue = (); // done
-|};
+public isolated function parseStringToList(string s, ParseOption options = {}, typedesc<anydata[][]> t = <>)
+       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public type ToCSVConfig record {|
-    string[]? headers = ();
-    string:Char separator = ",";
-    string:Char lineSeparator = "\n";
-    boolean skipHeaders = false;
-    int skipdataRows = 0;
-    int dataRowCount = -1;
-    ColumnOrder|ColumnOrder[] orderBy = [];
-    string|int|string[]|int[]? skipColumns = ();
-    boolean suppressEscaping = false;
-    anydata nullValue = ();
-    string:Char escapeCharacter = "\\";
-|};
+public isolated function parseBytesToList(byte[] s, ParseOption options = {}, typedesc<anydata[][]> t = <>)
+       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function fromCsvWithType((string[]|map<anydata>)[] csv, FromCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>)
-    returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseStreamToList(stream<byte[], error?> s,
+            ParseOption options = {}, typedesc<anydata[][]> t = <>)
+       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function fromCsvStringWithType(string|byte[]|stream<byte[], error?> s,
-        FromCSVConfig config = {} ,typedesc<(map<anydata>|anydata)[]> t = <>)
-    returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseRecordAsRecordType(record{}[] s,
+            ToRecordOptions options = {}, typedesc<record{}[]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function toCsv((anydata[]|map<anydata>)[] csv, ToCSVConfig config = {}, typedesc<(record{}|map<anydata>|anydata[])[]> t = <>) 
-    returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseRecordAsListType(record{}[] s, string[] customHeaders,
+            Options options = {}, typedesc<anydata[][]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function toCsvString((anydata[]|map<anydata>)[] csv, ToCSVConfig config = {}) returns string|UnSupportedOperation {
-    string csvString = "";
-    foreach anydata[]|map<anydata> row in csv {
-        if row is anydata[] {
-            foreach anydata cell in row {
-                csvString += check convertToString(cell) + config.separator;
-            }
-            csvString = removeLastIndex(csvString);
-            csvString += config.lineSeparator;
-            continue;
-        } 
+public isolated function parseListAsRecordType(string[][] s, string[]? customHeaders = (),
+            Options options = {}, typedesc<record{}[]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-        // issue: https://github.com/ballerina-platform/ballerina-lang/issues/42172
-        foreach string cell in (<record {}>row).keys() {
-            csvString += check convertToString(row[cell]) + config.separator;
-        }
+public isolated function parseListAsListType(string[][] s, Options options = {}, typedesc<anydata[][]> t = <>)
+      returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-        csvString = removeLastIndex(csvString);
-        csvString += config.lineSeparator;
-    }
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    csvString = removeLastIndex(csvString);
-    return csvString;
-}
-
-isolated function removeLastIndex(string content) returns string {
-    return content.substring(0, content.length() - 1);
-}
-
-isolated function convertToString(anydata cell) returns string|UnSupportedOperation {
-    if cell is int|string|boolean|float|decimal|() {
-        return cell.toBalString();
-    } else {
-        return error UnSupportedOperation(string `unsupported opration`);
-    }
-}

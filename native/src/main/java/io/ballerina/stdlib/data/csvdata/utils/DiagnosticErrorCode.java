@@ -40,7 +40,10 @@ public enum DiagnosticErrorCode {
     INVALID_TYPE_FOR_ARRAY("BDE_0013", "invalid.type.for.array"),
     INVALID_CONVERSION_FOR_ARRAY_TO_MAP("BDE_0014", "invalid.conversion.for.array.to.map"),
     INVALID_CONFIGURATIONS( "BDE_0015", "invalid.configurations"),
-    EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0016", "expected.type.can.only.contains.basic.types");
+    EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0016", "expected.type.can.only.contains.basic.types"),
+    INVALID_FORMAT_FOR_SKIPLINES( "BDE_0017", "invalid.format.for.skiplines"),
+    INVALID_RANGE_FOR_SKIPLINES( "BDE_0018", "invalid.range.for.skiplines"),
+    INVALID_VALUE_FOR_SKIPLINES( "BDE_0019", "invalid.value.for.skiplines"),;
 
     String diagnosticId;
     String messageKey;

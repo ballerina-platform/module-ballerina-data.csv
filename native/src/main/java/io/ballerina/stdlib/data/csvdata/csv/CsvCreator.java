@@ -29,6 +29,7 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.FromString;
+import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
@@ -95,7 +96,7 @@ public class CsvCreator {
     }
 
     public static String getHeaderValueForColumnIndex(CsvParser.StateMachine sm) {
-        if (sm.config.customHeader == null &&  (sm.config.skipHeaders || !sm.config.headers)) {
+        if (sm.config.customHeader == null &&  (sm.config.header == Boolean.FALSE)) {
             String header = String.valueOf(sm.columnIndex + 1);
             Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
             if (fieldHierarchy.containsKey(header)) {
@@ -104,26 +105,6 @@ public class CsvCreator {
             return header;
         }
         return sm.headers.get(sm.columnIndex);
-    }
-
-    public static void updateHeaders(CsvParser.StateMachine sm) {
-        List<String> updatedHeaders = Arrays.asList(
-                QueryParser.parse(sm.config.skipColumns, sm.headers.toArray(new String[]{})));
-        generateSkipColumnIndexes(updatedHeaders, sm);
-    }
-
-    public static void generateSkipColumnIndexes(List<String> updatedHeaders, CsvParser.StateMachine sm) {
-        String header;
-        ArrayList<String> copyOfHeaders = new ArrayList<>();
-        for (int i = 0; i < sm.headers.size(); i++) {
-            header = sm.headers.get(i);
-            if (!updatedHeaders.contains(header)) {
-                sm.skipColumnIndexes.add(i);
-                continue;
-            }
-            copyOfHeaders.add(header);
-        }
-        sm.headers = copyOfHeaders;
     }
 
     public static void checkAndAddCustomHeaders(CsvParser.StateMachine sm, Object customHeader) {

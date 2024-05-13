@@ -24,7 +24,7 @@ import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
-import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.csv.CsvParser;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 

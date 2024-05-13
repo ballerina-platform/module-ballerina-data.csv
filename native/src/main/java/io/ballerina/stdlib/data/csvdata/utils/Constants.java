@@ -5,30 +5,26 @@ import io.ballerina.runtime.api.values.BString;
 
 public class Constants {
     public static class ConfigConstants {
-        public static BString START_NUMBER = StringUtils.fromString("startNumber");
-        public static BString HEADER_START_NUMBER = StringUtils.fromString("headerStartNumber");
-        public static BString DATA_START_NUMBER = StringUtils.fromString("dataStartNumber");
-        public static BString HEADERS = StringUtils.fromString("headers");
-        public static BString ESCAPE_CHARACTER = StringUtils.fromString("escapeCharacter");
-        public static BString IGNORE_EMPTY_LINES = StringUtils.fromString("ignoreEmptyLines");
-        public static BString SEPARATOR = StringUtils.fromString("separator");
-        public static BString QUOTE = StringUtils.fromString("quote");
-        public static BString SKIP_HEADERS = StringUtils.fromString("skipHeaders");
-        public static BString SKIP_DATA_ROWS = StringUtils.fromString("skipdataRows");
-        public static BString DATA_ROW_COUNT = StringUtils.fromString("dataRowCount");
-        public static BString ORDER_BY = StringUtils.fromString("orderBy");
-        public static BString SKIP_COLUMNS = StringUtils.fromString("skipColumns");
-        public static BString CUSTOM_HEADER = StringUtils.fromString("customheader");
-        public static BString SUPPRESS_ESCAPING = StringUtils.fromString("suppressEscaping");
-        public static BString NULL_VALUE = StringUtils.fromString("nullValue");
-        public static BString ROOT = StringUtils.fromString("root");
-        public static BString LINE_SEPARATOR = StringUtils.fromString("lineSeparator");
+        public static BString DELIMITER = StringUtils.fromString("delimiter");
+        public static BString TEXT_ENCLOSURE = StringUtils.fromString("textEnclosure");
+        public static BString HEADER = StringUtils.fromString("header");
+        public static BString ESCAPE_CHAR = StringUtils.fromString("escapeChar");
+        public static BString LINE_TERMINATOR = StringUtils.fromString("lineTerminator");
+        public static BString SKIP_LINES = StringUtils.fromString("skipLines");
+        public static BString NIL_VALUE = StringUtils.fromString("nilValue");
+        public static BString COMMENT_CHAR = StringUtils.fromString("comment");
+        public static BString LOCALE = StringUtils.fromString("locale");
+        public static BString ENCODING = StringUtils.fromString("encoding");
+        public static BString NIL_AS_OPTIONAL = StringUtils.fromString("nilAsOptionalField");
+        public static BString ABSENT_AS_NILABLE = StringUtils.fromString("absentAsNilableType");
+        public static BString ALLOW_DATA_PROJECTION = StringUtils.fromString("allowDataProjection");
+        public static BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
     }
 
-    public static class OrderConfigs {
-        public static BString COLUMN = StringUtils.fromString("column");
-        public static BString COLUMN_ORDER = StringUtils.fromString("columnOrder");
-        public static BString ASC = StringUtils.fromString("ASC");
-        public static BString DESC = StringUtils.fromString("DESC");
+    public static class Values {
+        public static String NULL = "null";
+        public static String BALLERINA_NULL = "()";
     }
+
+    public static String SKIP_LINE_RANGE_SEP = "-";
 }

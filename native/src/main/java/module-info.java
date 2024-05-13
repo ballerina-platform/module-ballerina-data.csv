@@ -22,4 +22,5 @@ module io.ballerina.stdlib.data {
     requires junit;
     requires org.apache.commons.lang3;
     exports io.ballerina.stdlib.data.csvdata.csv;
+    exports io.ballerina.stdlib.data.csvdata.utils;
 }

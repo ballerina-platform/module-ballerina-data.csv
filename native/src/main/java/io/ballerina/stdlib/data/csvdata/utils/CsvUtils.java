@@ -6,24 +6,14 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.*;
-import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
-import io.ballerina.stdlib.data.csvdata.csv.CsvParser;
-import io.ballerina.stdlib.data.csvdata.csv.QueryParser;
 
 import java.util.Arrays;
 import java.util.Map;
 
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.SKIP_LINE_RANGE_SEP;
 
 public class CsvUtils {
-    public static CsvConfig createFromCsvConfiguration(BMap<BString, Object> config) {
-        return CsvConfig.createFromCsvConfiguration(config);
-    }
-
-    public static CsvConfig createToCsvConfiguration(BMap<BString, Object> config) {
-        return CsvConfig.createToCsvConfiguration(config);
-    }
-
     public static void validateExpectedArraySize(int size, int currentSize) {
         if (size != -1 && size > currentSize) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, currentSize);
@@ -46,37 +36,6 @@ public class CsvUtils {
         }
     }
 
-    public static void sortCsvData(BArray rootCsvNode, CsvConfig config) {
-        Object orderConfiguration = config.orderBy;
-        if (orderConfiguration == null) {
-            return;
-        }
-
-        Object[] arrayValues = rootCsvNode.getValues();
-        Arrays.sort(arrayValues, (value1, value2) -> compareCsvColumns(
-                value1, value2, constructSortingColumnNames(orderConfiguration))
-        );
-    }
-
-    public static int compareCsvColumns(Object row1, Object row2, SortConfigurations[] sortConfigurations) {
-        Object o1,o2;
-        int value;
-        for (SortConfigurations sortConfig: sortConfigurations) {
-            o1 = getRowValueForSort(row1, sortConfig.columnName);
-            o2 = getRowValueForSort(row2, sortConfig.columnName);
-            value = compareTwoColumnAndGetValue(o1, o2);
-
-            if (value == 0) {
-                continue;
-            }
-            if (sortConfig.sortOrder.equals(Constants.OrderConfigs.DESC)) {
-                return -1 * value;
-            }
-            return value;
-        }
-        return 0;
-    }
-
     public static Object getRowValueForSort(Object row, Object columnName) {
         if (row instanceof BMap) {
             return ((BMap) row).get(columnName);
@@ -88,25 +47,6 @@ public class CsvUtils {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, "Test", "Test");
             }
         }
-    }
-
-
-    public static SortConfigurations[] constructSortingColumnNames(Object orderConfiguration) {
-        BString columnName = Constants.OrderConfigs.COLUMN;
-        BString sortOrder = Constants.OrderConfigs.COLUMN_ORDER;
-
-        SortConfigurations[] columns = new SortConfigurations[]{};
-        if (orderConfiguration instanceof BMap) {
-            BMap orderConfigMap = (BMap<BString, Object>) orderConfiguration;
-            columns[0] = new SortConfigurations(orderConfigMap.get(columnName), orderConfigMap.get(sortOrder));
-        } else {
-            BArray orderConfigArray = (BArray) orderConfiguration;
-            for (int i = 0; i < orderConfigArray.size(); i++) {
-                BMap orderConfigMap = (BMap) orderConfigArray.get(i);
-                columns[i] = new SortConfigurations(orderConfigMap.get(columnName), orderConfigMap.get(sortOrder));
-            }
-        }
-        return columns;
     }
 
     public static int compareTwoColumnAndGetValue(Object o1, Object o2) {
@@ -137,10 +77,6 @@ public class CsvUtils {
         return (StringUtils.getStringValue(o1)).compareTo(StringUtils.getStringValue(o2));
     }
 
-    public static boolean calculateNumberOfRows(long dataRowCount, int i, long skipDataRows) {
-        return dataRowCount != -1 && i >= dataRowCount + skipDataRows;
-    }
-
     public static String[] createHeaders(String[] headers, CsvConfig config) {
         Object customHeaders = config.customHeader;
 
@@ -157,16 +93,12 @@ public class CsvUtils {
             }
         }
 
-        Object skipColumns = config.skipColumns;
-        if (skipColumns == null) {
-            return headers;
-        }
-        return QueryParser.parse(config.skipColumns, headers);
+        return headers;
     }
 
     public static Object convertToBasicType(Object csv, Type targetType, CsvConfig config) {
         if (csv == null) {
-            csv = config.nullValue;
+            csv = config.nilValue;
         }
         try {
             return ValueUtils.convert(csv, targetType);
@@ -254,6 +186,45 @@ public class CsvUtils {
         } else {
             return ((ArrayType) type).getSize();
         }
+    }
+
+    public static long[] getSkipLinesFromStringConfigValue(String configValue) {
+        String[] parts = configValue.split(SKIP_LINE_RANGE_SEP);
+        if (parts.length != 2) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_RANGE_FOR_SKIPLINES);
+        }
+        try {
+            int start = Integer.parseInt(parts[0]);
+            int end = Integer.parseInt(parts[1]);
+            int size = end - start + 1;
+            if (size <= 0) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_RANGE_FOR_SKIPLINES);
+            }
+            long[] result = new long[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = start + i;
+            }
+            return result;
+        } catch (NumberFormatException e) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_VALUE_FOR_SKIPLINES);
+        }
+    }
+
+    public static long[] getSkipDataRows(Object skipLines) {
+        long[] skipDataRows;
+        if (skipLines instanceof BArray) {
+            BArray skipLinesArray = (BArray) skipLines;
+            if (skipLinesArray.getLength() == 0) {
+                return new long[]{-1};
+            }
+            skipDataRows = (skipLinesArray).getIntArray();
+            Arrays.sort(skipDataRows);
+            return skipDataRows;
+        }
+
+        skipDataRows = getSkipLinesFromStringConfigValue(StringUtils.getStringValue(skipLines));
+        Arrays.sort(skipDataRows);
+        return skipDataRows;
     }
 
     public static class SortConfigurations {

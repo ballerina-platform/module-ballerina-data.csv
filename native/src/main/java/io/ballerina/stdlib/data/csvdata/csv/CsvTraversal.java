@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
+import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 
@@ -87,7 +88,6 @@ public class CsvTraversal {
             validateExpectedArraySize(expectedArraySize, sourceArraySize);
 
             traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv);
-            sortCsvData(rootCsvNode, config);
             return rootCsvNode;
         }
 
@@ -113,9 +113,7 @@ public class CsvTraversal {
             Object rowValue;
             for (int i = 0; i < length; i++) {
                 rowValue = traverseCsvElementWithMapOrRecord(csv.get(i), expectedArrayType);
-                if (!constructRootCsvNode(rowValue, i, config.dataRowCount)) {
-                    break;
-                }
+                checkSkipDataRowsAndAddDataRow(rowValue, i, config.skipLines);
             }
         }
 
@@ -123,21 +121,16 @@ public class CsvTraversal {
             Object rowValue;
             for (int i = 0; i < length; i++) {
                 rowValue = traverseCsvElementWithArray(csv.get(i), expectedArrayType);
-                if (!constructRootCsvNode(rowValue, i, config.dataRowCount)) {
-                    break;
-                }
+                checkSkipDataRowsAndAddDataRow(rowValue, i, config.skipLines);
             }
         }
 
-        private boolean constructRootCsvNode(Object value, int i, long dataRowCount) {
-            long skipDataRows = config.skipDataRows;
-            if (i < skipDataRows) {
+        private boolean checkSkipDataRowsAndAddDataRow(Object value, int index, Object skipLinesConfig) {
+            long[] skipLines = getSkipDataRows(skipLinesConfig);
+            if (skipLines[0] <= index && index < skipLines[skipLines.length - 1]) {
                 return true;
             }
             rootCsvNode.append(value);
-            if (calculateNumberOfRows(dataRowCount, i, skipDataRows)) {
-                return false;
-            }
             return true;
         }
 
@@ -148,7 +141,6 @@ public class CsvTraversal {
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
                     this.headerFieldHierarchy = new HashMap<>(recordType.getFields());
                     this.restType = recordType.getRestFieldType();
-                    // TODO: check for package ID
                     currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
                     traverseCsvMap(csvElement, expectedType, false);
                     break;
@@ -157,13 +149,6 @@ public class CsvTraversal {
                     currentCsvNode = ValueCreator.createMapValue(mapType);
                     traverseCsvMap(csvElement, expectedType, true);
                     break;
-//                case TypeTags.TABLE_TAG:
-//                    //TODO: Check
-//                    TableType tableType = (TableType) expectedType;
-//                    this.fieldHierarchy = new HashMap<>();
-//                    currentCsvNode = ValueCreator.createT(tableType);
-//                    traverseCsvMap(csvElement, expectedType, true);
-//                    break;
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }

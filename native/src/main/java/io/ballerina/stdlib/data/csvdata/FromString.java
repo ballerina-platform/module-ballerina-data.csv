@@ -32,7 +32,8 @@ import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
-import io.ballerina.stdlib.data.csvdata.csv.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
+import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -134,17 +135,17 @@ public class FromString {
     }
 
     private static Object stringToNull(String value, CsvConfig config) throws NumberFormatException {
-        Object nullValue = config.nullValue;
+        Object nullValue = config.nilValue;
         if (nullValue != null && StringUtils.getStringValue(nullValue).equalsIgnoreCase(value)) {
             return nullValue;
         }
-        if ("null".equalsIgnoreCase(value) || "()".equalsIgnoreCase(value)) {
+        if (Constants.Values.NULL.equalsIgnoreCase(value) || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(value)) {
             if (nullValue != null) {
                 return nullValue;
             }
             return null;
         }
-        return returnError(value, "()");
+        return returnError(value, Constants.Values.BALLERINA_NULL);
     }
 
     private static Object stringToUnion(BString string, UnionType expType, CsvConfig config) throws NumberFormatException {
