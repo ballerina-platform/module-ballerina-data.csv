@@ -49,7 +49,7 @@ public class CsvConfig {
         this.header = header;
         this.escapeChar = escapeChar;
         this.lineTerminator = lineTerminator;
-        this.nilValue = nilValue == null ? null : StringUtils.getStringValue(nilValue);
+        this.nilValue = nilValue == null ? null : nilValue;
         this.comment = comment;
         this.locale = locale;
         this.encoding = encoding;
@@ -68,7 +68,7 @@ public class CsvConfig {
         this.header = header;
         this.escapeChar = escapeChar;
         this.lineTerminator = lineTerminator;
-        this.nilValue = nilValue == null ? null : StringUtils.getStringValue(nilValue);
+        this.nilValue = nilValue == null ? null : nilValue;
         this.comment = comment;
         this.locale = locale;
         this.encoding = encoding;

@@ -15,6 +15,7 @@ public type ParseOption record {|
   string delimiter = ",";
   string encoding = "UTF-8";
   string locale = "en_US";
+//  TODO: Add " for Strings"
   string textEnclosure = "\"";
   string escapeChar = "\\";
   LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];

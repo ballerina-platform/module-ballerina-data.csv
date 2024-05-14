@@ -1,6 +1,6 @@
 import ballerina/test;
 
-boolean enable = true;
+// boolean enable = true;
 
 // @test:Config {enable: !enable}
 // function debugTest() {

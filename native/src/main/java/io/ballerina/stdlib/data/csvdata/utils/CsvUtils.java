@@ -227,6 +227,22 @@ public class CsvUtils {
         return skipDataRows;
     }
 
+    public static boolean isCharContainsInLineTerminatorUserConfig(char c, Object lineTerminatorObj) {
+        String stringValue = Character.toString(c);
+        if (lineTerminatorObj instanceof BArray) {
+            Object[] lineTerminators = ((BArray) lineTerminatorObj).getValues();
+            for (Object lineTerminator: lineTerminators) {
+                if (lineTerminator != null && lineTerminator.toString().equals(stringValue)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        String lineTerminator = StringUtils.getStringValue(lineTerminatorObj);
+        return lineTerminator.equals(stringValue);
+    }
+
     public static class SortConfigurations {
         protected Object columnName;
         protected Object sortOrder;

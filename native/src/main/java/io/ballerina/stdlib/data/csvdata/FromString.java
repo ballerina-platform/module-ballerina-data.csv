@@ -136,16 +136,14 @@ public class FromString {
 
     private static Object stringToNull(String value, CsvConfig config) throws NumberFormatException {
         Object nullValue = config.nilValue;
-        if (nullValue != null && StringUtils.getStringValue(nullValue).equalsIgnoreCase(value)) {
-            return nullValue;
-        }
-        if (Constants.Values.NULL.equalsIgnoreCase(value) || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(value)) {
-            if (nullValue != null) {
-                return nullValue;
-            }
+        if (nullValue == null && (Constants.Values.NULL.equalsIgnoreCase(value)
+                || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(value))) {
             return null;
         }
-        return returnError(value, Constants.Values.BALLERINA_NULL);
+        if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
+            return nullValue;
+        }
+        return returnError(value, nullValue == null ? Constants.Values.BALLERINA_NULL : nullValue.toString());
     }
 
     private static Object stringToUnion(BString string, UnionType expType, CsvConfig config) throws NumberFormatException {

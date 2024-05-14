@@ -44,7 +44,6 @@ import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
  */
 public class CsvParser {
     private static final char CR = 0x000D;
-    private static final char NEWLINE = 0x000A;
     private static final char HZ_TAB = 0x0009;
     private static final char SPACE = 0x0020;
     private static final char BACKSPACE = 0x0008;
@@ -121,8 +120,9 @@ public class CsvParser {
             charBuffIndex = 0;
         }
 
-        private static boolean isWhitespace(char ch) {
-            return ch == SPACE || ch == HZ_TAB || ch == CR || ch == NEWLINE;
+        private static boolean isWhitespace(char ch, Object lineTerminator) {
+            return ch == SPACE || ch == HZ_TAB || ch == CR
+                    || isCharContainsInLineTerminatorUserConfig(ch, lineTerminator);
         }
 
         private static void throwExpected(String... chars) throws CsvParserException {
@@ -231,7 +231,7 @@ public class CsvParser {
         }
 
         private boolean isNewLineOrEof(char ch) {
-            return ch == NEWLINE || ch == EOF;
+            return ch == EOF || isCharContainsInLineTerminatorUserConfig(ch, config.lineTerminator);
         }
 
         private void growCharBuff() {
@@ -264,7 +264,7 @@ public class CsvParser {
                         sm.lineNumber++;
                         continue;
                     }
-                    if (!(isWhitespace(ch) && sm.isNewLineOrEof(ch))) {
+                    if (!(isWhitespace(ch, sm.config.lineTerminator) && sm.isNewLineOrEof(ch))) {
                         headerStart = true;
                     }
                     if (customHeader != null) {
@@ -287,7 +287,7 @@ public class CsvParser {
                         sm.columnIndex = 0;
                         sm.lineNumber++;
                         state = HEADER_END_STATE;
-                    } else if (StateMachine.isWhitespace(ch)) {
+                    } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
                         state = this;
                         continue;
                     } else {
@@ -373,14 +373,6 @@ public class CsvParser {
                     ch = buff[i];
                     sm.processLocation(ch);
 
-                    if (skipLines[0] <= sm.lineNumber &&  sm.lineNumber < skipLines[skipLines.length - 1]) {
-                        if (isEndOfTheRow(sm, ch)) {
-                            sm.lineNumber++;
-                            sm.rowIndex++;
-                        }
-                        continue;
-                    }
-
                     //TODO: Handle empty values and create again and again
                     if (sm.currentCsvNode == null) {
                         initiateNewRowType(sm);
@@ -389,12 +381,12 @@ public class CsvParser {
                         addRowValue(sm);
                     } else if (isEndOfTheRow(sm, ch)) {
                         sm.lineNumber++;
-                        handleCsvRow(sm);
+                        handleCsvRow(sm, skipLines);
                         checkOptionalFieldsAndLogError(sm.fieldHierarchy);
                         if (ch == EOF) {
                             state = ROW_END_STATE;
                         }
-                    } else if (StateMachine.isWhitespace(ch)) {
+                    } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
                         // ignore
                     } else {
                         sm.append(ch);
@@ -404,20 +396,32 @@ public class CsvParser {
                 return state;
             }
 
-            private void handleCsvRow(StateMachine sm) throws CsvParserException {
-                if (ignoreRow(sm.peek())) {
-                    sm.lineNumber++;
-                    sm.rowIndex++;
+            private void handleCsvRow(StateMachine sm, long[] skipRows) throws CsvParserException {
+                String value = sm.value();
+                if (value.isBlank()) {
+                    updateLineAndColumnIndexes(sm);
                     return;
                 }
+
                 addRowValue(sm);
+                if (ignoreRow(skipRows, sm.rowIndex)) {
+                    updateLineAndColumnIndexes(sm);
+                    return;
+                }
+
                 finalizeTheRow(sm);
-                sm.columnIndex = 0;
-                sm.currentCsvNode = null;
+                updateLineAndColumnIndexes(sm);
             }
 
-            private boolean ignoreRow(String peek) {
-                return peek.isEmpty();
+            private void updateLineAndColumnIndexes(StateMachine sm) {
+                sm.lineNumber++;
+                sm.rowIndex++;
+                sm.currentCsvNode = null;
+                sm.columnIndex = 0;
+            }
+
+            private boolean ignoreRow(long[] skipLines, int lineNumber) {
+                return skipLines[0] <= lineNumber &&  lineNumber < skipLines[skipLines.length - 1];
             }
 
             private void initiateNewRowType(StateMachine sm) throws CsvParserException {
@@ -428,8 +432,6 @@ public class CsvParser {
                 int rootArraySize = sm.rootArrayType.getSize();
                 if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
                     sm.rootCsvNode.add(sm.rowIndex, sm.currentCsvNode);
-                    sm.rowIndex++;
-                    sm.lineNumber++;
                 }
             }
 
@@ -437,6 +439,7 @@ public class CsvParser {
                 // TODO: Can convert all at once by storing in a Object[]
                 Type type;
                 Type exptype = sm.expectedArrayElementType;
+                String value = sm.value();
 
                 if (exptype instanceof RecordType) {
                    type = getExpectedRowTypeOfRecord(sm);
@@ -451,7 +454,6 @@ public class CsvParser {
                 }
 
                 if (type != null) {
-                    String value = sm.value();
                     CsvCreator.convertAndUpdateCurrentJsonNode(sm,
                             StringUtils.fromString(value), type, sm.config, exptype);
                 }
@@ -613,7 +615,8 @@ public class CsvParser {
                             state = this.getSourceState();
                             break;
                         case 'n':
-                            sm.append(NEWLINE);
+                            // TODO: Update this
+                            sm.append('\n');
                             state = this.getSourceState();
                             break;
                         case 'r':

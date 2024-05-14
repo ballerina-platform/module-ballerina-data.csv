@@ -245,7 +245,7 @@ string csvStringData8 = string `
 
 
                         1@ stri,ng@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ ()
+                        1@ string@ true@ 2.234@ ()@-3.21
                         1@ string@ true@ 2.234@ -3.21@ null
 
                         1@ s,tring@ true@ 2.234@ -3.21@ ()
@@ -257,6 +257,6 @@ string csvStringData9 = string `
                         1@ string@ true@ 2.234@ -3.21@ null
 
                         1@ string@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ ()
+                        1@ string@ true@ 2.234@ ()@-3.21
 
                         1@ string@ true@ 2.234@ -3.21@ null`;                                             
