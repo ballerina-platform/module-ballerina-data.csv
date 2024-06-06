@@ -123,11 +123,12 @@ public class Native {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
     }
-    public static Object parseRecordAsListType(BArray csv, BArray customHeaders,
+    public static Object parseRecordAsListType(BArray csv, BArray headers,
                                                BMap<BString, Object> options, BTypedesc type) {
         try {
-            options.put(Constants.ConfigConstants.CUSTOM_HEADERS, customHeaders);
-            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
+            CsvConfig toRecordOptions = CsvConfig.createToRecordOptions(options);
+            toRecordOptions.headersOrder = headers;
+            return CsvTraversal.traverse(csv, toRecordOptions, type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

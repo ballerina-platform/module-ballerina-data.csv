@@ -3,9 +3,12 @@ import ballerina/test;
 boolean enable = true;
 
 @test:Config {enable: !enable}
-function debugTest() returns  error? {
-    record{}[]|CsvConversionError csv2cop3 = parseStringToRecord(csvStringData1, {header: 0, skipLines: "2-5"});
-    test:assertEquals(csv2cop3, [{a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()}]);
+function debugTest() returns error? {
+    record{}[]|CsvConversionError bm1br = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
+    test:assertEquals(bm1br, [
+        [true, false],
+        [true, false]
+    ]);
 }
 
 @test:Config {enable}
@@ -466,4 +469,55 @@ function testSkipLineParserOption() {
         [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
+}
+
+@test:Config {enable}
+function testCustomHeaderParserOption() {
+// parseListAsRecordType
+    anydata[][]|CsvConversionError bm1ba = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {});
+    test:assertEquals(bm1ba, [
+        [true, false],
+        [true, false]
+    ]);
+
+    anydata[][]|CsvConversionError bm1ba2 = parseRecordAsListType([bm1, bm1], ["b2", "b1"], {});
+    test:assertEquals(bm1ba2, [
+        [false, true],
+        [false, true]
+    ]);
+
+    anydata[][]|CsvConversionError bm2ba = parseRecordAsListType([bm2, bm2], ["b1", "n1", "b2", "n2", "b3"], {});
+    test:assertTrue(bm2ba is CsvConversionError);
+    test:assertEquals((<error> bm2ba).message(), generateErrorMessageForInvalidCustomHeader("n2"));
+
+    anydata[][]|CsvConversionError bm3ba = parseRecordAsListType([bm3, bm3], ["b1", "b4", "b2", "n2", "i1"], {});
+    test:assertTrue(bm3ba is CsvConversionError);
+    test:assertEquals((<error> bm3ba).message(), generateErrorMessageForInvalidCustomHeader("n2"));
+
+    anydata[][]|CsvConversionError bm3ba2 = parseRecordAsListType([bm3, bm3], ["b1", "b3", "b4", "b2", "i2"], {});
+    test:assertTrue(bm3ba2 is CsvConversionError);
+    test:assertEquals((<error> bm3ba2).message(), generateErrorMessageForInvalidCustomHeader("i2"));
+
+    // TODO: Fix this
+    // [boolean, boolean][]|CsvConversionError bm3ba3 = parseRecordAsListType([bm3, bm3], ["b1", "b4"], {});
+    // test:assertEquals(bm3ba3, [
+    //     [b1, b4],
+    //     [b1, b4]
+    // ]);
+
+    [boolean...][]|CsvConversionError bm3ba4 = parseRecordAsListType([bm3, bm3], ["n2"], {});
+    test:assertTrue(bm3ba4 is CsvConversionError);
+    test:assertEquals((<error> bm3ba4).message(), "Invalid length for the header names");
+
+    [boolean...][]|CsvConversionError bm3ba5 = parseRecordAsListType([bm3, bm3], [], {});
+    test:assertTrue(bm3ba5 is CsvConversionError);
+    test:assertEquals((<error> bm3ba5).message(), "Invalid length for the header names");
+
+    record{}[]|CsvConversionError bm1br = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
+    test:assertTrue(bm1br is CsvConversionError);
+    test:assertEquals((<error> bm1br).message(), "Invalid length for the custom headers");
+
+    record{}[]|CsvConversionError bm1br2 = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
+    test:assertTrue(bm1br2 is CsvConversionError);
+    test:assertEquals((<error> bm1br2).message(), "Invalid length for the custom headers");
 }

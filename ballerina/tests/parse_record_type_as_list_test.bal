@@ -33,7 +33,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     test:assertTrue(bm3ba is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3ba).message(), generateErrorMessageForInvalidValueForArrayType("null", "2", "boolean"));
 
-    BooleanArrayArray|CsvConversionError bm4ba = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, BooleanArrayArray);
+    BooleanArrayArray|CsvConversionError bm4ba = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, BooleanArrayArray);
     test:assertTrue(bm4ba is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4ba).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "boolean"));
 
@@ -57,7 +57,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     test:assertTrue(bm3nba is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3nba).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "boolean?"));
 
-    NillableBooleanArrayArray|CsvConversionError bm4nba = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableBooleanArrayArray);
+    NillableBooleanArrayArray|CsvConversionError bm4nba = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableBooleanArrayArray);
     test:assertEquals(bm4nba, [
         [(), ()],
         [(), ()]
@@ -99,7 +99,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
         [true, false, null, false, 1]
     ]);
 
-    NillableIntOrUnionBooleanArrayArray|CsvConversionError bm4niouba = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableIntOrUnionBooleanArrayArray);
+    NillableIntOrUnionBooleanArrayArray|CsvConversionError bm4niouba = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableIntOrUnionBooleanArrayArray);
     test:assertEquals(bm4niouba, [
         [(), ()],
         [(), ()]
@@ -129,7 +129,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
         [true, false, null, false, 1]
     ]);
 
-    JsonArray1Array|CsvConversionError bm4ja = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, JsonArray1Array);
+    JsonArray1Array|CsvConversionError bm4ja = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, JsonArray1Array);
     test:assertEquals(bm4ja, [
         [(), ()],
         [(), ()]
@@ -159,7 +159,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
         [true, false, null, false, 1]
     ]);
 
-    AnydataArray1Array|CsvConversionError bm4anyda = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, AnydataArray1Array);
+    AnydataArray1Array|CsvConversionError bm4anyda = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, AnydataArray1Array);
     test:assertEquals(bm4anyda, [
         [(), ()],
         [(), ()]
@@ -183,7 +183,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     test:assertTrue(bm3sa is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3sa).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "string"));
 
-    StringArray1Array|CsvConversionError bm4sa = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, StringArray1Array);
+    StringArray1Array|CsvConversionError bm4sa = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, StringArray1Array);
     test:assertTrue(bm4sa is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4sa).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "string"));
 
@@ -208,7 +208,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3bt is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3bt).message(), generateErrorMessageForInvalidValueForArrayType("null", "2", "boolean"));
 
-    BooleanTuple1Array|CsvConversionError bm4bt = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, BooleanTuple1Array);
+    BooleanTuple1Array|CsvConversionError bm4bt = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, BooleanTuple1Array);
     test:assertTrue(bm4bt is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4bt).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "boolean"));
 
@@ -234,7 +234,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
         [true, false]
     ]);
 
-    BooleanTuple2Array|CsvConversionError bm4b2t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, BooleanTuple2Array);
+    BooleanTuple2Array|CsvConversionError bm4b2t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, BooleanTuple2Array);
     test:assertTrue(bm4b2t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4b2t).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "boolean"));
 
@@ -258,7 +258,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3b3t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3b3t).message(), generateErrorMessageForInvalidValueForArrayType("null", "2", "boolean"));
 
-    BooleanTuple3Array|CsvConversionError bm4b3t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, BooleanTuple3Array);
+    BooleanTuple3Array|CsvConversionError bm4b3t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, BooleanTuple3Array);
     test:assertTrue(bm4b3t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4b3t).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "boolean"));
 
@@ -280,7 +280,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3b4t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3b4t).message(), generateErrorMessageForInvalidValueForArrayType("null", "2", "boolean"));
 
-    BooleanTuple4Array|CsvConversionError bm4b4t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, BooleanTuple4Array);
+    BooleanTuple4Array|CsvConversionError bm4b4t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, BooleanTuple4Array);
     test:assertTrue(bm4b4t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4b4t).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "boolean"));
 
@@ -304,7 +304,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3nbt is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3nbt).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "boolean?"));
 
-    NillableBooleanTuple5Array|CsvConversionError bm4nbt = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableBooleanTuple5Array);
+    NillableBooleanTuple5Array|CsvConversionError bm4nbt = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableBooleanTuple5Array);
     test:assertEquals(bm4nbt, [
         [(), (), (), (), ()],
         [(), (), (), (), ()]
@@ -334,7 +334,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
         [true, false]
     ]);
 
-    NillableBooleanTuple6Array|CsvConversionError bm4nb6t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableBooleanTuple6Array);
+    NillableBooleanTuple6Array|CsvConversionError bm4nb6t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableBooleanTuple6Array);
     test:assertEquals(bm4nb6t, [
         [(), ()],
         [(), ()]
@@ -362,7 +362,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3nb7t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3nb7t).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "boolean?"));
 
-    NillableBooleanTuple7Array|CsvConversionError bm4nb7t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableBooleanTuple7Array);
+    NillableBooleanTuple7Array|CsvConversionError bm4nb7t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableBooleanTuple7Array);
     test:assertEquals(bm4nb7t, [
         [(), ()],
         [(), ()]
@@ -390,7 +390,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3nb8t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3nb8t).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "boolean?"));
 
-    NillableBooleanTuple8Array|CsvConversionError bm4nb8t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableBooleanTuple8Array);
+    NillableBooleanTuple8Array|CsvConversionError bm4nb8t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableBooleanTuple8Array);
     test:assertEquals(bm4nb8t, [
         [(), ()],
         [(), ()]
@@ -420,7 +420,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
         [true, false, (), false, 1]
     ]);
 
-    NillableIntBooleanTuple9Array|CsvConversionError bm4nb9t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NillableIntBooleanTuple9Array);
+    NillableIntBooleanTuple9Array|CsvConversionError bm4nb9t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NillableIntBooleanTuple9Array);
     test:assertEquals(bm4nb9t, [
         [(), ()],
         [(), ()]
@@ -444,7 +444,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     test:assertTrue(bm3n3t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3n3t).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "()"));
 
-    NilTuple3Array|CsvConversionError bm4n3t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, NilTuple3Array);
+    NilTuple3Array|CsvConversionError bm4n3t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, NilTuple3Array);
     test:assertEquals(bm4n3t, [
         [(), ()],
         [(), ()]
@@ -476,7 +476,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType2() {
         [true, false, (), false, 1]
     ]);
 
-    AnydataTuple3Array|CsvConversionError bm4anyd3t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, AnydataTuple3Array);
+    AnydataTuple3Array|CsvConversionError bm4anyd3t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, AnydataTuple3Array);
     test:assertEquals(bm4anyd3t, [
         [(), ()],
         [(), ()]
@@ -506,7 +506,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType2() {
         [true, false, (), false, 1]
     ]);
 
-    JsonTuple3Array|CsvConversionError bm4j3t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, JsonTuple3Array);
+    JsonTuple3Array|CsvConversionError bm4j3t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, JsonTuple3Array);
     test:assertEquals(bm4j3t, [
         [(), ()],
         [(), ()]
@@ -530,7 +530,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType2() {
     test:assertTrue(bm3s3t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm3s3t).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "string"));
 
-    StringTuple3Array|CsvConversionError bm4s3t = parseRecordAsListType([bm4, bm4], ["n1", "n2"], {}, StringTuple3Array);
+    StringTuple3Array|CsvConversionError bm4s3t = parseRecordAsListType([bm4, bm4], ["n1", "n3"], {}, StringTuple3Array);
     test:assertTrue(bm4s3t is CsvConversionError);
     test:assertEquals((<CsvConversionError>bm4s3t).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "string"));
 

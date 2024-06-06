@@ -88,6 +88,9 @@ public class CsvUtils {
 
         if (customHeaders instanceof BArray) {
             BArray array = (BArray) customHeaders;
+            if (array.size() != headers.length) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
+            }
             for (int i = 0; i < headers.length; i++) {
                 headers[i] = array.get(i).toString();
             }

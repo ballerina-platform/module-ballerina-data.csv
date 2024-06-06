@@ -17,3 +17,7 @@ function generateErrorMessageForInvalidValueForArrayType(string value, string in
 function generateErrorMessageForInvalidHeaders(string value, string 'type) returns string{
     return string `value '${value}' cannot be cast into '${'type}', because fields in '${'type}' or the provided expected headers are not matching with the '${value}'`;
 }
+
+function generateErrorMessageForInvalidCustomHeader(string header) returns string{
+    return string `Invalid header value: '${header}'`;
+}

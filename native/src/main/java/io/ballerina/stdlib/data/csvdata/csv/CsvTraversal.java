@@ -201,17 +201,31 @@ public class CsvTraversal {
             int size = map.size();
             BString[] keys = new BString[size];
             int index = 0;
-            if (config.customHeader == null) {
+            if (config.headersOrder != null) {
+                String[] headerOrder = config.headersOrder.getStringArray();
+                if (headerOrder.length != size) {
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_HEADER_NAMES_LENGTH);
+                }
+                for (int i = 0; i < size; i++) {
+                    keys[i] = StringUtils.fromString(headerOrder[i]);
+                }
+            } else if (config.customHeader == null) {
                 keys = map.getKeys();
             } else {
                 if (this.headers == null) {
                     this.headers = createHeaders(new String[size], config);
+                }
+                if (this.headers.length != size) {
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
                 }
                 for (int i = 0; i < size; i++) {
                     keys[i] = StringUtils.fromString(this.headers[i]);
                 }
             }
             for (BString key: keys) {
+                if (!map.containsKey(key)) {
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER, key);
+                }
                 Object v = map.get(key);
                 if (index >= expectedSize) {
                     break;

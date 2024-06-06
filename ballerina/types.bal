@@ -20,7 +20,8 @@ public type ParseOption record {|
   string:Char escapeChar = "\\";
   LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];
   NilValue? nilValue = ();
-  string:Char comment = "#";
+  // string commentStartingSequence = "#";
+  string comment = "#";
   false|int:Unsigned32 header = 0;
 |};
 

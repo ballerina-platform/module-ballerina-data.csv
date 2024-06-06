@@ -41,7 +41,7 @@ public isolated function parseRecordAsRecordType(record{}[] s,
             ToRecordOptions options = {}, typedesc<record{}[]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function parseRecordAsListType(record{}[] s, string[] customHeaders,
+public isolated function parseRecordAsListType(record{}[] s, string[] headerNames,
             Options options = {}, typedesc<anydata[][]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 

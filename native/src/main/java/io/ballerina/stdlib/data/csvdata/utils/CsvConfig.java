@@ -22,6 +22,7 @@ public class CsvConfig {
     public boolean absentAsNilableType = false;
     public boolean allowDataProjection = true;
     public Object customHeader = null;
+    public BArray headersOrder = null;
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
                       boolean absentAsNilableType, boolean allowDataProjection) {

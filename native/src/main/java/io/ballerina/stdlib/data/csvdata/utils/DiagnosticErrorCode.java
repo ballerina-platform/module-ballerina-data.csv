@@ -43,7 +43,10 @@ public enum DiagnosticErrorCode {
     EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES("BDE_0016", "expected.type.can.only.contains.basic.types"),
     INVALID_FORMAT_FOR_SKIPLINES( "BDE_0017", "invalid.format.for.skiplines"),
     INVALID_RANGE_FOR_SKIPLINES( "BDE_0018", "invalid.range.for.skiplines"),
-    INVALID_VALUE_FOR_SKIPLINES( "BDE_0019", "invalid.value.for.skiplines"),;
+    INVALID_VALUE_FOR_SKIPLINES( "BDE_0019", "invalid.value.for.skiplines"),
+    INVALID_CUSTOM_HEADER("BDE_0020", "invalid.custom.header"),
+    INVALID_CUSTOM_HEADER_LENGTH("BDE_0021", "invalid.custom.header.length"),
+    INVALID_HEADER_NAMES_LENGTH("BDE_0022", "invalid.header.names.length");
 
     String diagnosticId;
     String messageKey;
