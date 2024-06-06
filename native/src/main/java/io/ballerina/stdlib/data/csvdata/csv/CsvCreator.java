@@ -64,6 +64,7 @@ public class CsvCreator {
                                                   BString value, Type type, CsvConfig config, Type exptype) {
         Object currentCsv = sm.currentCsvNode;
         Object convertedValue = convertToExpectedType(value, type, config);
+        sm.isCurrentCsvNodeEmpty = false;
         if (convertedValue instanceof BError) {
             if (ignoreIncompatibilityErrorsForMaps(sm, type, exptype)) {
                 return null;

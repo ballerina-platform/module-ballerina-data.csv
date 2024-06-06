@@ -121,20 +121,17 @@ var booleanRecordArray2 = [
     {},{}
 ];
 
-string csvStringWithBooleanValues1 = string `
-b1,b2,b3,b4
+string csvStringWithBooleanValues1 = string `b1,b2,b3,b4
 true,false,true,false 
 true,false, true,false
 true,false,true,false
 `;
 
-string csvStringWithBooleanValues2 = string `
-b1,b2,b3,b4,b5
+string csvStringWithBooleanValues2 = string `b1,b2,b3,b4,b5
 true,false, true,false,true
 true,false, true,false,true`;
 
-string csvStringWithBooleanValues3 = string `
-        b1,b2,b3
+string csvStringWithBooleanValues3 = string `b1,b2,b3
 ${" "}${"\t"}
 true, false,true
 ${" "}
@@ -145,51 +142,48 @@ true, true,FALSE
  
 `;
 
-string csvStringWithBooleanValues4 = string `
-      b1,b2,b3,b4
+string csvStringWithBooleanValues4 = string `b1,b2,b3,b4
     true,(), (),0
  1,(), null,false
 
 `;
 
-string csvStringWithBooleanValues5 = string `
-b1,b2,b3,b4
+string csvStringWithBooleanValues5 = string `b1,b2,b3,b4
 
 true,false,true,2
 
 true,false,true,3
 `;
 
-string csvStringWithBooleanValues6 = string `
-b2,b3
+string csvStringWithBooleanValues6 = string `b2,b3
 (),()
 
 `;
 
-string csvStringWithBooleanValues7 = string `
-b1,b2,b3,b4
+string csvStringWithBooleanValues7 = string `b1,b2,b3,b4
 ${b1},${b2},(),${b4}
 `;
 
 string csvStringData1 = string `
                         a, b, c, d, e, f
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
-                        1, string3, 0, 1.23, 1.23, ()
-                        1, string4, 1, -6.51, -6.51, ()
-                        1, string5, true, 3, 3, ()`;
+                        2, string2, false, 0, 0, null
+                        3, string3, 0, 1.23, 1.23, ()
+                        4, string4, 1, -6.51, -6.51, ()
+                        5, string5, true, 3, 3, ()`;
 
 string csvStringData2 = string `
-
-
+                        hello, hello, (), 12, true, 12.34
+                        // comment
+                        
                         a, b, c, d, e, f
-
+                        
 
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
-                        1, string3, 0, 1.23, 1.23, ()
-                        1, string4, 1, -6.51, -6.51, ()
-                        1, string5, true, 3, 3, ()`;
+                        2, string2, false, 0, 0, null
+                        3, string3, 0, 1.23, 1.23, ()
+                        4, string4, 1, -6.51, -6.51, ()
+                        5, string5, true, 3, 3, ()`;
 
 string csvStringData3 = string `
                         a, b, c, d, e, f
@@ -197,66 +191,66 @@ string csvStringData3 = string `
 
 
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
-                        1, string3, 0, 1.23, 1.23, ()
+                        2, string2, false, 0, 0, null
+                        3, string3, 0, 1.23, 1.23, ()
 
-                        1, string4, 1, -6.51, -6.51, ()
-                        1, string5, true, 3, 3, ()`;
+                        4, string4, 1, -6.51, -6.51, ()
+                        5, string5, true, 3, 3, ()`;
 
 string csvStringData4 = string `
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
-                        1, string3, 0, 1.23, 1.23, ()
-                        1, string4, 1, -6.51, -6.51, ()
-                        1, string5, true, 3, 3, ()`;  
+                        2, string2, false, 0, 0, null
+                        3, string3, 0, 1.23, 1.23, ()
+                        4, string4, 1, -6.51, -6.51, ()
+                        5, string5, true, 3, 3, ()`;  
 
 string csvStringData5 = string `
 
 
 
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
+                        2, string2, false, 0, 0, null
 
-                        1, string3, 0, 1.23, 1.23, ()
-                        1, string4, 1, -6.51, -6.51, ()
+                        3, string3, 0, 1.23, 1.23, ()
+                        4, string4, 1, -6.51, -6.51, ()
 
-                        1, string5, true, 3, 3, ()`;   
+                        5, string5, true, 3, 3, ()`;   
 
 string csvStringData6 = string `
 
                         1, string1, true, 2.234, 2.234, ()
-                        1, string2, false, 0, 0, null
+                        2, string2, false, 0, 0, null
 
-                        1, string3, 0, 1.23, 1.23, ()
-                        1, string4, 1, -6.51, -6.51, ()
+                        3, string3, 0, 1.23, 1.23, ()
+                        4, string4, 1, -6.51, -6.51, ()
 
-                        1, string5, true, 3, 3, ()`;
+                        5, string5, true, 3, 3, ()`;
 
 string csvStringData7 = string `
                         a@ b@ c@ d@ e@ f
                         1@ string@ true@ 2.234@ -3.21@ ()
-                        1@ s,tring@ true@ 2.234@ -3.21@ null
-                        1@ stri,ng@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ ()`;
+                        2@ s,tring@ true@ 2.234@ -3.21@ null
+                        3@ stri,ng@ true@ 2.234@ -3.21@ ()
+                        4@ string@ true@ 2.234@ -3.21@ ()
+                        5@ string@ true@ 2.234@ -3.21@ ()`;
 string csvStringData8 = string `
                         a@ b@ c@ d@ e@ f
 
 
 
                         1@ stri,ng@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ ()@-3.21
-                        1@ string@ true@ 2.234@ -3.21@ null
+                        2@ string@ true@ 2.234@ ()@-3.21
+                        3@ string@ true@ 2.234@ -3.21@ null
 
-                        1@ s,tring@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ ()`;  
+                        4@ s,tring@ true@ 2.234@ -3.21@ ()
+                        5@ string@ true@ 2.234@ -3.21@ ()`;  
 
 string csvStringData9 = string `
 
                         1@ string@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ -3.21@ null
+                        2@ string@ true@ 2.234@ -3.21@ null
 
-                        1@ string@ true@ 2.234@ -3.21@ ()
-                        1@ string@ true@ 2.234@ ()@-3.21
+                        3@ string@ true@ 2.234@ -3.21@ ()
+                        4@ string@ true@ 2.234@ ()@-3.21
 
-                        1@ string@ true@ 2.234@ -3.21@ null`;                                             
+                        5@ string@ true@ 2.234@ -3.21@ null`;                                             

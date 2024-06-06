@@ -136,12 +136,12 @@ public class FromString {
 
     private static Object stringToNull(String value, CsvConfig config) throws NumberFormatException {
         Object nullValue = config.nilValue;
-        if (nullValue == null && (Constants.Values.NULL.equalsIgnoreCase(value)
+        if ((nullValue == null) && (Constants.Values.NULL.equalsIgnoreCase(value)
                 || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(value))) {
             return null;
         }
         if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
-            return nullValue;
+            return null;
         }
         return returnError(value, nullValue == null ? Constants.Values.BALLERINA_NULL : nullValue.toString());
     }

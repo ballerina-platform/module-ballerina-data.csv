@@ -26,6 +26,8 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
@@ -91,10 +93,14 @@ public class CsvParser {
         Type restType;
         Type expectedArrayElementType;
         int columnIndex = 0;
-        int rowIndex = 0;
+        int rowIndex = 1;
         int lineNumber = 0;
         ArrayType rootArrayType = null;
         CsvConfig config = null;
+        boolean skipTheRow = false;
+        boolean insideComment = false;
+        boolean isCurrentCsvNodeEmpty = true;
+        boolean isHeaderConfigExceedLineNumber = false;
         StateMachine() {
             reset();
         }
@@ -107,7 +113,7 @@ public class CsvParser {
             restType = null;
             rootCsvNode = null;
             columnIndex = 0;
-            rowIndex = 0;
+            rowIndex = 1;
             fieldHierarchy.clear();
             fieldNames.clear();
             rootArrayType = null;
@@ -118,6 +124,9 @@ public class CsvParser {
             currentEscapeCharacters = new Stack<>();
             charBuff = new char[1024];
             charBuffIndex = 0;
+            skipTheRow = false;
+            isCurrentCsvNodeEmpty = true;
+            isHeaderConfigExceedLineNumber = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -202,9 +211,10 @@ public class CsvParser {
                 }
                 currentState = currentState.transition(this, new char[] { EOF }, 0, 1);
                 if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
-                    throw new CsvParserException("Invalid token found");
+                    if (!this.isHeaderConfigExceedLineNumber) {
+                        throw new CsvParserException("Invalid token found");
+                    }
                 }
-
                 return rootCsvNode;
             } catch (IOException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
@@ -260,15 +270,19 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
-                    if (sm.lineNumber < headerStartRowNumber - 1) {
-                        sm.lineNumber++;
+                    if (sm.lineNumber < headerStartRowNumber) {
+                        sm.isHeaderConfigExceedLineNumber = true;
+                        if (sm.isNewLineOrEof(ch)) {
+                            sm.lineNumber++;
+                        }
                         continue;
                     }
-                    if (!(isWhitespace(ch, sm.config.lineTerminator) && sm.isNewLineOrEof(ch))) {
-                        headerStart = true;
-                    }
+                    sm.isHeaderConfigExceedLineNumber = false;
+//                    if (!(isWhitespace(ch, sm.config.lineTerminator) && sm.isNewLineOrEof(ch))) {
+//                        headerStart = true;
+//                    }
                     if (customHeader != null) {
-                        if (headerStart && sm.isNewLineOrEof(ch)) {
+                        if (sm.isNewLineOrEof(ch)) {
                             checkAndAddCustomHeaders(sm, customHeader);
                             sm.lineNumber++;
                             state = HEADER_END_STATE;
@@ -277,21 +291,26 @@ public class CsvParser {
                         continue;
                     }
 
-                    if (ch == separator) {
+                    if (ch == sm.config.comment) {
+                        sm.insideComment = true;
+                    } else if (!sm.insideComment && ch == separator) {
                         addHeader(sm);
                         sm.columnIndex++;
                         continue;
-                    } else if (isEndOfTheRow(sm, ch)) {
-                        addHeader(sm);
-                        finalizeHeaders(sm);
-                        sm.columnIndex = 0;
-                        sm.lineNumber++;
+                    } else if (sm.insideComment && sm.isNewLineOrEof(ch)) {
+                        sm.insideComment = false;
+                        handleEndOfTheHeader(sm);
+                        state = HEADER_END_STATE;
+                    } else if (isEndOfTheHeaderRow(sm, ch)) {
+                        handleEndOfTheHeader(sm);
                         state = HEADER_END_STATE;
                     } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
                         state = this;
                         continue;
                     } else {
-                        sm.append(ch);
+                        if (!sm.insideComment) {
+                            sm.append(ch);
+                        }
                         state = this;
                         continue;
                     }
@@ -299,6 +318,15 @@ public class CsvParser {
                 }
                 sm.index = i + 1;
                 return state;
+            }
+
+            private void handleEndOfTheHeader(StateMachine sm) throws CsvParserException {
+                if (!sm.peek().isBlank()) {
+                    addHeader(sm);
+                    finalizeHeaders(sm);
+                }
+                sm.columnIndex = 0;
+                sm.lineNumber++;
             }
 
             private int getHeaderStartRowWhenHeaderIsPresent(Object header) {
@@ -372,66 +400,110 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (sm.skipTheRow) {
+//                        buff[i-10],buff[i-9],buff[i-8],buff[i-7],buff[i-6],buff[i-5],buff[i-4],buff[i-3],buff[i-2],buff[i-1],buff[i],buff[i+1],buff[i+2],buff[i+3]
+                        if (sm.isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
+                            sm.insideComment = false;
+                            sm.skipTheRow = false;
+                            sm.clear();
+                            if (ch == EOF) {
+                                state = ROW_END_STATE;
+                            }
+                        } else {
+                            sm.append(ch);
+                        }
+                        continue;
+                    }
 
                     //TODO: Handle empty values and create again and again
-                    if (sm.currentCsvNode == null) {
+                    if (sm.isCurrentCsvNodeEmpty) {
+                        if (ignoreRow(skipLines, sm.rowIndex)) {
+                            updateLineAndColumnIndexes(sm);
+                            sm.skipTheRow = true;
+                            continue;
+                        }
                         initiateNewRowType(sm);
                     }
-                    if (ch == separator) {
+                    if (!sm.insideComment && ch == sm.config.comment) {
+                        handleEndOfTheRow(sm, ch);
+                        sm.insideComment = true;
+                        if (ch == EOF) {
+                            state = ROW_END_STATE;
+                        }
+                    } else if (!sm.insideComment && ch == separator) {
                         addRowValue(sm);
-                    } else if (isEndOfTheRow(sm, ch)) {
-                        sm.lineNumber++;
-                        handleCsvRow(sm, skipLines);
-                        checkOptionalFieldsAndLogError(sm.fieldHierarchy);
+                    } else if (sm.insideComment && sm.isNewLineOrEof(ch)) {
+                        sm.insideComment = false;
+                        if (ch == EOF) {
+                            state = ROW_END_STATE;
+                        }
+                    } else if (isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
+                        handleEndOfTheRow(sm, ch);
                         if (ch == EOF) {
                             state = ROW_END_STATE;
                         }
                     } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
                         // ignore
                     } else {
-                        sm.append(ch);
+                        if (!sm.insideComment) {
+                            sm.append(ch);
+                        }
                     }
                 }
                 sm.index = i + 1;
                 return state;
             }
 
-            private void handleCsvRow(StateMachine sm, long[] skipRows) throws CsvParserException {
-                String value = sm.value();
-                if (value.isBlank()) {
-                    updateLineAndColumnIndexes(sm);
-                    return;
-                }
+            private void handleEndOfTheRow(StateMachine sm, char ch) throws CsvParserException {
+//                if (sm.peek().isBlank()) {
+//                    updateLineAndColumnIndexesWithoutRowIndexes(sm);
+//                } else {
+                    handleCsvRow(sm);
+                    checkOptionalFieldsAndLogError(sm.fieldHierarchy);
+//                }
+            }
 
-                addRowValue(sm);
-                if (ignoreRow(skipRows, sm.rowIndex)) {
-                    updateLineAndColumnIndexes(sm);
-                    return;
+            private void handleCsvRow(StateMachine sm) throws CsvParserException {
+                if (!sm.peek().isBlank()) {
+                    addRowValue(sm);
                 }
-
-                finalizeTheRow(sm);
+                if (!sm.isCurrentCsvNodeEmpty) {
+                    finalizeTheRow(sm);
+                } else {
+                    updateLineAndColumnIndexesWithoutRowIndexes(sm);
+                }
                 updateLineAndColumnIndexes(sm);
             }
 
             private void updateLineAndColumnIndexes(StateMachine sm) {
-                sm.lineNumber++;
                 sm.rowIndex++;
+                updateLineAndColumnIndexesWithoutRowIndexes(sm);
+            }
+
+            private void updateLineAndColumnIndexesWithoutRowIndexes(StateMachine sm) {
+                sm.lineNumber++;
                 sm.currentCsvNode = null;
+                sm.isCurrentCsvNodeEmpty = true;
                 sm.columnIndex = 0;
             }
 
             private boolean ignoreRow(long[] skipLines, int lineNumber) {
-                return skipLines[0] <= lineNumber &&  lineNumber < skipLines[skipLines.length - 1];
+                for (long skipLine: skipLines) {
+                    if (skipLine == lineNumber) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
-            private void initiateNewRowType(StateMachine sm) throws CsvParserException {
+            private void initiateNewRowType(StateMachine sm) {
                 sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
             }
 
             private void finalizeTheRow(StateMachine sm) {
                 int rootArraySize = sm.rootArrayType.getSize();
                 if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
-                    sm.rootCsvNode.add(sm.rowIndex, sm.currentCsvNode);
+                    sm.rootCsvNode.append(sm.currentCsvNode);
                 }
             }
 
@@ -637,8 +709,12 @@ public class CsvParser {
 
         }
 
-        public static boolean isEndOfTheRow(CsvParser.StateMachine sm, char ch) {
-            return (ch == EOF || !sm.peek().isEmpty()) && sm.isNewLineOrEof(ch);
+        public static boolean isEndOfTheRowAndValueIsNotEmpty(CsvParser.StateMachine sm, char ch) {
+            return sm.isNewLineOrEof(ch) && (ch == EOF || !(sm.isCurrentCsvNodeEmpty && sm.peek().isBlank()));
+        }
+
+        public static boolean isEndOfTheHeaderRow(CsvParser.StateMachine sm, char ch) {
+            return sm.isNewLineOrEof(ch);
         }
 
         public static class CsvParserException extends Exception {

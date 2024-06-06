@@ -218,12 +218,10 @@ public class CsvUtils {
                 return new long[]{-1};
             }
             skipDataRows = (skipLinesArray).getIntArray();
-            Arrays.sort(skipDataRows);
             return skipDataRows;
         }
 
         skipDataRows = getSkipLinesFromStringConfigValue(StringUtils.getStringValue(skipLines));
-        Arrays.sort(skipDataRows);
         return skipDataRows;
     }
 

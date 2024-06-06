@@ -12,15 +12,15 @@ public type Options record {
 
 public type ParseOption record {|
   *Options;
-  string delimiter = ",";
+  string:Char delimiter = ",";
   string encoding = "UTF-8";
   string locale = "en_US";
 //  TODO: Add " for Strings"
-  string textEnclosure = "\"";
-  string escapeChar = "\\";
+  string:Char textEnclosure = "\"";
+  string:Char escapeChar = "\\";
   LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];
   NilValue? nilValue = ();
-  string comment = "#";
+  string:Char comment = "#";
   false|int:Unsigned32 header = 0;
 |};
 

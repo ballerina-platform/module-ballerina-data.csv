@@ -13,17 +13,14 @@ import ballerina/test;
 
 @test:Config {enable}
 function testFromCsvStringWithTypeCompatibility() {
-    string value = string `
-        i1,i2,s1,s2,  b1,b2,n1,n2,f1,f2, d1,d2,j1,a1,j2,a2
+    string value = string `i1,i2,s1,s2,  b1,b2,n1,n2,f1,f2, d1,d2,j1,a1,j2,a2
         ${i1},${i2},${s1},${s2},${b1},${b2},(),(),${f1}, ${f2},${d1},${d2},${b1},${d1},${b2},${d2}
         ${i1},${i2},${s1},${s2},${b1},${b2},(),(),  ${f1},${f2},${d1},${d2},${b1},${d1},${b2},${d2}
     `;
-    string value2 = string `
-        i1, s1, b1, n1, f1, d1, j1, a1, s2, s3, j2, a2
+    string value2 = string `i1, s1, b1, n1, f1, d1, j1, a1, s2, s3, j2, a2
         ${i1}, ${s1},${b1}, null,${f1}, ${d1},${b1}, ${d1},${s2}, ${s3},${b2}, ${d2}
     `;
-    string value3 = string `
-        i1, s1, b1, n1, f1, d1, j1, a1, s2, s3
+    string value3 = string `i1, s1, b1, n1, f1, d1, j1, a1, s2, s3
         ${i1}, ${s1},${b1}, null,${f1}, ${d1},${b1}, ${d1},${s2}, ${s3}
     `;
 
@@ -120,7 +117,7 @@ function testFromCsvStringWithTypeCompatibility() {
                                                                             a, b, c
                                                                             1, a, 2.3
                                                                             1, -2, true
-                                                                            hello, -2, hello`);
+                                                                            hello, -2, hello`, {header: 1});
     test:assertEquals(irrma, [
         {a: 1},
         {a: i1, b: i2},
@@ -131,7 +128,7 @@ function testFromCsvStringWithTypeCompatibility() {
                                                                             a, b, c
                                                                             1, a, ()
                                                                             1, null, ()
-                                                                            hello, -2, hello`);
+                                                                            hello, -2, hello`, {header: 1});
     test:assertEquals(nrrma, [
         {c: ()},
         {b: (), c: ()},
@@ -149,8 +146,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {b: -3.21d, c: <decimal>f3}
     ]);
 
-    record {|string...;|}[]|CsvConversionError srra = parseStringToRecord(string `
-                                                                            a, b, c
+    record {|string...;|}[]|CsvConversionError srra = parseStringToRecord(string `a, b, c
                                                                             1, a, 2.3
                                                                             1, -2, true
                                                                             hello, -2, hello`);
