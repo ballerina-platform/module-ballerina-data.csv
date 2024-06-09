@@ -118,7 +118,7 @@ public class Native {
 
     public static Object parseRecordAsRecordType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createOptions(options), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

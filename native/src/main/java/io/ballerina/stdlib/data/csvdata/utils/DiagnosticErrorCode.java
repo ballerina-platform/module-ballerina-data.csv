@@ -46,7 +46,8 @@ public enum DiagnosticErrorCode {
     INVALID_VALUE_FOR_SKIPLINES( "BDE_0019", "invalid.value.for.skiplines"),
     INVALID_CUSTOM_HEADER("BDE_0020", "invalid.custom.header"),
     INVALID_CUSTOM_HEADER_LENGTH("BDE_0021", "invalid.custom.header.length"),
-    INVALID_HEADER_NAMES_LENGTH("BDE_0022", "invalid.header.names.length");
+    INVALID_HEADER_NAMES_LENGTH("BDE_0022", "invalid.header.names.length"),
+    HEADER_CANNOT_BE_EMPTY("BDE_0023", "header.cannot.be.empty");
 
     String diagnosticId;
     String messageKey;

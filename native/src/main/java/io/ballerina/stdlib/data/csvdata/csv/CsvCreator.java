@@ -105,6 +105,9 @@ public class CsvCreator {
             }
             return header;
         }
+        if (sm.columnIndex >= sm.headers.size()) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
+        }
         return sm.headers.get(sm.columnIndex);
     }
 

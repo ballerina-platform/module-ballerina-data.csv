@@ -1,13 +1,22 @@
 import ballerina/test;
 
-// boolean enable = false;
+// boolean enable = true;
 
 // @test:Config {enable: !enable}
 // function debugTest() {
-//         StringRecord10Array|CsvConversionError st1sr10 = parseListAsRecordType([st1, st1], (), {}, StringRecord10Array);
-//     test:assertEquals(st1sr10, [
-//         {'1: "string", '2: ""},
-//         {'1: "string", '2: ""}
+//     // record{decimal c; boolean d; int e; string f;}[]|CsvConversionError ct1br8 = parseListAsRecordType(
+//     //     [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+//     //     ["f", "e", "d", "c", "b", "a"]);
+//     // test:assertEquals(ct1br8, [
+//     //     {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
+//     //     {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
+//     // ]);
+
+//     record{int c;}[]|CsvConversionError ct1br8 = parseStringToRecord(string `c
+//                                                                             1`, {});
+//     test:assertEquals(ct1br8, [
+//         {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
+//         {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
 //     ]);
 // }
 
@@ -478,6 +487,39 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType2() {
     test:assertEquals(st4cr24, [
         {'1: s1, '2: s2, '3: s3, '4: s2},
         {'1: s1, '2: s2, '3: s3, '4: s2}
+    ]);
+}
+
+@test:Config {enable: false}
+function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
+    record{string a; boolean b; int c;}[]|CsvConversionError ct1br4 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "c", "b"], {});
+    test:assertEquals(ct1br4, [
+        {a: "a", b: true, c: 1},
+        {a: "a", b: true, c: 1}
+    ]);
+
+    record{() a; float b; decimal c; boolean d; int e; string f;}[]|CsvConversionError ct1br6 = parseListAsRecordType(
+        [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+        ["f", "e", "d", "c", "b", "a"]);
+    test:assertEquals(ct1br6, [
+        {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
+        {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
+    ]);
+
+    record{|decimal c; boolean d; int e; string f;|}[]|CsvConversionError ct1br7 = parseListAsRecordType(
+        [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+        ["f", "e", "d", "c", "b", "a"]);
+    test:assertEquals(ct1br7, [
+        {c: <decimal>0, d: true, e: 1, f: "a"},
+        {c: <decimal>2.23, d: true, e: 1, f: "a"}
+    ]);
+
+    record{decimal c; boolean d; int e; string f;}[]|CsvConversionError ct1br8 = parseListAsRecordType(
+        [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+        ["f", "e", "d", "c", "b", "a"]);
+    test:assertEquals(ct1br8, [
+        {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
+        {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
     ]);
 }
 

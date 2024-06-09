@@ -406,4 +406,10 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
     test:assertEquals(bv7dsma, [
         {}
     ]);
+
+    //TODO: Fix the test case
+    // string csvValue1 = string `a,
+    //                             1,,`;
+    // record{}[]|error a = parseStringToRecord(csvValue1, {});
+    // test:assertEquals(a, [{a: 1}]);
 }

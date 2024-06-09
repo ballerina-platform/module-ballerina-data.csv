@@ -26,11 +26,10 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -54,6 +53,7 @@ public class CsvParser {
     private static final char REV_SOL = '\\';
     private static final char SOL = '/';
     private static final char EOF = (char) -1;
+    private static final char NEWLINE = 0x000A;
 
 
     private static final ThreadLocal<StateMachine> tlStateMachine = ThreadLocal.withInitial(StateMachine::new);
@@ -75,8 +75,15 @@ public class CsvParser {
         private static State HEADER_END_STATE = new HeaderEndState();
         private static State ROW_START_STATE = new RowStartState();
         private static State ROW_END_STATE = new RowEndState();
-        private static State STRING_VALUE_STATE = new StringValueEscapedCharacterProcessingState();
-        private static State HEADER_NAME_STATE = new HeaderNameEscapedCharacterProcessingState();
+        private static State STRING_ESCAPE_VALUE_STATE = new StringValueEscapedCharacterProcessingState();
+        private static State STRING_UNICODE_CHAR_STATE = new StringValueUnicodeHexProcessingState();
+        private static State HEADER_UNICODE_CHAR_STATE = new HeaderUnicodeHexProcessingState();
+        private static State HEADER_ESCAPE_CHAR_STATE = new HeaderEscapedCharacterProcessingState();
+        private static State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
+        private static State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
+
+
+
         private static char LINE_BREAK = '\n';
 
         Object currentCsvNode;
@@ -101,6 +108,9 @@ public class CsvParser {
         boolean insideComment = false;
         boolean isCurrentCsvNodeEmpty = true;
         boolean isHeaderConfigExceedLineNumber = false;
+        boolean isQuoteClosed = false;
+
+        private StringBuilder hexBuilder = new StringBuilder(4);
         StateMachine() {
             reset();
         }
@@ -127,6 +137,8 @@ public class CsvParser {
             skipTheRow = false;
             isCurrentCsvNodeEmpty = true;
             isHeaderConfigExceedLineNumber = false;
+            hexBuilder = new StringBuilder(4);
+            isQuoteClosed = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -265,7 +277,6 @@ public class CsvParser {
                 //TODO: If the header is not present make the headers and fieldnames to be default values
                 char separator = sm.config.delimiter;
                 Object customHeader = sm.config.customHeader;
-                boolean headerStart = false;
                 int headerStartRowNumber = getHeaderStartRowWhenHeaderIsPresent(sm.config.header);
                 for (; i < count; i++) {
                     ch = buff[i];
@@ -297,11 +308,17 @@ public class CsvParser {
                         addHeader(sm);
                         sm.columnIndex++;
                         continue;
+                    } else if (!sm.insideComment && ch == sm.config.textEnclosure) {
+                        state = HEADER_QUOTE_CHAR_STATE;
+                        break;
+                    } else if (!sm.insideComment && ch == sm.config.escapeChar) {
+                        state = HEADER_ESCAPE_CHAR_STATE;
+                        break;
                     } else if (sm.insideComment && sm.isNewLineOrEof(ch)) {
                         sm.insideComment = false;
                         handleEndOfTheHeader(sm);
                         state = HEADER_END_STATE;
-                    } else if (isEndOfTheHeaderRow(sm, ch)) {
+                    } else if (!sm.insideComment && isEndOfTheHeaderRow(sm, ch)) {
                         handleEndOfTheHeader(sm);
                         state = HEADER_END_STATE;
                     } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
@@ -319,66 +336,69 @@ public class CsvParser {
                 sm.index = i + 1;
                 return state;
             }
+        }
 
-            private void handleEndOfTheHeader(StateMachine sm) throws CsvParserException {
-                if (!sm.peek().isBlank()) {
-                    addHeader(sm);
-                    finalizeHeaders(sm);
-                }
-                sm.columnIndex = 0;
-                sm.lineNumber++;
+        private static void handleEndOfTheHeader(StateMachine sm) throws CsvParserException {
+            if (!sm.peek().isBlank()) {
+                addHeader(sm);
             }
+            finalizeHeaders(sm);
+            sm.columnIndex = 0;
+            sm.lineNumber++;
+        }
 
-            private int getHeaderStartRowWhenHeaderIsPresent(Object header) {
-                return ((Long) header).intValue();
+        private static int getHeaderStartRowWhenHeaderIsPresent(Object header) {
+            return ((Long) header).intValue();
+        }
+
+        private static void finalizeHeaders(StateMachine sm) throws CsvParserException {
+            if (sm.headers.size() == 0) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.HEADER_CANNOT_BE_EMPTY);
             }
-
-            private void finalizeHeaders(StateMachine sm) throws CsvParserException {
-                Type expType = sm.expectedArrayElementType;
-                if (expType instanceof RecordType) {
-                    validateRemainingRecordFields(sm);
-                } else if (expType instanceof ArrayType) {
-                    // TODO: Get the other validation into here
-                    //TODO: Replace arraysize -1 with
-                    // TODO: Can remove using fillers
-                    validateExpectedArraySize(((ArrayType) expType).getSize(), sm.headers.size());
-                } else if (expType instanceof MapType) {
-                    //ignore
-                } else if (expType instanceof TupleType) {
-                    validateTupleTypes((TupleType) expType, sm.restType, sm.headers.size());
-                } else {
-                    throw new CsvParserException("Invalid expected type");
-                }
+            Type expType = sm.expectedArrayElementType;
+            if (expType instanceof RecordType) {
+                validateRemainingRecordFields(sm);
+            } else if (expType instanceof ArrayType) {
+                // TODO: Get the other validation into here
+                //TODO: Replace arraysize -1 with
+                // TODO: Can remove using fillers
+                validateExpectedArraySize(((ArrayType) expType).getSize(), sm.headers.size());
+            } else if (expType instanceof MapType) {
+                //ignore
+            } else if (expType instanceof TupleType) {
+                validateTupleTypes((TupleType) expType, sm.restType, sm.headers.size());
+            } else {
+                throw new CsvParserException("Invalid expected type");
             }
+        }
 
-            private void validateTupleTypes(TupleType tupleType, Type restType, int currentSize) {
-                if (restType != null && tupleType.getTupleTypes().size() > currentSize) {
-                    // TODO: Can remove using fillers
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, currentSize);
-                }
+        private static void validateTupleTypes(TupleType tupleType, Type restType, int currentSize) {
+            if (restType != null && tupleType.getTupleTypes().size() > currentSize) {
+                // TODO: Can remove using fillers
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, currentSize);
             }
+        }
 
-            private void validateRemainingRecordFields(StateMachine sm) {
-                if (sm.restType == null) {
-                    for (Field field : sm.fieldHierarchy.values()) {
-                        if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
-                            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
-                        }
+        private static void validateRemainingRecordFields(StateMachine sm) {
+            if (sm.restType == null) {
+                for (Field field : sm.fieldHierarchy.values()) {
+                    if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
                     }
                 }
             }
+        }
 
-            private void addHeader(StateMachine sm) throws CsvParserException {
-                String value = sm.value();
-                if (sm.expectedArrayElementType instanceof RecordType) {
-                    Field field = sm.fieldHierarchy.get(value);
-                    if (field != null) {
-                        sm.fieldNames.put(value, field);
-                        sm.fieldHierarchy.remove(value);
-                    }
+        private static void addHeader(StateMachine sm) throws CsvParserException {
+            String value = sm.value();
+            if (sm.expectedArrayElementType instanceof RecordType) {
+                Field field = sm.fieldHierarchy.get(value);
+                if (field != null) {
+                    sm.fieldNames.put(value, field);
+                    sm.fieldHierarchy.remove(value);
                 }
-                sm.headers.add(value);
             }
+            sm.headers.add(value);
         }
 
         private static class HeaderEndState implements State {
@@ -432,15 +452,23 @@ public class CsvParser {
                         }
                     } else if (!sm.insideComment && ch == separator) {
                         addRowValue(sm);
+                    } else if (!sm.insideComment && ch == sm.config.textEnclosure) {
+                        state = STRING_QUOTE_CHAR_STATE;
+                        break;
+                    } else if (!sm.insideComment && ch == sm.config.escapeChar) {
+                        state = STRING_ESCAPE_VALUE_STATE;
+                        break;
                     } else if (sm.insideComment && sm.isNewLineOrEof(ch)) {
                         sm.insideComment = false;
                         if (ch == EOF) {
                             state = ROW_END_STATE;
+                            break;
                         }
                     } else if (isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
                         handleEndOfTheRow(sm, ch);
                         if (ch == EOF) {
                             state = ROW_END_STATE;
+                            break;
                         }
                     } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
                         // ignore
@@ -453,124 +481,124 @@ public class CsvParser {
                 sm.index = i + 1;
                 return state;
             }
+        }
 
-            private void handleEndOfTheRow(StateMachine sm, char ch) throws CsvParserException {
+        private static void handleEndOfTheRow(StateMachine sm, char ch) throws CsvParserException {
 //                if (sm.peek().isBlank()) {
 //                    updateLineAndColumnIndexesWithoutRowIndexes(sm);
 //                } else {
-                    handleCsvRow(sm);
-                    checkOptionalFieldsAndLogError(sm.fieldHierarchy);
+            handleCsvRow(sm);
+            checkOptionalFieldsAndLogError(sm.fieldHierarchy);
 //                }
-            }
+        }
 
-            private void handleCsvRow(StateMachine sm) throws CsvParserException {
-                if (!sm.peek().isBlank()) {
-                    addRowValue(sm);
-                }
-                if (!sm.isCurrentCsvNodeEmpty) {
-                    finalizeTheRow(sm);
-                } else {
-                    updateLineAndColumnIndexesWithoutRowIndexes(sm);
-                }
-                updateLineAndColumnIndexes(sm);
+        private static void handleCsvRow(StateMachine sm) throws CsvParserException {
+            if (!sm.peek().isBlank()) {
+                addRowValue(sm);
             }
-
-            private void updateLineAndColumnIndexes(StateMachine sm) {
-                sm.rowIndex++;
+            if (!sm.isCurrentCsvNodeEmpty) {
+                finalizeTheRow(sm);
+            } else {
                 updateLineAndColumnIndexesWithoutRowIndexes(sm);
             }
+            updateLineAndColumnIndexes(sm);
+        }
 
-            private void updateLineAndColumnIndexesWithoutRowIndexes(StateMachine sm) {
-                sm.lineNumber++;
-                sm.currentCsvNode = null;
-                sm.isCurrentCsvNodeEmpty = true;
-                sm.columnIndex = 0;
-            }
+        private static void updateLineAndColumnIndexes(StateMachine sm) {
+            sm.rowIndex++;
+            updateLineAndColumnIndexesWithoutRowIndexes(sm);
+        }
 
-            private boolean ignoreRow(long[] skipLines, int lineNumber) {
-                for (long skipLine: skipLines) {
-                    if (skipLine == lineNumber) {
-                        return true;
-                    }
-                }
-                return false;
-            }
+        private static void updateLineAndColumnIndexesWithoutRowIndexes(StateMachine sm) {
+            sm.lineNumber++;
+            sm.currentCsvNode = null;
+            sm.isCurrentCsvNodeEmpty = true;
+            sm.columnIndex = 0;
+        }
 
-            private void initiateNewRowType(StateMachine sm) {
-                sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
-            }
-
-            private void finalizeTheRow(StateMachine sm) {
-                int rootArraySize = sm.rootArrayType.getSize();
-                if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
-                    sm.rootCsvNode.append(sm.currentCsvNode);
+        private static boolean ignoreRow(long[] skipLines, int lineNumber) {
+            for (long skipLine: skipLines) {
+                if (skipLine == lineNumber) {
+                    return true;
                 }
             }
+            return false;
+        }
 
-            private void addRowValue(StateMachine sm) throws CsvParserException {
-                // TODO: Can convert all at once by storing in a Object[]
-                Type type;
-                Type exptype = sm.expectedArrayElementType;
-                String value = sm.value();
+        private static void initiateNewRowType(StateMachine sm) {
+            sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
+        }
 
-                if (exptype instanceof RecordType) {
-                   type = getExpectedRowTypeOfRecord(sm);
-                } else if (exptype instanceof MapType) {
-                    type = ((MapType) exptype).getConstrainedType();
-                } else if (exptype instanceof ArrayType) {
-                   type = getExpectedRowTypeOfArray(sm, (ArrayType) exptype);
-                } else if (exptype instanceof TupleType) {
-                    type = getExpectedRowTypeOfTuple(sm, (TupleType) exptype);
+        private static void finalizeTheRow(StateMachine sm) {
+            int rootArraySize = sm.rootArrayType.getSize();
+            if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
+                sm.rootCsvNode.append(sm.currentCsvNode);
+            }
+        }
+
+        private static void addRowValue(StateMachine sm) throws CsvParserException {
+            // TODO: Can convert all at once by storing in a Object[]
+            Type type;
+            Type exptype = sm.expectedArrayElementType;
+            String value = sm.value();
+
+            if (exptype instanceof RecordType) {
+                type = getExpectedRowTypeOfRecord(sm);
+            } else if (exptype instanceof MapType) {
+                type = ((MapType) exptype).getConstrainedType();
+            } else if (exptype instanceof ArrayType) {
+                type = getExpectedRowTypeOfArray(sm, (ArrayType) exptype);
+            } else if (exptype instanceof TupleType) {
+                type = getExpectedRowTypeOfTuple(sm, (TupleType) exptype);
+            } else {
+                throw new CsvParserException("Unexpected expected type");
+            }
+
+            if (type != null) {
+                CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                        StringUtils.fromString(value), type, sm.config, exptype);
+            }
+            sm.columnIndex++;
+        }
+
+        private static Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {
+            List<Type> tupleTypes = tupleType.getTupleTypes();
+            if (tupleTypes.size() > sm.columnIndex) {
+                return tupleTypes.get(sm.columnIndex);
+            } else {
+                Type restType = sm.restType;
+                if (restType != null) {
+                    return restType;
                 } else {
-                    throw new CsvParserException("Unexpected expected type");
-                }
-
-                if (type != null) {
-                    CsvCreator.convertAndUpdateCurrentJsonNode(sm,
-                            StringUtils.fromString(value), type, sm.config, exptype);
-                }
-                sm.columnIndex++;
-            }
-
-            private Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {
-                List<Type> tupleTypes = tupleType.getTupleTypes();
-                if (tupleTypes.size() > sm.columnIndex) {
-                    return tupleTypes.get(sm.columnIndex);
-                } else {
-                    Type restType = sm.restType;
-                    if (restType != null) {
-                        return restType;
-                    } else {
-                        sm.charBuffIndex = 0;
-                        return null;
-                    }
-                }
-            }
-
-            private Type getExpectedRowTypeOfArray(StateMachine sm, ArrayType arrayType) {
-                // TODO: add to a constant
-                if (arrayType.getSize() != -1 && arrayType.getSize() < sm.columnIndex) {
                     sm.charBuffIndex = 0;
                     return null;
                 }
-                return arrayType.getElementType();
             }
+        }
 
-            private Type getExpectedRowTypeOfRecord(StateMachine sm) {
-                // TODO: These can be make as module level variables
-                String header = CsvCreator.getHeaderValueForColumnIndex(sm);
-                Map<String, Field> fields = sm.fieldNames;
-                if (fields.containsKey(header)) {
-                    //TODO: Optimize
-                    return fields.get(header).getFieldType();
+        private static Type getExpectedRowTypeOfArray(StateMachine sm, ArrayType arrayType) {
+            // TODO: add to a constant
+            if (arrayType.getSize() != -1 && arrayType.getSize() < sm.columnIndex) {
+                sm.charBuffIndex = 0;
+                return null;
+            }
+            return arrayType.getElementType();
+        }
+
+        private static Type getExpectedRowTypeOfRecord(StateMachine sm) {
+            // TODO: These can be make as module level variables
+            String header = CsvCreator.getHeaderValueForColumnIndex(sm);
+            Map<String, Field> fields = sm.fieldNames;
+            if (fields.containsKey(header)) {
+                //TODO: Optimize
+                return fields.get(header).getFieldType();
+            } else {
+                Type restType = sm.restType;
+                if (restType != null) {
+                    return restType;
                 } else {
-                    Type restType = sm.restType;
-                    if (restType != null) {
-                        return restType;
-                    } else {
-                        sm.charBuffIndex = 0;
-                        return null;
-                    }
+                    sm.charBuffIndex = 0;
+                    return null;
                 }
             }
         }
@@ -582,78 +610,186 @@ public class CsvParser {
             }
         }
 
+        private static class StringQuoteValueState implements State {
+
+            @Override
+            public State transition(StateMachine sm, char[] buff, int i, int count)
+                    throws CsvParserException {
+                State state = this;
+                char ch;
+                for (; i < count; i++) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    if (ch == sm.config.textEnclosure) {
+                        if (sm.isQuoteClosed) {
+                            sm.append(ch);
+                            continue;
+                        }
+                        sm.isQuoteClosed = true;
+                    } else if (ch == sm.config.delimiter && sm.isQuoteClosed) {
+                        addRowValue(sm);
+                        state = ROW_START_STATE;
+                        sm.isQuoteClosed = false;
+                        break;
+                    } else if (sm.isNewLineOrEof(ch) && sm.isQuoteClosed) {
+                        handleEndOfTheRow(sm, ch);
+                        if (ch == EOF) {
+                            state = ROW_END_STATE;
+                            break;
+                        }
+                        state = ROW_START_STATE;
+                        sm.isQuoteClosed = false;
+                        break;
+                    } else if (ch == sm.config.escapeChar) {
+                        state = STRING_ESCAPE_VALUE_STATE;
+                        sm.isQuoteClosed = false;
+                        break;
+                    } else if (!sm.isQuoteClosed && ch == EOF) {
+                        throw new CsvParserException("unexpected end of csv stream");
+                    } else {
+                        if (!sm.isQuoteClosed) {
+                            sm.append(ch);
+                        } else {
+                            sm.append(sm.config.textEnclosure);
+                            sm.append(ch);
+                            sm.isQuoteClosed = false;
+                        }
+                        state = this;
+                    }
+                }
+                sm.index = i + 1;
+                return state;
+            }
+        }
+
+        private static class HeaderQuoteValueState implements State {
+
+            @Override
+            public State transition(StateMachine sm, char[] buff, int i, int count)
+                    throws CsvParserException {
+                State state = null;
+                char ch;
+                for (; i < count; i++) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    if (ch == sm.config.textEnclosure) {
+                        sm.isQuoteClosed = true;
+                    } else if (ch == sm.config.delimiter && sm.isQuoteClosed) {
+                        addHeader(sm);
+                        sm.columnIndex++;
+                        sm.isQuoteClosed = false;
+                        state = HEADER_START_STATE;
+                        break;
+                    } else if (sm.isNewLineOrEof(ch) && sm.isQuoteClosed) {
+                        handleEndOfTheHeader(sm);
+                        state = HEADER_END_STATE;
+                        sm.isQuoteClosed = false;
+                        break;
+                    } else if (!sm.isQuoteClosed && ch == sm.config.escapeChar) {
+                        sm.isQuoteClosed = false;
+                        state = HEADER_ESCAPE_CHAR_STATE;
+                        break;
+                    } else if (!sm.isQuoteClosed && ch == EOF) {
+                        throw new CsvParserException("unexpected end of csv stream");
+                    } else {
+                        if (!sm.isQuoteClosed) {
+                            sm.append(ch);
+                        } else {
+                            sm.append(sm.config.textEnclosure);
+                            sm.append(ch);
+                            sm.isQuoteClosed = false;
+                        }
+                        state = this;
+                        continue;
+                    }
+                    break;
+                }
+                sm.index = i + 1;
+                return state;
+            }
+        }
+
+        private static class StringValueUnicodeHexProcessingState extends UnicodeHexProcessingState {
+
+            @Override
+            protected State getSourceState() {
+                return STRING_UNICODE_CHAR_STATE;
+            }
+
+        }
+
         /**
-         * Represents the state where an escaped character is processed in a string value.
+         * Represents the state where an escaped unicode character in hex format is processed
+         * from a field name.
          */
+        private static class HeaderUnicodeHexProcessingState extends UnicodeHexProcessingState {
+
+            @Override
+            protected State getSourceState() {
+                return HEADER_UNICODE_CHAR_STATE;
+            }
+        }
+
+        /**
+         * Represents the state where an escaped unicode character in hex format is processed.
+         */
+        private abstract static class UnicodeHexProcessingState implements State {
+
+            protected abstract State getSourceState();
+
+            @Override
+            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
+                State state = null;
+                char ch;
+                for (; i < count; i++) {
+                    ch = buff[i];
+                    sm.processLocation(ch);
+                    if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f')) {
+                        sm.hexBuilder.append(ch);
+                        if (sm.hexBuilder.length() >= 4) {
+                            sm.append(this.extractUnicodeChar(sm));
+                            this.reset(sm);
+                            state = this.getSourceState();
+                            break;
+                        }
+                        state = this;
+                        continue;
+                    }
+                    this.reset(sm);
+                    StateMachine.throwExpected("hexadecimal value of an unicode character");
+                    break;
+                }
+                sm.index = i + 1;
+                return state;
+            }
+
+            private void reset(StateMachine sm) {
+                sm.hexBuilder.setLength(0);
+            }
+
+            private char extractUnicodeChar(StateMachine sm) {
+                return StringEscapeUtils.unescapeJava("\\u" + sm.hexBuilder.toString()).charAt(0);
+            }
+
+        }
+
+        private static class HeaderEscapedCharacterProcessingState extends EscapedCharacterProcessingState {
+
+            @Override
+            protected State getSourceState() {
+                return HEADER_ESCAPE_CHAR_STATE;
+            }
+
+        }
+
         private static class StringValueEscapedCharacterProcessingState extends EscapedCharacterProcessingState {
 
             @Override
             protected State getSourceState() {
-                return STRING_VALUE_STATE;
-            }
-
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                State state = null;
-                char ch;
-                for (; i < count; i++) {
-                    ch = buff[i];
-                    sm.processLocation(ch);
-                    if (String.valueOf(ch) == sm.currentEscapeCharacters.peek()) {
-                        sm.currentEscapeCharacters.pop();
-                        state = ROW_START_STATE;
-                    } else if (ch == EOF) {
-                        throw new CsvParserException("unexpected end of JSON document");
-                    } else {
-                        sm.append(ch);
-                        state = this;
-                        continue;
-                    }
-                    break;
-                }
-                sm.index = i + 1;
-                return state;
-            }
-
-        }
-
-        /**
-         * Represents the state where an escaped character is processed in a field name.
-         */
-        private static class HeaderNameEscapedCharacterProcessingState extends EscapedCharacterProcessingState {
-
-            @Override
-            protected State getSourceState() {
-                return HEADER_NAME_STATE;
-            }
-
-            @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
-                State state = null;
-                char ch;
-                for (; i < count; i++) {
-                    ch = buff[i];
-                    sm.processLocation(ch);
-                    if (String.valueOf(ch) == sm.currentEscapeCharacters.peek()) {
-                        sm.currentEscapeCharacters.pop();
-                        state = HEADER_START_STATE;
-                    } else if (ch == EOF) {
-                        throw new CsvParserException("unexpected end of JSON document");
-                    } else {
-                        sm.append(ch);
-                        state = this;
-                        continue;
-                    }
-                    break;
-                }
-                sm.index = i + 1;
-                return state;
+                return STRING_ESCAPE_VALUE_STATE;
             }
         }
 
-        /**
-         * Represents the state where an escaped character is processed.
-         */
         private abstract static class EscapedCharacterProcessingState implements State {
 
             protected abstract State getSourceState();
@@ -687,8 +823,7 @@ public class CsvParser {
                             state = this.getSourceState();
                             break;
                         case 'n':
-                            // TODO: Update this
-                            sm.append('\n');
+                            sm.append(NEWLINE);
                             state = this.getSourceState();
                             break;
                         case 'r':
@@ -699,6 +834,16 @@ public class CsvParser {
                             sm.append(HZ_TAB);
                             state = this.getSourceState();
                             break;
+                        case 'u':
+                            if (this.getSourceState() == STRING_ESCAPE_VALUE_STATE) {
+                                state = STRING_UNICODE_CHAR_STATE;
+                            } else if (this.getSourceState() == HEADER_ESCAPE_CHAR_STATE) {
+                                state = HEADER_UNICODE_CHAR_STATE;
+                            } else {
+                                throw new CsvParserException("unknown source '" + this.getSourceState() +
+                                        "' in escape char processing state");
+                            }
+                            break;
                         default:
                             StateMachine.throwExpected("escaped characters");
                     }
@@ -706,7 +851,6 @@ public class CsvParser {
                 sm.index = i + 1;
                 return state;
             }
-
         }
 
         public static boolean isEndOfTheRowAndValueIsNotEmpty(CsvParser.StateMachine sm, char ch) {

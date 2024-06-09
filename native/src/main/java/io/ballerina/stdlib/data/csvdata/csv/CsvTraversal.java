@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
+import io.ballerina.stdlib.data.csvdata.FromString;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
@@ -327,12 +328,13 @@ public class CsvTraversal {
                     return true;
                 }
 
-                for (int i = 0; i < this.headers.length; i++) {
-                    if (!this.fieldHierarchy.containsKey(this.headers[i])) {
-                        return false;
+                for (String key: this.fieldHierarchy.keySet()) {
+                    for(String header: this.headers) {
+                        if (key.equals(header)) {
+                            return true;
+                        }
                     }
                 }
-                return true;
             }
             return false;
         }
@@ -345,7 +347,8 @@ public class CsvTraversal {
             }
             boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(expectedType, csvElement, arraySize);
             if (!headersMatchWithExpType) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP, csvElement, expectedType);
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP,
+                        csvElement, expectedType);
             }
             // TODO: Add headers from config
             addValuesToMapType(csvElement, arraySize, mappingType, expectedType);
@@ -465,7 +468,7 @@ public class CsvTraversal {
                 case TypeTags.STRING_TAG:
                     if (checkTypeCompatibility(restFieldType, csvMember)) {
                         ((BMap<BString, Object>) currentCsvNode)
-                                .put(key,  convertToBasicType(csvMember, restFieldType, config));
+                                .put(key, convertToBasicType(csvMember, restFieldType, config));
                     }
                     break;
                 case TypeTags.UNION_TAG:

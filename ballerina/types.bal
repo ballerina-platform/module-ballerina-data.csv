@@ -21,7 +21,7 @@ public type ParseOption record {|
   LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];
   NilValue? nilValue = ();
   // string commentStartingSequence = "#";
-  string comment = "#";
+  string:Char comment = "#";
   false|int:Unsigned32 header = 0;
 |};
 

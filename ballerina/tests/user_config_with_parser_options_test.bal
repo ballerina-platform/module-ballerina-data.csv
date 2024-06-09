@@ -4,11 +4,8 @@ boolean enable = true;
 
 @test:Config {enable: !enable}
 function debugTest() returns error? {
-    record{}[]|CsvConversionError bm1br = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
-    test:assertEquals(bm1br, [
-        [true, false],
-        [true, false]
-    ]);
+
+
 }
 
 @test:Config {enable}
@@ -152,11 +149,10 @@ function testHeaderOption() {
 
     record{}[]|CsvConversionError csv2cop4 = parseStringToRecord(csvStringData2, {header: 10});
     test:assertEquals(csv2cop4, [{'4: 5, string4: "string5", '1: true, "-6.51": 3, "()": ()}]);
-}
 
-@test:Config {enable}
-function testCustomHeaderOption() {
-
+    record{}[]|CsvConversionError csv1cop5 = parseStringToRecord(csvStringData1, {});
+    test:assertTrue(csv1cop5 is CsvConversionError);
+    test:assertEquals((<error> csv1cop5).message(), "The provided header row is empty");
 }
 
 @test:Config {enable}
@@ -472,8 +468,7 @@ function testSkipLineParserOption() {
 }
 
 @test:Config {enable}
-function testCustomHeaderParserOption() {
-// parseListAsRecordType
+function testCustomHeaderOption() {
     anydata[][]|CsvConversionError bm1ba = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {});
     test:assertEquals(bm1ba, [
         [true, false],
@@ -498,13 +493,6 @@ function testCustomHeaderParserOption() {
     test:assertTrue(bm3ba2 is CsvConversionError);
     test:assertEquals((<error> bm3ba2).message(), generateErrorMessageForInvalidCustomHeader("i2"));
 
-    // TODO: Fix this
-    // [boolean, boolean][]|CsvConversionError bm3ba3 = parseRecordAsListType([bm3, bm3], ["b1", "b4"], {});
-    // test:assertEquals(bm3ba3, [
-    //     [b1, b4],
-    //     [b1, b4]
-    // ]);
-
     [boolean...][]|CsvConversionError bm3ba4 = parseRecordAsListType([bm3, bm3], ["n2"], {});
     test:assertTrue(bm3ba4 is CsvConversionError);
     test:assertEquals((<error> bm3ba4).message(), "Invalid length for the header names");
@@ -513,11 +501,261 @@ function testCustomHeaderParserOption() {
     test:assertTrue(bm3ba5 is CsvConversionError);
     test:assertEquals((<error> bm3ba5).message(), "Invalid length for the header names");
 
-    record{}[]|CsvConversionError bm1br = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
-    test:assertTrue(bm1br is CsvConversionError);
-    test:assertEquals((<error> bm1br).message(), "Invalid length for the custom headers");
+    // -------------------------------------------------------------
 
-    record{}[]|CsvConversionError bm1br2 = parseListAsRecordType([["a", "1", "true"], []], ["a", "b"], {});
-    test:assertTrue(bm1br2 is CsvConversionError);
-    test:assertEquals((<error> bm1br2).message(), "Invalid length for the custom headers");
+    record{}[]|CsvConversionError ct1br = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "b"], {});
+    test:assertTrue(ct1br is CsvConversionError);
+    test:assertEquals((<error> ct1br).message(), "Invalid length for the custom headers");
+
+    record{}[]|CsvConversionError ct1br2 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "b", "c", "d"], {});
+    test:assertTrue(ct1br2 is CsvConversionError);
+    test:assertEquals((<error> ct1br2).message(), "Invalid length for the custom headers");
+
+    record{}[]|CsvConversionError ct1br2_2 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "c", "b", "d"], {});
+    test:assertTrue(ct1br2_2 is CsvConversionError);
+    test:assertEquals((<error> ct1br2_2).message(), "Invalid length for the custom headers");
+
+    record{}[]|CsvConversionError ct1br3 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], [], {});
+    test:assertTrue(ct1br3 is CsvConversionError);
+    test:assertEquals((<error> ct1br3).message(), "Invalid length for the custom headers");
+
+    record{|string a; string b; string c;|}[]|CsvConversionError ct1br5 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    test:assertTrue(ct1br5 is CsvConversionError);
+    // TODO: Fix
+    test:assertEquals((<error> ct1br5).message(), generateErrorMessageForMissingRequiredField("c"));
+
+    record{string a; string b; string c;}[]|CsvConversionError ct1br6 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    test:assertTrue(ct1br6 is CsvConversionError);
+    test:assertEquals((<error> ct1br6).message(), generateErrorMessageForMissingRequiredField("c"));
+
+    record{string a; string b;}[]|CsvConversionError ct1br7 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+        test:assertEquals(ct1br7, [
+        {a: "a", e: "1", b: "true"},
+        {a: "a", e: "1", b: "true"}
+    ]);
+
+    record{|string a; string b;|}[]|CsvConversionError ct1br8 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    test:assertEquals(ct1br8, [
+        {a: "a", b: "true"},
+        {a: "a", b: "true"}
+    ]);
+
+    record{|string...;|}[]|CsvConversionError ct1br9 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    test:assertEquals(ct1br9, [
+        {a: "a", b: "true", e: "1"},
+        {a: "a", b: "true", e: "1"}
+    ]);
+
+    record{|string...;|}[]|CsvConversionError ct1br10 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], (), {});
+    test:assertEquals(ct1br10, [
+        {'1: "a", '3: "true", '2: "1"},
+        {'1: "a", '3: "true", '2: "1"}
+    ]);
+}
+
+@test:Config {enable}
+function testCustomHeaderParserOption2() {
+    // parseStringToRecord
+    // parseRecordAsRecordType
+
+    record{}[]|CsvConversionError ct1br = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b"]});
+    test:assertTrue(ct1br is CsvConversionError);
+    test:assertEquals((<error> ct1br).message(), "Invalid length for the custom headers");
+
+    // record{}[]|CsvConversionError ct1br2 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b", "aa", "aaa", "aaaaa", "bb", "ccc"]});
+    // // TODO: Fix this
+    // test:assertTrue(ct1br2 is CsvConversionError);
+    // test:assertEquals((<error> ct1br2).message(), "Invalid length for the custom headers");
+
+    record{}[]|CsvConversionError ct1br2 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: []});
+    test:assertTrue(ct1br2 is CsvConversionError);
+    test:assertEquals((<error> ct1br2).message(), "Invalid length for the custom headers");
+
+    record{int a; string b; boolean c; decimal d; float e; () f;}[]|CsvConversionError ct1br3 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b"]});
+    test:assertTrue(ct1br3 is CsvConversionError);
+    test:assertEquals((<error> ct1br3).message(), "Invalid length for the custom headers");
+
+    record{int a; string b; boolean c; decimal d; float e; () f;}[]|CsvConversionError ct1br4 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b", "c", "d", "e", "f"]});
+    test:assertEquals(ct1br4, [
+        {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
+        {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
+        {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
+        {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
+        {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3, f: ()}
+    ]);
+
+    record{() a; float b; decimal c; boolean d; string e; int f;}[]|CsvConversionError ct1br5 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f", "e", "d", "c", "b", "a"]});
+    test:assertEquals(ct1br5, [
+        {f: 1, e: "string1", d: true, c: <decimal>2.234, b: <float>2.234, a: ()},
+        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+    ]);
+
+    record{() a; float b; decimal c; boolean d; string e; int f;}[]|CsvConversionError ct1br5_2 = parseStringToRecord(csvStringData1, {header: false, skipLines: [1], customHeaders: ["f", "e", "d", "c", "b", "a"]});
+    test:assertEquals(ct1br5_2, [
+        {f: 1, e: "string1", d: true, c: <decimal>2.234, b: <float>2.234, a: ()},
+        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+    ]);
+
+    record{() a; float b; decimal c; boolean d; string e; int f;}[]|CsvConversionError ct1br5_3 = parseStringToRecord(csvStringData1, {skipLines: [1], customHeaders: ["f", "e", "d", "c", "b", "a"]});
+    test:assertEquals(ct1br5_3, [
+        {f: 1, e: "string1", d: true, c: <decimal>2.234, b: <float>2.234, a: ()},
+        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+    ]);
+
+    record{|() a1; float b1; decimal c1; boolean d1; string e1; int f1;|}[]|CsvConversionError ct1br6 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "d1", "c1", "b1", "a1"]});
+    test:assertEquals(ct1br6, [
+        {f1: 1, e1: "string1", d1: true, c1: <decimal>2.234, b1: <float>2.234, a1: ()},
+        {f1: 2, e1: "string2", d1: false, c1: <decimal>0, b1: <float>0, a1: ()},
+        {f1: 3, e1: "string3", d1: false, c1: <decimal>1.23, b1: <float>1.23, a1: ()},
+        {f1: 4, e1: "string4", d1: true, c1: <decimal>-6.51, b1: <float>-6.51, a1: ()},
+        {f1: 5, e1: "string5", d1: true, c1: <decimal>3, b1: <float>3, a1: ()}
+    ]);
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br7 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "d1", "c1", "b1", "a1"]});
+    test:assertEquals(ct1br7, [
+        {e1: "string1", d1: true},
+        {e1: "string2", d1: false},
+        {e1: "string3", d1: false},
+        {e1: "string4", d1: true},
+        {e1: "string5", d1: true}
+    ]);
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br7_2 = parseStringToRecord(csvStringData1, {header: false, skipLines: [1], customHeaders: ["f1", "e1", "d1", "c1", "b1", "a1"]});
+    test:assertEquals(ct1br7_2, [
+        {e1: "string1", d1: true},
+        {e1: "string2", d1: false},
+        {e1: "string3", d1: false},
+        {e1: "string4", d1: true},
+        {e1: "string5", d1: true}
+    ]);
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br8 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["e1", "d1"]});
+    // TODO: Fix
+    test:assertTrue(ct1br8 is CsvConversionError);
+    test:assertEquals((<error> ct1br8).message(), generateErrorMessageForInvalidCast("string1", "boolean"));
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br9 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "d1", "c1", "b1", "a1"]});
+    test:assertEquals(ct1br9, [
+            {e1: "string1", d1: true},
+            {e1: "string2", d1: false},
+            {e1: "string3", d1: false},
+            {e1: "string4", d1: true},
+            {e1: "string5", d1: true}
+    ]);
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br10 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "d1", "f1", "b1", "a1"]});
+    test:assertEquals(ct1br10, [
+            {e1: "string1", d1: true},
+            {e1: "string2", d1: false},
+            {e1: "string3", d1: false},
+            {e1: "string4", d1: true},
+            {e1: "string5", d1: true}
+    ]);
+
+    record{|boolean d1; string e1;|}[]|CsvConversionError ct1br11 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1"]});
+    test:assertTrue(ct1br11 is CsvConversionError);
+    test:assertEquals((<error> ct1br11).message(), "Invalid length for the custom headers");
+
+    record{|string d1; string e1;|}[]|CsvConversionError ct1br12 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "d1", "c1", "b1", "a1"]});
+    test:assertEquals(ct1br12, [
+            {e1: "string1", d1: "true"},
+            {e1: "string2", d1: "false"},
+            {e1: "string3", d1: "0"},
+            {e1: "string4", d1: "1"},
+            {e1: "string5", d1: "true"}
+    ]);
+
+    record{|string d1; string e1;|}[]|CsvConversionError ct1br13 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["f1", "e1", "dd1", "c1", "b1", "a1"]});
+    test:assertTrue(ct1br13 is CsvConversionError);
+    test:assertEquals((<error> ct1br13).message(), generateErrorMessageForMissingRequiredField("d1"));
+}
+
+@test:Config {enable}
+function testTextQuotesWithParserOptions() {
+        string csvValue1 = string `
+        a, b, c
+                                1, "2", "3"
+                                "1", 2, 3
+                                1, "2", 3
+                                
+                                "1", "2", "3"`;
+
+        string csvValue2 = string `
+        a, b, c
+                        1, "2, 3", 3
+                        1, "2, 3",3
+                        4, 5, 6
+            `;
+
+        string csvValue3 = string `a, b, c
+                            "1", ""2"", "3"
+                            4, "5, 6"b" " a "", ""6""`;
+
+        string csvValue4 = string `a, b, c
+                            1, '2', 3
+                            4, '5, '6'7', 8
+                            4, "5", '4, '5"a", ,"," a '6'7'`;
+
+        string csvValue5 = string `a, b, c
+            1, "2", "3"
+            1, 2, 3
+            "1", "2", 3
+            1, "2", "3"
+        `;
+
+    record {}[]|CsvConversionError cn = parseStringToRecord(csvValue1, {header: 1});
+    test:assertEquals(cn, [{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3}]);
+
+    record {}[]|CsvConversionError cn2 = parseStringToRecord(csvValue2, {header: 1});
+    test:assertEquals(cn2, [{"a":1,"b":"2, 3","c":3}, {"a":1,"b":"2, 3","c":3}, {"a":4,"b":5,"c":6}]);
+
+    record {}[]|CsvConversionError cn3 = parseStringToRecord(csvValue3, {});
+    test:assertEquals(cn3, [{"a":1,"b":"\"2\"","c":3}, {"a":4,"b":"5, 6\"b\" \" a \"", c:"\"6\""}]);
+
+    record {}[]|CsvConversionError cn4 = parseStringToRecord(csvValue4, {textEnclosure: "'"});
+    test:assertEquals(cn4, [{"a":1,"b":2,"c":3}, {"a":4, b: "5, '6'7", c: 8}, {a:4, b: "\"5\"", c: "4, '5\"a\", ,\",\" a '6'7"}]);
+
+    record {}[]|CsvConversionError cn5 = parseStringToRecord(csvValue5, {});
+    test:assertEquals(cn5, [{a: 1, b: 2, c: 3}, {a: 1, b: 2, c: 3}, {a: 1, b: 2, c: 3}, {a: 1, b: 2, c: 3}]);
+}
+
+@test:Config {enable}
+function testHeaderQuotesWithParserOptions() {
+        string csvValue1 = string `
+        "a", b, c
+                                1, "2", "3"
+                                "1", 2, 3
+                                1, "2", 3
+                                
+                                "1", "2", "3"`;
+
+        string csvValue2 = string `
+        "a, b, c", "b,c", "c,d"
+                        1, "2, 3", 3
+                        1, "2, 3",3
+                        4, 5, 6
+            `;
+
+        string csvValue3 = string `'a '1'a5,6', 'b", " ","""', c
+                    1, '2', 3
+                    4, '5, '6'7', 8
+                    4, "5", '4, '5"a", ,"," a '6'7'`;
+
+    record {}[]|CsvConversionError cn = parseStringToRecord(csvValue1, {header: 1});
+    test:assertEquals(cn, [{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3},{"a":1,"b":2,"c":3}]);
+
+    record {}[]|CsvConversionError cn2 = parseStringToRecord(csvValue2, {header: 1});
+    test:assertEquals(cn2, [{"a, b, c":1,"b,c":"2, 3","c,d":3}, {"a, b, c":1,"b,c":"2, 3","c,d":3}, {"a, b, c":4,"b,c":5,"c,d":6}]);
+
+    record {}[]|CsvConversionError cn3 = parseStringToRecord(csvValue3, {textEnclosure: "'"});
+    test:assertEquals(cn3, [{"a '1'a5,6":1,"b\", \" \",\"\"\"":2,"c":3}, {"a '1'a5,6":4, "b\", \" \",\"\"\"": "5, '6'7", c: 8}, {"a '1'a5,6":4, "b\", \" \",\"\"\"": "\"5\"", c: "4, '5\"a\", ,\",\" a '6'7"}]);
 }

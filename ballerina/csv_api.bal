@@ -16,7 +16,6 @@
 
 import ballerina/jballerina.java;
 
-
 public isolated function parseStringToRecord(string s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
@@ -38,7 +37,7 @@ public isolated function parseStreamToList(stream<byte[], error?> s,
        returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function parseRecordAsRecordType(record{}[] s,
-            ToRecordOptions options = {}, typedesc<record{}[]> t = <>)
+            Options options = {}, typedesc<record{}[]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function parseRecordAsListType(record{}[] s, string[] headerNames,
@@ -53,4 +52,3 @@ public isolated function parseListAsListType(string[][] s, Options options = {},
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
