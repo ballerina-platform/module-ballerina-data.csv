@@ -864,3 +864,26 @@ function testDelimiterWithParserOptions() {
         [5, "string", true, 2.234, -3.21, ()]
     ]);
 }
+
+@test:Config {enable}
+function testLineTerminatorWithParserOptions() {
+    string csvValue = string `a,b${"\n"} 1,"2\n3"`;
+
+    record {}[]|CsvConversionError cn = parseStringToRecord(csvValue, {header: 0, lineTerminator: LF});
+    test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
+
+    cn = parseStringToRecord(csvValue, {header: 0, lineTerminator: [LF]});
+    test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
+
+    cn = parseStringToRecord(csvValue, {header: 0, lineTerminator: [CRLF, LF, CR]});
+    test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
+
+    anydata[][]|CsvConversionError cn2 = parseStringToList(csvValue, {header: 0, lineTerminator: LF});
+    test:assertEquals(cn2, [[1, "2\n3"]]);
+
+    cn2 = parseStringToList(csvValue, {header: 0, lineTerminator: [LF]});
+    test:assertEquals(cn2, [[1, "2\n3"]]);
+
+    cn2 = parseStringToList(csvValue, {header: 0, lineTerminator: [CRLF, LF, CR]});
+    test:assertEquals(cn2, [[1, "2\n3"]]);
+}
