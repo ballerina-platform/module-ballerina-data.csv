@@ -667,7 +667,7 @@ public class CsvParser {
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count)
                     throws CsvParserException {
-                State state = null;
+                State state = this;
                 char ch;
                 for (; i < count; i++) {
                     ch = buff[i];
@@ -713,7 +713,7 @@ public class CsvParser {
 
             @Override
             protected State getSourceState() {
-                return STRING_UNICODE_CHAR_STATE;
+                return STRING_QUOTE_CHAR_STATE;
             }
 
         }
@@ -726,7 +726,7 @@ public class CsvParser {
 
             @Override
             protected State getSourceState() {
-                return HEADER_UNICODE_CHAR_STATE;
+                return HEADER_QUOTE_CHAR_STATE;
             }
         }
 
@@ -777,7 +777,7 @@ public class CsvParser {
 
             @Override
             protected State getSourceState() {
-                return HEADER_ESCAPE_CHAR_STATE;
+                return HEADER_QUOTE_CHAR_STATE;
             }
 
         }
@@ -786,7 +786,7 @@ public class CsvParser {
 
             @Override
             protected State getSourceState() {
-                return STRING_ESCAPE_VALUE_STATE;
+                return STRING_QUOTE_CHAR_STATE;
             }
         }
 
