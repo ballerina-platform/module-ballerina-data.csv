@@ -4,95 +4,10 @@ boolean enable = true;
 
 @test:Config {enable: !enable}
 function debugTest() returns error? {
-    RecordWithCustomAnnotation5[]|CsvConversionError cn19 = parseStringToRecord(string ` c,d,a,b
-                                          3,1,4,5`, {});
-    test:assertTrue(cn19 is CsvConversionError);
-    test:assertEquals((<error>cn19).message(), "Duplicate field found in record fields: 'c'");
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr8 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
+    test:assertTrue(cnrr8 is CsvConversionError);
+    test:assertEquals((<error>cnrr8).message(), "Duplicate field found in record fields: 'a'");
 }
-
-type RecordWithCustomAnnotation record {
-    @Name {
-        value: "c"
-    }
-    int a;
-    int b;
-};
-
-type RecordWithCustomAnnotation2 record {
-    @Name {
-        value: "c"
-    }
-    int a?;
-    @Name {
-        value: "d"
-    }
-    int? b;
-};
-
-type RecordWithCustomAnnotation3 record {|
-    @Name {
-        value: "c"
-    }
-    int a?;
-    @Name {
-        value: "d"
-    }
-    int? b;
-|};
-
-type RecordWithCustomAnnotation4 record {|
-    @Name {
-        value: "c"
-    }
-    int a;
-    @Name {
-        value: "d"
-    }
-    int b;
-    boolean...;
-|};
-
-type RecordWithCustomAnnotation5 record {
-    @Name {
-        value: "c"
-    }
-    int a;
-    @Name {
-        value: "d"
-    }
-    int b;
-    int c?;
-};
-
-type RecordWithCustomAnnotation6 record {
-    @Name {
-        value: "c"
-    }
-    int a;
-    @Name {
-        value: "d"
-    }
-    int b;
-    @Name {
-        value: "e"
-    }
-    int c;
-};
-
-type RecordWithCustomAnnotation7 record {
-    @Name {
-        value: "c"
-    }
-    int a;
-    @Name {
-        value: "d"
-    }
-    int b;
-    @Name {
-        value: "a"
-    }
-    int c;
-};
 
 @test:Config {enable}
 function testCustomNameAnnotation() returns error? {
@@ -155,9 +70,9 @@ function testCustomNameAnnotation() returns error? {
     test:assertTrue(cn13 is CsvConversionError);
     test:assertEquals((<error>cn13).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation4[]|CsvConversionError cn14 = parseStringToRecord(string `d,c
-                                                           1,3`, {});
-    test:assertEquals(cn14, [{b: 1, a: 3}]);
+    RecordWithCustomAnnotation4[]|CsvConversionError cn14 = parseStringToRecord(string `d,c,z
+                                                           1,3,true`, {});
+    test:assertEquals(cn14, [{b: 1, a: 3, z: true}]);
 
     RecordWithCustomAnnotation4[]|CsvConversionError cn15 = parseStringToRecord(string `c,d
                                           3,1`, {});
@@ -192,6 +107,178 @@ function testCustomNameAnnotation() returns error? {
                                           3,1,4
                                           3,1,4`, {});
     test:assertEquals(cn21, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
+
+    RecordWithCustomAnnotation8[]|CsvConversionError cn22 = parseStringToRecord(string ` c,d,a
+                                          3,1,4
+                                          3,1,4`, {});
+    test:assertTrue(cn22 is CsvConversionError);
+    test:assertEquals((<error>cn22).message(), "Duplicate field found in record fields: 'c'");
+
+    RecordWithCustomAnnotation[]|CsvConversionError cnrr1 = parseRecordAsRecordType([{"b": 1, "c": 3}], {});
+    test:assertEquals(cnrr1, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation[]|CsvConversionError cnrr2 = parseRecordAsRecordType([{"c": 3, "b": 1}], {});
+    test:assertEquals(cnrr2, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation[]|CsvConversionError cnrr3 = parseRecordAsRecordType(
+                                    [{"f": 3, "c": 3, "b": 1, "e": "cde"}, {"f": 3, "c": 3, "b": 1, "e": "cde"}], {});
+    test:assertEquals(cnrr3, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr4 = parseRecordAsRecordType([{"d": 1, "c": 3}], {});
+    test:assertEquals(cnrr4, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr5 = parseRecordAsRecordType([{"c": 3, "d": 1}], {});
+    test:assertEquals(cnrr5, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr6 = parseRecordAsRecordType(
+                                    [{"c": 3, "f": 3, "d": 1, "e": "cde"}, {"c": 3, "f": 3, "d": 1, "e": "cde"}], {});
+    test:assertEquals(cnrr6, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr7 = parseRecordAsRecordType([{"a":3, "b": 1}], {});
+    test:assertTrue(cnrr7 is CsvConversionError);
+    test:assertEquals((<error>cnrr7).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cnrr8 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
+    test:assertTrue(cnrr8 is CsvConversionError);
+    test:assertEquals((<error>cnrr8).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cnrr9 = parseRecordAsRecordType([{"d": 1, "c": 3}], {});
+    test:assertEquals(cnrr9, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cnrr10 = parseRecordAsRecordType([{"c": 3, "d": 1}], {});
+    test:assertEquals(cnrr10, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cnrr11 = parseRecordAsRecordType(
+                                                [{"c": 3, "f": 3, "d": 1, "e": "cde"}, {"c": 3, "f": 3, "d": 1, "e": "cde"}], {});
+    test:assertEquals(cnrr11, [{b: 1, a: 3}, {b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cnrr12 = parseRecordAsRecordType([{"a": 3, "b": 1}], {});
+    test:assertTrue(cnrr12 is CsvConversionError);
+    test:assertEquals((<error>cnrr12).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cnrr13 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
+    test:assertTrue(cnrr13 is CsvConversionError);
+    test:assertEquals((<error>cnrr13).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cnrr14 = parseRecordAsRecordType([{"d": 1, "c": 3, "z": true}], {});
+    test:assertEquals(cnrr14, [{b: 1, a: 3, z: true}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cnrr15 = parseRecordAsRecordType([{"c": 3, "d": 1}], {});
+    test:assertEquals(cnrr15, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cnrr16 = parseRecordAsRecordType(
+                                                [{"c": 3, "f": 3, "d": 1, "e": "cde"}, {"c": 3, "f": 3, "d": 1, "e": "cde"}], {});
+    test:assertEquals(cnrr16, [{b: 1, a: 3}, {b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cnrr17 = parseRecordAsRecordType([{"a": 3, "b": 1}], {});
+    test:assertTrue(cnrr17 is CsvConversionError);
+    test:assertEquals((<error>cnrr17).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cnrr18 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
+    test:assertTrue(cnrr18 is CsvConversionError);
+    test:assertEquals((<error>cnrr18).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation5[]|CsvConversionError cnrr19 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
+    test:assertTrue(cnrr19 is CsvConversionError);
+    test:assertEquals((<error>cnrr19).message(), "Duplicate field found in record fields: 'c'");
+
+    RecordWithCustomAnnotation6[]|CsvConversionError cnrr20 = parseRecordAsRecordType(
+                                                [{"c": 3, "d": 1, "e": 4}, {"c": 3, "d": 1, "e": 4}], {});
+    test:assertEquals(cnrr20, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
+
+    RecordWithCustomAnnotation7[]|CsvConversionError cnrr21 = parseRecordAsRecordType(
+                                                [{"c": 3, "d": 1, "a": 4}, {"c": 3, "d": 1, "a": 4}], {});
+    test:assertEquals(cnrr21, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
+
+    RecordWithCustomAnnotation8[]|CsvConversionError cnrr22 = parseRecordAsRecordType(
+                                                [{"c": 3, "d": 1, "a": 4}, {"c": 3, "d": 1, "a": 4}], {});
+    test:assertTrue(cnrr22 is CsvConversionError);
+    test:assertEquals((<error>cnrr22).message(), "Duplicate field found in record fields: 'c'");
+}
+
+//TODO: Emable after fix tuple proj
+@test:Config {enable: false}
+function testCustomNameAnnotation2() returns error? {
+    RecordWithCustomAnnotation[]|CsvConversionError cntr1 = parseListAsRecordType([["1", "3"]], ["b", "c"], {});
+    test:assertEquals(cntr1, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation[]|CsvConversionError cntr2 = parseListAsRecordType([["3", "1"]], ["c", "b"], {});
+    test:assertEquals(cntr2, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation[]|CsvConversionError cntr3 = parseListAsRecordType(
+                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["f", "c", "b", "e"], {});
+    test:assertEquals(cntr3, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cntr4 = parseListAsRecordType([["1", "3"]], ["d", "c"], {});
+    test:assertEquals(cntr4, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cntr5 = parseListAsRecordType([["3","1"]], ["c", "d"], {});
+    test:assertEquals(cntr5, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cntr6 = parseListAsRecordType(
+                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+    test:assertEquals(cntr6, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cntr7 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
+    test:assertTrue(cntr7 is CsvConversionError);
+    test:assertEquals((<error>cntr7).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation2[]|CsvConversionError cntr8 = parseListAsRecordType([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    test:assertTrue(cntr8 is CsvConversionError);
+    test:assertEquals((<error>cntr8).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr9 = parseListAsRecordType([["1", "3"]], ["d", "c"], {});
+    test:assertEquals(cntr9, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr10 = parseListAsRecordType([["3", "1"]], ["c", "d"], {});
+    test:assertEquals(cntr10, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr11 = parseListAsRecordType(
+                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+    test:assertEquals(cntr11, [{b: 1, a: 3}, {b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr12 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
+    test:assertTrue(cntr12 is CsvConversionError);
+    test:assertEquals((<error>cntr12).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr13 = parseListAsRecordType([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    test:assertTrue(cntr13 is CsvConversionError);
+    test:assertEquals((<error>cntr13).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cntr14 = parseListAsRecordType([["1", "3", "true"]], ["d", "c", "z"], {});
+    test:assertEquals(cntr14, [{b: 1, a: 3, z: true}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cntr15 = parseListAsRecordType([["3", "1"]], ["c", "d"], {});
+    test:assertEquals(cntr15, [{b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cntr16 = parseListAsRecordType(
+                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+    test:assertEquals(cntr16, [{b: 1, a: 3}, {b: 1, a: 3}]);
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cntr17 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
+    test:assertTrue(cntr17 is CsvConversionError);
+    test:assertEquals((<error>cntr17).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation4[]|CsvConversionError cntr18 = parseListAsRecordType([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    test:assertTrue(cntr18 is CsvConversionError);
+    test:assertEquals((<error>cntr18).message(), "Duplicate field found in record fields: 'a'");
+
+    RecordWithCustomAnnotation5[]|CsvConversionError cntr19 = parseListAsRecordType([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    test:assertTrue(cntr19 is CsvConversionError);
+    test:assertEquals((<error>cntr19).message(), "Duplicate field found in record fields: 'c'");
+
+    RecordWithCustomAnnotation6[]|CsvConversionError cntr20 = parseListAsRecordType(
+                                                [["3", "1", "4"], ["3", "1", "4"]], ["c", "d", "e"], {});
+    test:assertEquals(cntr20, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
+
+    RecordWithCustomAnnotation7[]|CsvConversionError cntr21 = parseListAsRecordType(
+                                                [["3", "1", "4"], ["3", "1", "4"]], ["c", "d", "a"], {});
+    test:assertEquals(cntr21, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
+
+    RecordWithCustomAnnotation8[]|CsvConversionError cntr22 = parseListAsRecordType(
+                                                [["3", "1", "4"], ["3", "1", "4"]], ["c", "d", "a"], {});
+    test:assertTrue(cntr22 is CsvConversionError);
+    test:assertEquals((<error>cntr22).message(), "Duplicate field found in record fields: 'c'");
 }
 
 @test:Config {enable}

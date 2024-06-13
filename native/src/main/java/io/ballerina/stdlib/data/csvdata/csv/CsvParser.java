@@ -96,6 +96,7 @@ public class CsvParser {
         BArray rootCsvNode;
         Map<String, Field> fieldHierarchy = new HashMap<>();
         Map<String, String> updatedRecordFieldNames = new HashMap<>();
+        HashSet<String> fields = new HashSet<>();
         Map<String, Field> fieldNames = new HashMap<>();
         private char[] charBuff = new char[1024];
         private int charBuffIndex;
@@ -131,6 +132,7 @@ public class CsvParser {
             rowIndex = 1;
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
+            fields.clear();
             fieldNames.clear();
             rootArrayType = null;
             config = null;
@@ -195,6 +197,7 @@ public class CsvParser {
                     RecordType recordType = (RecordType) expectedArrayElementType;
                     restType = (recordType).getRestFieldType();
                     fieldHierarchy = new HashMap<>(recordType.getFields());
+                    fields = new HashSet<>(recordType.getFields().keySet());
                     updatedRecordFieldNames = processNameAnnotationsAndBuildCustomFieldMap(recordType, fieldHierarchy);
                     break;
                 case TypeTags.TUPLE_TAG:
@@ -403,8 +406,7 @@ public class CsvParser {
             String value = sm.value();
             if (sm.expectedArrayElementType instanceof RecordType) {
                 String fieldName = CsvUtils.getUpdatedHeaders(
-                        sm.updatedRecordFieldNames, value,
-                        sm.fieldHierarchy.containsKey(value) || sm.fieldNames.containsKey(value));
+                        sm.updatedRecordFieldNames, value, sm.fields.contains(value));
                 Field field = sm.fieldHierarchy.get(fieldName);
                 if (field != null) {
                     sm.fieldNames.put(fieldName, field);

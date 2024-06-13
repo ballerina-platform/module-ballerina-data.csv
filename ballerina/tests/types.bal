@@ -2533,3 +2533,102 @@ type ClosedAnydataMapArray AnydataMap[3];
 type CustomMapArray CustomMap[];
 
 type ClosedCustomMapArray CustomMap[3];
+
+type RecordWithCustomAnnotation record {
+    @Name {
+        value: "c"
+    }
+    int a;
+    int b;
+};
+
+type RecordWithCustomAnnotation2 record {
+    @Name {
+        value: "c"
+    }
+    int a?;
+    @Name {
+        value: "d"
+    }
+    int? b;
+};
+
+type RecordWithCustomAnnotation3 record {|
+    @Name {
+        value: "c"
+    }
+    int a?;
+    @Name {
+        value: "d"
+    }
+    int? b;
+|};
+
+type RecordWithCustomAnnotation4 record {|
+    @Name {
+        value: "c"
+    }
+    int a;
+    @Name {
+        value: "d"
+    }
+    int b;
+    boolean...;
+|};
+
+type RecordWithCustomAnnotation5 record {
+    @Name {
+        value: "c"
+    }
+    int a;
+    @Name {
+        value: "d"
+    }
+    int b;
+    int c?;
+};
+
+type RecordWithCustomAnnotation6 record {
+    @Name {
+        value: "c"
+    }
+    int a;
+    @Name {
+        value: "d"
+    }
+    int b;
+    @Name {
+        value: "e"
+    }
+    int c;
+};
+
+type RecordWithCustomAnnotation7 record {
+    @Name {
+        value: "c"
+    }
+    int a;
+    @Name {
+        value: "d"
+    }
+    int b;
+    @Name {
+        value: "a"
+    }
+    int c;
+};
+
+type RecordWithCustomAnnotation8 record {
+    @Name {
+        value: "c"
+    }
+    int a;
+    @Name {
+        value: "c"
+    }
+    int b;
+    @Name {
+        value: "a"
+    }
+    int c;
+};

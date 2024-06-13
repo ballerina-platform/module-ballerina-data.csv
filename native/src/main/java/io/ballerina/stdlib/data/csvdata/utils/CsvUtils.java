@@ -210,7 +210,10 @@ public class CsvUtils {
                     if (mapKey.getValue().endsWith(Constants.NAME)) {
                         String name = ((Map<BString, Object>) annotMap.get(mapKey)).get(Constants.VALUE).toString();
                         String originalName = key.substring(Constants.FIELD.length());
-                        if (updatedValues.contains(name) || updatedFields.contains(originalName)) {
+                        if (updatedValues.contains(name)) {
+                            throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_FIELD, name);
+                        }
+                        if (updatedFields.contains(originalName)) {
                             throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_FIELD, originalName);
                         }
                         updatedFields.add(originalName);

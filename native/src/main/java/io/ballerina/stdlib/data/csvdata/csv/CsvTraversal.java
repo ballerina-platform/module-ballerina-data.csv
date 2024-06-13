@@ -59,6 +59,7 @@ public class CsvTraversal {
         Map<String, Field> fieldHierarchy = new HashMap<>();
         Map<String, String> updatedRecordFieldNames = new HashMap<>();
         Map<String, Field> headerFieldHierarchy = new HashMap<>();
+        HashSet<String> fields = new HashSet<>();
         Type restType;
         Deque<String> fieldNames = new ArrayDeque<>();
         BArray rootCsvNode;
@@ -72,6 +73,7 @@ public class CsvTraversal {
             currentField = null;
             fieldHierarchy.clear();
             headerFieldHierarchy.clear();
+            fields.clear();;
             restType = null;
             fieldNames.clear();
             expectedArrayElementType = null;
@@ -149,6 +151,7 @@ public class CsvTraversal {
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
+                    fields = new HashSet<>(recordType.getFields().keySet());
                     this.updatedRecordFieldNames =
                             processNameAnnotationsAndBuildCustomFieldMap(recordType, fieldHierarchy);
                     this.headerFieldHierarchy = new HashMap<>(recordType.getFields());
@@ -420,7 +423,7 @@ public class CsvTraversal {
         private boolean isKeyBelongsToNonRestType(Object value, BString key) {
             String keyStr = StringUtils.getStringValue(key);
             String fieldName = CsvUtils.getUpdatedHeaders(this.updatedRecordFieldNames,
-                    keyStr, this.fieldHierarchy.containsKey(keyStr));
+                    keyStr, this.fields.contains(keyStr));
             currentField = fieldHierarchy.remove(fieldName);
             if (currentField == null) {
                 // Add to the rest field

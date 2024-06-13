@@ -119,7 +119,8 @@ public class CsvCreator {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
         }
         String header = sm.headers.get(sm.columnIndex);
-        return getUpdatedHeaders(sm.updatedRecordFieldNames, header, sm.fieldHierarchy.containsKey(header));
+        return getUpdatedHeaders(sm.updatedRecordFieldNames, header,
+                sm.fields.contains(header));
     }
 
     public static void checkAndAddCustomHeaders(CsvParser.StateMachine sm, Object customHeader) {
