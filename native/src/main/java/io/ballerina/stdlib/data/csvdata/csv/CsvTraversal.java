@@ -20,13 +20,17 @@ package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.FromString;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 
@@ -113,27 +117,44 @@ public class CsvTraversal {
         public void traverseCsvArrayMembersWithMapAsCsvElementType(long length, BArray csv, Type expectedArrayType) {
             Object rowValue;
             for (int i = 0; i < length; i++) {
+                if (ignoreRow(i + 1, config.skipLines)) {
+                    continue;
+                }
                 rowValue = traverseCsvElementWithMapOrRecord(csv.get(i), expectedArrayType);
-                checkSkipDataRowsAndAddDataRow(rowValue, i, config.skipLines);
+                rootCsvNode.append(rowValue);
             }
         }
 
         public void traverseCsvArrayMembersWithArrayAsCsvElementType(long length, BArray csv, Type expectedArrayType) {
             Object rowValue;
             for (int i = 0; i < length; i++) {
+                if (ignoreRow(i + 1, config.skipLines)) {
+                    continue;
+                }
                 rowValue = traverseCsvElementWithArray(csv.get(i), expectedArrayType);
-                checkSkipDataRowsAndAddDataRow(rowValue, i, config.skipLines);
+                rootCsvNode.append(rowValue);
             }
         }
 
-        private boolean checkSkipDataRowsAndAddDataRow(Object value, int index, Object skipLinesConfig) {
+        private static boolean ignoreRow(int index, Object skipLinesConfig) {
             long[] skipLines = getSkipDataRows(skipLinesConfig);
-            if (skipLines[0] <= index && index < skipLines[skipLines.length - 1]) {
-                return true;
+            for (long skipLine: skipLines) {
+                if (skipLine == index) {
+                    return true;
+                }
             }
-            rootCsvNode.append(value);
-            return true;
+            return false;
         }
+
+//        private void checkSkipDataRowsAndAddDataRow(Object value, int index, Object skipLinesConfig) {
+//            long[] skipLines = getSkipDataRows(skipLinesConfig);
+//            for (long skipLine: skipLines) {
+//                if (skipLine == index) {
+//                    return;
+//                }
+//            }
+//            rootCsvNode.append(value);
+//        }
 
         public Object traverseCsvElementWithMapOrRecord(Object csvElement, Type expectedType) {
             switch (expectedType.getTag()) {
@@ -189,7 +210,7 @@ public class CsvTraversal {
         private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
             int index = 0;
             for (int i = 0; i < csvElement.getLength(); i++) {
-                if (index >= expectedSize) {
+                if (config.allowDataProjection && index >= expectedSize) {
                     break;
                 }
                 addValuesToArrayType(csvElement.get(i),
@@ -228,7 +249,7 @@ public class CsvTraversal {
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER, key);
                 }
                 Object v = map.get(key);
-                if (index >= expectedSize) {
+                if (config.allowDataProjection && index >= expectedSize) {
                     break;
                 }
                 addValuesToArrayType(v, getArrayOrTupleMemberType(type, index), index, currentCsvNode, config);
@@ -245,8 +266,19 @@ public class CsvTraversal {
                 }
                 if (restType != null) {
                     return restType;
+                } else {
+                    if (config.allowDataProjection) {
+                        return null;
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, tupleTypes.size());
                 }
-                return null;
+            }
+            ArrayType  arrayType = (ArrayType) type;
+            if (arrayType.getSize() != -1 && arrayType.getSize() <= index) {
+                if (config.allowDataProjection) {
+                    return null;
+                }
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, arrayType.getSize());
             }
             return ((ArrayType) type).getElementType();
         }
@@ -360,7 +392,6 @@ public class CsvTraversal {
 
             // TODO: Canges the logic with headers parameter
             for(int i = 1; i <= arraySize; i++) {
-//                key = StringUtils.fromString(String.valueOf(i));
                 key = StringUtils.fromString(this.headers[i - 1]);
                 if (!mappingType) {
                     if (!isKeyBelongsToNonRestType(csvElement.get(i-1), key)) {
@@ -373,10 +404,11 @@ public class CsvTraversal {
                 }
                 addCurrentFieldValue(fieldType, csvElement.get(i - 1), key, mappingType);
             }
-            checkOptionalFieldsAndLogError(fieldHierarchy);
+            checkRequiredFieldsAndLogError(fieldHierarchy, config.absentAsNilableType);
         }
 
-        private void traverseMapValueWithMapAsExpectedType(BMap<BString, Object> map, boolean mappingType, Type expType) {
+        private void traverseMapValueWithMapAsExpectedType(
+                BMap<BString, Object> map, boolean mappingType, Type expType) {
             Type currentFieldType;
             for (BString key : map.getKeys()) {
                 if (!mappingType) {
@@ -392,7 +424,7 @@ public class CsvTraversal {
                 }
                 addCurrentFieldValue(currentFieldType, map.get(key), key, mappingType);
             }
-            checkOptionalFieldsAndLogError(fieldHierarchy);
+            checkRequiredFieldsAndLogError(fieldHierarchy, config.absentAsNilableType);
         }
 
         private boolean isKeyBelongsToNonRestType(Object value, BString key) {
@@ -402,8 +434,12 @@ public class CsvTraversal {
                 if (restType != null) {
                     Type restFieldType = TypeUtils.getReferredType(restType);
                     addRestField(restFieldType, key, value);
+                    return false;
                 }
-                return false;
+                if (config.allowDataProjection) {
+                    return false;
+                }
+                throw DiagnosticLog.error(DiagnosticErrorCode.NO_FIELD_FOR_HEADER, key);
             }
             fieldNames.push(currentField.getFieldName());
             return true;
@@ -415,7 +451,12 @@ public class CsvTraversal {
 
         private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key, boolean isMapType) {
             int currentFieldTypeTag = currentFieldType.getTag();
-
+            Object nilValue = config.nilValue;
+            if (config.nilAsOptionalField && !currentFieldType.isNilable()
+                    && CsvUtils.isNullValue(nilValue, mapValue)
+                    && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
+                return;
+            }
             switch (currentFieldTypeTag) {
                 case TypeTags.NULL_TAG:
                 case TypeTags.BOOLEAN_TAG:
@@ -458,6 +499,12 @@ public class CsvTraversal {
         }
 
         private void addRestField(Type restFieldType, BString key, Object csvMember) {
+            Object nilValue = config.nilValue;
+            if (config.nilAsOptionalField && !restFieldType.isNilable()
+                    && CsvUtils.isNullValue(nilValue, csvMember)
+                    && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
+                return;
+            }
             switch (restFieldType.getTag()) {
                 case TypeTags.ANYDATA_TAG:
                 case TypeTags.JSON_TAG:

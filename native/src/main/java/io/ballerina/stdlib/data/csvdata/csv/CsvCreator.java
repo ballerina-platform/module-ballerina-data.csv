@@ -21,6 +21,7 @@ package io.ballerina.stdlib.data.csvdata.csv;
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
@@ -29,13 +30,12 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.FromString;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,9 +61,16 @@ public class CsvCreator {
     }
 
     static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
-                                                  BString value, Type type, CsvConfig config, Type exptype) {
+                                                  String value, Type type, CsvConfig config, Type exptype,
+                                                  Field currentField) {
         Object currentCsv = sm.currentCsvNode;
-        Object convertedValue = convertToExpectedType(value, type, config);
+        Object nilValue = config.nilValue;
+        if (sm.config.nilAsOptionalField && !type.isNilable()
+                && CsvUtils.isNullValue(nilValue, value)
+                && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
+            return null;
+        }
+        Object convertedValue = convertToExpectedType(StringUtils.fromString(value), type, config);
         sm.isCurrentCsvNodeEmpty = false;
         if (convertedValue instanceof BError) {
             if (ignoreIncompatibilityErrorsForMaps(sm, type, exptype)) {

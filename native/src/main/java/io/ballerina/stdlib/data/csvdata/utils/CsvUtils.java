@@ -111,8 +111,11 @@ public class CsvUtils {
         }
     }
 
-    public static void checkOptionalFieldsAndLogError(Map<String, Field> currentField) {
-        currentField.values().forEach(field -> {
+    public static void checkRequiredFieldsAndLogError(Map<String, Field> filedHierarchy, boolean absentAsNilableType) {
+        filedHierarchy.values().forEach(field -> {
+            if (absentAsNilableType && field.getFieldType().isNilable()) {
+                return;
+            }
             if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
             }
@@ -227,6 +230,26 @@ public class CsvUtils {
 
         skipDataRows = getSkipLinesFromStringConfigValue(StringUtils.getStringValue(skipLines));
         return skipDataRows;
+    }
+
+    public static boolean isNullValue(Object nullValue, Object value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof BString) {
+            value = StringUtils.getStringValue(value);
+        }
+        if (value instanceof String v) {
+            if ((nullValue == null) && (Constants.Values.NULL.equalsIgnoreCase(v)
+                    || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(v))) {
+                return true;
+            }
+            if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     public static boolean isCharContainsInLineTerminatorUserConfig(char c, Object lineTerminatorObj) {

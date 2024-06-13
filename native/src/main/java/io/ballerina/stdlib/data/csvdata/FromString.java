@@ -40,6 +40,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isNullValue;
+
 /**
  * Native implementation of data:fromStringWithType(string).
  *
@@ -136,11 +138,7 @@ public class FromString {
 
     private static Object stringToNull(String value, CsvConfig config) throws NumberFormatException {
         Object nullValue = config.nilValue;
-        if ((nullValue == null) && (Constants.Values.NULL.equalsIgnoreCase(value)
-                || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(value))) {
-            return null;
-        }
-        if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
+        if (isNullValue(nullValue, value)) {
             return null;
         }
         return returnError(value, nullValue == null ? Constants.Values.BALLERINA_NULL : nullValue.toString());

@@ -19,13 +19,17 @@
 package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
+import io.ballerina.runtime.api.flags.TypeFlags;
 import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
@@ -36,6 +40,7 @@ import java.io.Reader;
 import java.util.*;
 
 import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.checkAndAddCustomHeaders;
+import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.getHeaderValueForColumnIndex;
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
 
 /**
@@ -382,6 +387,9 @@ public class CsvParser {
         private static void validateRemainingRecordFields(StateMachine sm) {
             if (sm.restType == null) {
                 for (Field field : sm.fieldHierarchy.values()) {
+                    if (sm.config.absentAsNilableType && field.getFieldType().isNilable()) {
+                        return;
+                    }
                     if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.REQUIRED)) {
                         throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_FIELD_IN_CSV, field.getFieldName());
                     }
@@ -484,13 +492,20 @@ public class CsvParser {
         }
 
         private static void handleEndOfTheRow(StateMachine sm, char ch) throws CsvParserException {
-//                if (sm.peek().isBlank()) {
-//                    updateLineAndColumnIndexesWithoutRowIndexes(sm);
-//                } else {
             handleCsvRow(sm);
-            checkOptionalFieldsAndLogError(sm.fieldHierarchy);
-//                }
+            checkRequiredFieldsAndLogError(sm.fieldHierarchy, sm.config.absentAsNilableType);
         }
+
+//        public static void updateOptionalFields(StateMachine sm) {
+//            Object csvNode = sm.currentCsvNode;
+//            if (sm.config.absentAsNilableType && TypeUtils.getType(csvNode).getTag()  == TypeTags.RECORD_TYPE_TAG) {
+//                sm.fieldHierarchy.values().forEach(field -> {
+//                    if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL)) {
+//                        ((BMap<BString, Object>) csvNode).put(StringUtils.fromString(field.getFieldName()), null);
+//                    }
+//                });
+//            }
+//        }
 
         private static void handleCsvRow(StateMachine sm) throws CsvParserException {
             if (!sm.peek().isBlank()) {
@@ -531,6 +546,7 @@ public class CsvParser {
 
         private static void finalizeTheRow(StateMachine sm) {
             int rootArraySize = sm.rootArrayType.getSize();
+//            updateOptionalFields(sm);
             if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
                 sm.rootCsvNode.append(sm.currentCsvNode);
             }
@@ -541,9 +557,11 @@ public class CsvParser {
             Type type;
             Type exptype = sm.expectedArrayElementType;
             String value = sm.value();
+            Field currentField = null;
 
             if (exptype instanceof RecordType) {
                 type = getExpectedRowTypeOfRecord(sm);
+                currentField = getCurrentField(sm);
             } else if (exptype instanceof MapType) {
                 type = ((MapType) exptype).getConstrainedType();
             } else if (exptype instanceof ArrayType) {
@@ -556,7 +574,7 @@ public class CsvParser {
 
             if (type != null) {
                 CsvCreator.convertAndUpdateCurrentJsonNode(sm,
-                        StringUtils.fromString(value), type, sm.config, exptype);
+                        value, type, sm.config, exptype, currentField);
             }
             sm.columnIndex++;
         }
@@ -571,23 +589,29 @@ public class CsvParser {
                     return restType;
                 } else {
                     sm.charBuffIndex = 0;
-                    return null;
+                    if (sm.config.allowDataProjection) {
+                        return null;
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, tupleTypes.size());
                 }
             }
         }
 
         private static Type getExpectedRowTypeOfArray(StateMachine sm, ArrayType arrayType) {
             // TODO: add to a constant
-            if (arrayType.getSize() != -1 && arrayType.getSize() < sm.columnIndex) {
+            if (arrayType.getSize() != -1 && arrayType.getSize() <= sm.columnIndex) {
                 sm.charBuffIndex = 0;
-                return null;
+                if (sm.config.allowDataProjection) {
+                    return null;
+                }
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, arrayType.getSize());
             }
             return arrayType.getElementType();
         }
 
         private static Type getExpectedRowTypeOfRecord(StateMachine sm) {
             // TODO: These can be make as module level variables
-            String header = CsvCreator.getHeaderValueForColumnIndex(sm);
+            String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;
             if (fields.containsKey(header)) {
                 //TODO: Optimize
@@ -598,9 +622,21 @@ public class CsvParser {
                     return restType;
                 } else {
                     sm.charBuffIndex = 0;
-                    return null;
+                    if (sm.config.allowDataProjection) {
+                        return null;
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.NO_FIELD_FOR_HEADER, header);
                 }
             }
+        }
+
+        private static Field getCurrentField(StateMachine sm) {
+            String header = getHeaderValueForColumnIndex(sm);
+            Map<String, Field> fields = sm.fieldNames;
+            if (fields.containsKey(header)) {
+                return fields.get(header);
+            }
+            return null;
         }
 
         private static class RowEndState implements State {

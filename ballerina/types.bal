@@ -3,9 +3,9 @@ public type CsvConversionError error;
 public type Options record {
    record {
        # If `true`, nil values will be considered as optional fields in the projection.
-       boolean nilAsOptionalField = false;
+       boolean nilAsOptionalField = false; // () assign to op
        # If `true`, absent fields will be considered as nilable types in the projection.
-       boolean absentAsNilableType = false;
+       boolean absentAsNilableType = false; // source haven't () && expected type contains op => ()
    }|false allowDataProjection = {};
    int[]|string skipLines = [];
 };

@@ -1,32 +1,32 @@
 import ballerina/test;
 
-boolean enable = true;
+// boolean enable = true;
 
-@test:Config {enable: !enable}
-function debugTest() returns error? {
+// @test:Config {enable: !enable}
+// function debugTest() returns error? {
 
-    string csvValue1 = string `
-        "a", b, c
-                                1, "2a\t", "3b\n"
-                                "1c\n", 2, 3
-                                1, "2a\"", 3
+//     string csvValue1 = string `
+//         "a", b, c
+//                                 1, "2a\t", "3b\n"
+//                                 "1c\n", 2, 3
+//                                 1, "2a\"", 3
                                 
-                                "1a\\", "2b\\"", "3"`;
+//                                 "1a\\", "2b\\"", "3"`;
 
-    string csvValue2 = string `
-        "a\"", "\tb\t\n", c
-                                1, "2a\t", "3b\n"
-                                "1c\n", "/2/", 3
-                                1, "2a\"", "3"
+//     string csvValue2 = string `
+//         "a\"", "\tb\t\n", c
+//                                 1, "2a\t", "3b\n"
+//                                 "1c\n", "/2/", 3
+//                                 1, "2a\"", "3"
                                 
-                                "1a\\", "2b\\"", "3"`;
+//                                 "1a\\", "2b\\"", "3"`;
 
-    record {}[]|CsvConversionError cn = parseStringToRecord(csvValue1, {header: 1});
-    test:assertEquals(cn, [{"a": 1, "b": "2a\t", "c": "3b\n"}, {"a": "1c\n", "b": 2, "c": 3}, {"a": 1, "b": "2a\"", "c": 3}, {"a": "1a\\", "b": "2b\\\"", "c": 3}]);
+//     record {}[]|CsvConversionError cn = parseStringToRecord(csvValue1, {header: 1});
+//     test:assertEquals(cn, [{"a": 1, "b": "2a\t", "c": "3b\n"}, {"a": "1c\n", "b": 2, "c": 3}, {"a": 1, "b": "2a\"", "c": 3}, {"a": "1a\\", "b": "2b\\\"", "c": 3}]);
 
-    record {}[]|CsvConversionError cn2 = parseStringToRecord(csvValue2, {header: 1});
-    test:assertEquals(cn2, [{"a\"": 1, "\tb\t\n": "2a\t", "c": "3b\n"}, {"a\"": "1c\n", "\tb\t\n": "/2/", "c": 3}, {"a\"": 1, "\tb\t\n": "2a\"", "c": 3}, {"a\"": "1a\\", "\tb\t\n": "2b\\\"", "c": 3}]);
-}
+//     record {}[]|CsvConversionError cn2 = parseStringToRecord(csvValue2, {header: 1});
+//     test:assertEquals(cn2, [{"a\"": 1, "\tb\t\n": "2a\t", "c": "3b\n"}, {"a\"": "1c\n", "\tb\t\n": "/2/", "c": 3}, {"a\"": 1, "\tb\t\n": "2a\"", "c": 3}, {"a\"": "1a\\", "\tb\t\n": "2b\\\"", "c": 3}]);
+// }
 
 @test:Config {enable}
 function testFromCsvStringWithParserOptions() {
@@ -487,6 +487,8 @@ function testSkipLineParserOption() {
         [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
+
+    // Fix:- Add tests for parseType
 }
 
 @test:Config {enable}
@@ -863,6 +865,8 @@ function testDelimiterWithParserOptions() {
         [4, "string", true, 2.234, -3.21, ()],
         [5, "string", true, 2.234, -3.21, ()]
     ]);
+
+    //TODO: Add tests for Unicodes
 }
 
 @test:Config {enable}
