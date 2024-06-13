@@ -20,15 +20,12 @@ package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
-import io.ballerina.stdlib.data.csvdata.FromString;
-import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
@@ -60,6 +57,7 @@ public class CsvTraversal {
         Object currentCsvNode;
         Field currentField;
         Map<String, Field> fieldHierarchy = new HashMap<>();
+        Map<String, String> updatedRecordFieldNames = new HashMap<>();
         Map<String, Field> headerFieldHierarchy = new HashMap<>();
         Type restType;
         Deque<String> fieldNames = new ArrayDeque<>();
@@ -146,21 +144,13 @@ public class CsvTraversal {
             return false;
         }
 
-//        private void checkSkipDataRowsAndAddDataRow(Object value, int index, Object skipLinesConfig) {
-//            long[] skipLines = getSkipDataRows(skipLinesConfig);
-//            for (long skipLine: skipLines) {
-//                if (skipLine == index) {
-//                    return;
-//                }
-//            }
-//            rootCsvNode.append(value);
-//        }
-
         public Object traverseCsvElementWithMapOrRecord(Object csvElement, Type expectedType) {
             switch (expectedType.getTag()) {
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
+                    this.updatedRecordFieldNames =
+                            processNameAnnotationsAndBuildCustomFieldMap(recordType, fieldHierarchy);
                     this.headerFieldHierarchy = new HashMap<>(recordType.getFields());
                     this.restType = recordType.getRestFieldType();
                     currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
@@ -428,7 +418,10 @@ public class CsvTraversal {
         }
 
         private boolean isKeyBelongsToNonRestType(Object value, BString key) {
-            currentField = fieldHierarchy.remove(key.toString());
+            String keyStr = StringUtils.getStringValue(key);
+            String fieldName = CsvUtils.getUpdatedHeaders(this.updatedRecordFieldNames,
+                    keyStr, this.fieldHierarchy.containsKey(keyStr));
+            currentField = fieldHierarchy.remove(fieldName);
             if (currentField == null) {
                 // Add to the rest field
                 if (restType != null) {

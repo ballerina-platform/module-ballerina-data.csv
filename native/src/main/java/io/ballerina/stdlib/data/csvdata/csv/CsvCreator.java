@@ -36,7 +36,10 @@ import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getUpdatedHeaders;
 
 /**
  * Create objects for partially parsed csv.
@@ -73,7 +76,7 @@ public class CsvCreator {
         Object convertedValue = convertToExpectedType(StringUtils.fromString(value), type, config);
         sm.isCurrentCsvNodeEmpty = false;
         if (convertedValue instanceof BError) {
-            if (ignoreIncompatibilityErrorsForMaps(sm, type, exptype)) {
+            if (ignoreIncompatibilityErrorsForMaps(sm, exptype)) {
                 return null;
             }
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, value, type);
@@ -115,7 +118,8 @@ public class CsvCreator {
         if (sm.columnIndex >= sm.headers.size()) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
         }
-        return sm.headers.get(sm.columnIndex);
+        String header = sm.headers.get(sm.columnIndex);
+        return getUpdatedHeaders(sm.updatedRecordFieldNames, header, sm.fieldHierarchy.containsKey(header));
     }
 
     public static void checkAndAddCustomHeaders(CsvParser.StateMachine sm, Object customHeader) {
@@ -136,7 +140,7 @@ public class CsvCreator {
         }
     }
 
-    private static boolean ignoreIncompatibilityErrorsForMaps(CsvParser.StateMachine sm, Type type, Type exptype) {
+    private static boolean ignoreIncompatibilityErrorsForMaps(CsvParser.StateMachine sm, Type exptype) {
         if (exptype.getTag() == TypeTags.RECORD_TYPE_TAG) {
             String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;

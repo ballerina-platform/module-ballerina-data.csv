@@ -1,5 +1,15 @@
 public type CsvConversionError error;
 
+# Defines the name of the JSON Object key.
+#
+# + value - The name of the JSON Object key
+public type NameConfig record {|
+    string value;
+|};
+
+# The annotation is used to overwrite the existing record field name.
+public const annotation NameConfig Name on record field;                                               
+
 public type Options record {
    record {
        # If `true`, nil values will be considered as optional fields in the projection.

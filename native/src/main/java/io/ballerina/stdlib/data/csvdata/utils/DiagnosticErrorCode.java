@@ -48,7 +48,8 @@ public enum DiagnosticErrorCode {
     INVALID_CUSTOM_HEADER_LENGTH("BDE_0021", "invalid.custom.header.length"),
     INVALID_HEADER_NAMES_LENGTH("BDE_0022", "invalid.header.names.length"),
     HEADER_CANNOT_BE_EMPTY("BDE_0023", "header.cannot.be.empty"),
-    NO_FIELD_FOR_HEADER("BDE_0024", "no.field.for.header");
+    NO_FIELD_FOR_HEADER("BDE_0024", "no.field.for.header"),
+    DUPLICATE_FIELD("BDE_0025", "duplicate.field");
 
     String diagnosticId;
     String messageKey;

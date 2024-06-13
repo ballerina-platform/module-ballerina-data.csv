@@ -6,9 +6,9 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.*;
-import io.ballerina.stdlib.data.csvdata.FromString;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static io.ballerina.runtime.api.TypeTags.INT_TAG;
@@ -193,6 +193,56 @@ public class CsvUtils {
         } else {
             return ((ArrayType) type).getSize();
         }
+    }
+
+    public static HashMap<String, String> processNameAnnotationsAndBuildCustomFieldMap(RecordType recordType,
+                                                                                       Map<String, Field> fieldHierarchy) {
+        BMap<BString, Object> annotations = recordType.getAnnotations();
+        HashMap<String, String> updatedRecordFieldNames = new HashMap<>();
+        HashSet<String> updatedFields = new HashSet<>();
+        HashSet<String> updatedValues = new HashSet<>();
+
+        for (BString annotationsKey : annotations.getKeys()) {
+            String key = annotationsKey.getValue();
+            if (key.contains(Constants.FIELD)) {
+                BMap<BString, Object> annotMap = ((BMap<BString, Object>) annotations.get(annotationsKey));
+                for (BString mapKey : annotMap.getKeys()) {
+                    if (mapKey.getValue().endsWith(Constants.NAME)) {
+                        String name = ((Map<BString, Object>) annotMap.get(mapKey)).get(Constants.VALUE).toString();
+                        String originalName = key.substring(Constants.FIELD.length());
+                        if (updatedValues.contains(name) || updatedFields.contains(originalName)) {
+                            throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_FIELD, originalName);
+                        }
+                        updatedFields.add(originalName);
+                        updatedValues.add(name);
+                        updatedRecordFieldNames.put(name, originalName);
+                        break;
+                    }
+                }
+            }
+        }
+        for (String field : fieldHierarchy.keySet()) {
+            if (updatedFields.contains(field)) {
+                continue;
+            }
+            if (updatedValues.contains(field) || updatedRecordFieldNames.containsKey(field)) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_FIELD, field);
+            }
+            updatedRecordFieldNames.put(field, field);
+        }
+
+        return updatedRecordFieldNames;
+    }
+
+    public static String getUpdatedHeaders(Map<String, String> updatedRecords, String key, boolean isKeyContains) {
+        String fieldName = updatedRecords.get(key);
+        if (fieldName != null) {
+            return fieldName;
+        }
+        if (isKeyContains) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_FIELD, key);
+        }
+        return key;
     }
 
     public static long[] getSkipLinesFromStringConfigValue(String configValue) {

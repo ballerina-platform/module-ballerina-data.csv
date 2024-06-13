@@ -19,18 +19,17 @@
 package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
-import io.ballerina.runtime.api.flags.TypeFlags;
 import io.ballerina.runtime.api.types.*;
-import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -96,6 +95,7 @@ public class CsvParser {
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
         Map<String, Field> fieldHierarchy = new HashMap<>();
+        Map<String, String> updatedRecordFieldNames = new HashMap<>();
         Map<String, Field> fieldNames = new HashMap<>();
         private char[] charBuff = new char[1024];
         private int charBuffIndex;
@@ -130,6 +130,7 @@ public class CsvParser {
             columnIndex = 0;
             rowIndex = 1;
             fieldHierarchy.clear();
+            updatedRecordFieldNames.clear();
             fieldNames.clear();
             rootArrayType = null;
             config = null;
@@ -194,6 +195,7 @@ public class CsvParser {
                     RecordType recordType = (RecordType) expectedArrayElementType;
                     restType = (recordType).getRestFieldType();
                     fieldHierarchy = new HashMap<>(recordType.getFields());
+                    updatedRecordFieldNames = processNameAnnotationsAndBuildCustomFieldMap(recordType, fieldHierarchy);
                     break;
                 case TypeTags.TUPLE_TAG:
                     restType = ((TupleType) expectedArrayElementType).getRestType();
@@ -400,10 +402,13 @@ public class CsvParser {
         private static void addHeader(StateMachine sm) throws CsvParserException {
             String value = sm.value();
             if (sm.expectedArrayElementType instanceof RecordType) {
-                Field field = sm.fieldHierarchy.get(value);
+                String fieldName = CsvUtils.getUpdatedHeaders(
+                        sm.updatedRecordFieldNames, value,
+                        sm.fieldHierarchy.containsKey(value) || sm.fieldNames.containsKey(value));
+                Field field = sm.fieldHierarchy.get(fieldName);
                 if (field != null) {
-                    sm.fieldNames.put(value, field);
-                    sm.fieldHierarchy.remove(value);
+                    sm.fieldNames.put(fieldName, field);
+                    sm.fieldHierarchy.remove(fieldName);
                 }
             }
             sm.headers.add(value);
@@ -495,18 +500,6 @@ public class CsvParser {
             handleCsvRow(sm);
             checkRequiredFieldsAndLogError(sm.fieldHierarchy, sm.config.absentAsNilableType);
         }
-
-//        public static void updateOptionalFields(StateMachine sm) {
-//            Object csvNode = sm.currentCsvNode;
-//            if (sm.config.absentAsNilableType && TypeUtils.getType(csvNode).getTag()  == TypeTags.RECORD_TYPE_TAG) {
-//                sm.fieldHierarchy.values().forEach(field -> {
-//                    if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL)) {
-//                        ((BMap<BString, Object>) csvNode).put(StringUtils.fromString(field.getFieldName()), null);
-//                    }
-//                });
-//            }
-//        }
-
         private static void handleCsvRow(StateMachine sm) throws CsvParserException {
             if (!sm.peek().isBlank()) {
                 addRowValue(sm);
