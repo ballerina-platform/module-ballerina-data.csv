@@ -23,6 +23,7 @@ public class CsvConfig {
     public boolean allowDataProjection = true;
     public Object customHeader = null;
     public BArray headersOrder = null;
+    public boolean stringConversion = false;
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
                       boolean absentAsNilableType, boolean allowDataProjection) {
@@ -39,6 +40,48 @@ public class CsvConfig {
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.customHeader = customHeader;
+    }
+
+    private CsvConfig(Object skipLines, boolean nilAsOptionalField,
+                      boolean absentAsNilableType, boolean allowDataProjection, boolean stringConversion) {
+        this.skipLines = skipLines;
+        this.nilAsOptionalField = nilAsOptionalField;
+        this.absentAsNilableType = absentAsNilableType;
+        this.allowDataProjection = allowDataProjection;
+        this.stringConversion = stringConversion;
+    }
+
+    private CsvConfig(Object skipLines, boolean nilAsOptionalField, boolean absentAsNilableType,
+                      boolean allowDataProjection, boolean stringConversion, Object customHeader) {
+        this.skipLines = skipLines;
+        this.nilAsOptionalField = nilAsOptionalField;
+        this.absentAsNilableType = absentAsNilableType;
+        this.allowDataProjection = allowDataProjection;
+        this.stringConversion = stringConversion;
+        this.customHeader = customHeader;
+    }
+
+    public static CsvConfig createListTypeOptions(BMap<BString, Object> options) {
+        updateDataProjectOptions(options);
+        return new CsvConfig(
+            options.get(SKIP_LINES),
+            options.getBooleanValue(NIL_AS_OPTIONAL).booleanValue(),
+            options.getBooleanValue(ABSENT_AS_NILABLE).booleanValue(),
+            options.getBooleanValue(ALLOW_DATA_PROJECTION).booleanValue(),
+            options.getBooleanValue(STRING_CONVERSION).booleanValue()
+        );
+    }
+
+    public static CsvConfig createListAsRecordTypeOptions(BMap<BString, Object> options) {
+        updateDataProjectOptions(options);
+        return new CsvConfig(
+                options.get(SKIP_LINES),
+                options.getBooleanValue(NIL_AS_OPTIONAL).booleanValue(),
+                options.getBooleanValue(ABSENT_AS_NILABLE).booleanValue(),
+                options.getBooleanValue(ALLOW_DATA_PROJECTION).booleanValue(),
+                options.getBooleanValue(STRING_CONVERSION).booleanValue(),
+                options.get(CUSTOM_HEADERS)
+        );
     }
 
     private CsvConfig(char delimiter, char textEnclosure, Object header,

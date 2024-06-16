@@ -49,6 +49,11 @@ public type ToRecordOptions record {
    string[]? customHeaders = ();
 };
 
+public type ListTypeOption record {|
+    *Options;
+    boolean stringConversion = true;
+|};
+
 public enum LineTerminator {
   CR = "\r",
   LF = "\n",

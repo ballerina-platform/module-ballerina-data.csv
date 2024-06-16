@@ -155,7 +155,7 @@ public class CsvCreator {
         return false;
     }
 
-    private static Object convertToExpectedType(BString value, Type type, CsvConfig config) {
+    public static Object convertToExpectedType(BString value, Type type, CsvConfig config) {
         if (type.getTag() == TypeTags.ANYDATA_TAG) {
             return FromString.fromStringWithType(value, PredefinedTypes.TYPE_JSON, config);
         }

@@ -138,7 +138,7 @@ public class Native {
                                                BMap<BString, Object> options, BTypedesc type) {
         try {
             options.put(Constants.ConfigConstants.CUSTOM_HEADERS, customHeaders);
-            return CsvTraversal.traverse(csv, CsvConfig.createToRecordOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createListAsRecordTypeOptions(options), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
@@ -146,7 +146,7 @@ public class Native {
 
     public static Object parseListAsListType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createListTypeOptions(options), type.getDescribingType());
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

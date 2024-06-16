@@ -2,14 +2,14 @@ import ballerina/test;
 
 // boolean enable = true;
 
-// // @test:Config {enable: !enable}
-// // function debugTest() {
-// //     BooleanRecord1Array|CsvConversionError csvb4br1 = parseStringToRecord(csvStringWithBooleanValues4, {});
-// //     test:assertEquals(csvb4br1, [
-// //         {b1: true, b2: "()", b3: (), b4: false},
-// //         {b1: true, b2: "()", b3: (), b4: false}
-// //     ]);
-// // }
+// @test:Config {enable: !enable}
+// function debugTest() {
+//     // NillableStringArrayArray|CsvConversionError st1nsaa = parseListAsListType([st1, st1], {}, NillableStringArrayArray);
+//     // test:assertEquals(st1nsaa , [
+//     //     [s1, s2],
+//     //     [s1, s2]
+//     // ]);
+// }
 
 @test:Config {enable}
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
@@ -24,6 +24,7 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
         [s1, s2, s3, s2],
         [s1, s2, s3, s2]
     ]);
+
     StringTuple1Array|CsvConversionError st3st1 = parseListAsListType([st3, st3], {}, StringTuple1Array);
     test:assertEquals(st3st1, [
         [s1, s2, "", ""],
@@ -173,8 +174,100 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     test:assertEquals((<CsvConversionError>st4bta).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "boolean"));
 }
 
+@test:Config{enable} 
+function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
+    [string, boolean, int][]|CsvConversionError ct1bt4 = parseListAsListType([["a", "true", "1"], ["a", "true", "1"]], {});
+    test:assertEquals(ct1bt4, [
+        ["a", true, 1],
+        ["a", true, 1]
+    ]);
 
-@test:Config {enable}
+    [(), float, decimal, boolean, int, string][]|CsvConversionError ct1bt6 = parseListAsListType(
+        [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
+    test:assertEquals(ct1bt6, [
+        [(), <float>2.23, <decimal>0, true, 1, "a"],
+        [(), <float>0, <decimal>2.23, true, 1, "a"]
+    ]);
+
+    [decimal, boolean, int, string][]|CsvConversionError ct1bt7 = parseListAsListType(
+        [["0", "true", "1", "a"], ["2.23", "true", "1", "a"]]);
+    test:assertEquals(ct1bt7, [
+        [<decimal>0, true, 1, "a"],
+        [<decimal>2.23, true, 1, "a"]
+    ]);
+
+    [decimal, boolean, int, string, anydata...][]|CsvConversionError ct1bt8 = parseListAsListType(
+        [["0", "true", "1", "a", "null", "2.23"], ["2.23", "true", "1", "a", "null", "0"]]);
+    test:assertEquals(ct1bt8, [
+        [<decimal>0, true, 1, "a", (), 2.23],
+        [<decimal>2.23, true, 1, "a", (), 0]
+    ]);
+
+    [(), float, decimal, boolean, int, string, string...][]|CsvConversionError ct1bt9 = parseListAsListType(
+        [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
+    test:assertEquals(ct1bt9, [
+        [(), <float>2.23, <decimal>0, true, 1, "a"],
+        [(), <float>0, <decimal>2.23, true, 1, "a"]
+    ]);
+
+    [decimal, boolean, int, string, string...][]|CsvConversionError ct1bt10 = parseListAsListType(
+        [["0", "true", "1", "a", "null", "2.23"], ["2.23", "true", "1", "a", "null", "0"]]);
+    test:assertEquals(ct1bt10, [
+        [<decimal>0, true, 1, "a", "null", "2.23"],
+        [<decimal>2.23, true, 1, "a", "null", "0"]
+    ]);
+
+    [decimal, boolean, int, string, ()...][]|CsvConversionError ct1bt11 = parseListAsListType(
+        [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
+    test:assertTrue(ct1bt11 is CsvConversionError);
+    //TODO: Fix the message
+    test:assertEquals((<error>ct1bt11).message(), generateErrorMessageForInvalidValueForArrayType("null", "0", "decimal"));
+
+    [(), decimal, float, boolean, ()...][]|CsvConversionError ct1bt11_2 = parseListAsListType(
+        [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
+    test:assertTrue(ct1bt11_2 is CsvConversionError);
+    //TODO: Fix the message
+    test:assertEquals((<error>ct1bt11_2).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "()"));
+
+    [()...][]|CsvConversionError ct1bt12 = parseListAsListType(
+        [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
+    test:assertTrue(ct1bt12 is CsvConversionError);
+    test:assertEquals((<error>ct1bt12).message(), generateErrorMessageForInvalidValueForArrayType("2.23", "1", "()"));
+
+    [string...][]|CsvConversionError ct1bt13 = parseListAsListType(
+        [["1", "a"], ["1", "a"]]);
+    test:assertEquals(ct1bt13, [
+        ["1", "a"],
+        ["1", "a"]
+    ]);
+
+    [boolean...][]|CsvConversionError ct1bt14 = parseListAsListType(
+        [["2.23", "null"], ["7", "()"]]);
+    test:assertTrue(ct1bt14 is CsvConversionError);
+    test:assertEquals((<error>ct1bt14).message(), generateErrorMessageForInvalidValueForArrayType("2.23", "0", "boolean"));
+
+    int?[][]|CsvConversionError ct1bt15 = parseListAsListType(
+        [["1", "()"], ["1", "2"]]);
+    test:assertEquals(ct1bt15, [
+        [1, ()],
+        [1, 2]
+    ]);
+
+    int[][]|CsvConversionError ct1bt16 = parseListAsListType(
+        [["1", "2"], ["1", "()"]]);
+    test:assertTrue(ct1bt16 is CsvConversionError);
+    test:assertEquals((<error>ct1bt16).message(), generateErrorMessageForInvalidValueForArrayType("()", "1", "int"));
+
+    int[][]|CsvConversionError ct1bt17 = parseListAsListType(
+        [["a", "b"], ["a", "b"]]);
+    test:assertTrue(ct1bt17 is CsvConversionError);
+    test:assertEquals((<error>ct1bt17).message(), generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
+
+    // TODO: Add tests with union types, string|boolean => true
+}
+
+
+@test:Config {enable: enable}
 function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
     StringArrayArray|CsvConversionError st1saa = parseListAsListType([st1, st1], {}, StringArrayArray);
     test:assertEquals(st1saa , [

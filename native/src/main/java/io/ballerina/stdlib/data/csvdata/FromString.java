@@ -72,7 +72,6 @@ public class FromString {
 
     public static Object fromStringWithType(BString string, CsvConfig config, BTypedesc typed) {
         Type expType = typed.getDescribingType();
-
         try {
             return fromStringWithType(string, expType, config);
         } catch (NumberFormatException e) {

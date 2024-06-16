@@ -45,10 +45,10 @@ public isolated function parseRecordAsListType(record{}[] s, string[] headerName
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 public isolated function parseListAsRecordType(string[][] s, string[]? customHeaders = (),
-            Options options = {}, typedesc<record{}[]> t = <>)
+            ListTypeOption options = {}, typedesc<record{}[]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
-public isolated function parseListAsListType(string[][] s, Options options = {}, typedesc<anydata[][]> t = <>)
+public isolated function parseListAsListType(string[][] s, ListTypeOption options = {}, typedesc<anydata[][]> t = <>)
       returns t|CsvConversionError = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

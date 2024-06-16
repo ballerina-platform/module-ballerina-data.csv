@@ -1,13 +1,39 @@
 import ballerina/test;
 
-boolean enable = true;
+// boolean enable = !true;
 
-@test:Config {enable: !enable}
-function debugTest() returns error? {
-    RecordWithCustomAnnotation2[]|CsvConversionError cnrr8 = parseRecordAsRecordType([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
-    test:assertTrue(cnrr8 is CsvConversionError);
-    test:assertEquals((<error>cnrr8).message(), "Duplicate field found in record fields: 'a'");
-}
+// @test:Config {enable: !enable}
+// function debugTest() returns error? {
+//     // StringArrayArray|CsvConversionError st1saa = parseListAsListType([st1, st1], {}, StringArrayArray);
+//     // test:assertEquals(st1saa , [
+//     //     [s1, s2],
+//     //     [s1, s2]
+//     // ]);
+
+//     // StringArrayArray|CsvConversionError st2saa = parseListAsListType([st2, st2], {}, StringArrayArray);
+//     // test:assertEquals(st2saa , [
+//     //     [s1, s2, s3, s2],
+//     //     [s1, s2, s3, s2]
+//     // ]);
+
+//     // StringArrayArray|CsvConversionError st3saa = parseListAsListType([st3, st3], {}, StringArrayArray);
+//     // test:assertEquals(st3saa , [
+//     //     [s1, s2],
+//     //     [s1, s2]
+//     // ]);
+
+//     // StringArrayArray|CsvConversionError st4saa = parseListAsListType([st4, st4], {}, StringArrayArray);
+//     // test:assertEquals(st4saa , [
+//     //     [s1, s2, s3, s2],
+//     //     [s1, s2, s3, s2]
+//     // ]);
+
+//     // NillableStringArrayArray|CsvConversionError st1nsaa = parseListAsListType([st1, st1], {}, NillableStringArrayArray);
+//     // test:assertEquals(st1nsaa , [
+//     //     [s1, s2],
+//     //     [s1, s2]
+//     // ]);
+// }
 
 @test:Config {enable}
 function testCustomNameAnnotation() returns error? {
@@ -694,7 +720,7 @@ function testDataProjectionConfig() returns error? {
     test:assertEquals(cn22, [["a", 2], ["b", 4]]);
 
     [string...][]|CsvConversionError cn23 = parseRecordAsListType(csvValue2, ["a", "b"] ,{
-        allowDataProjection: false
+        allowDataProjection: false 
     });
     test:assertTrue(cn23 is CsvConversionError);
     test:assertEquals((<error> cn23).message(), generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));

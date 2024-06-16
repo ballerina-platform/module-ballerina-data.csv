@@ -552,25 +552,33 @@ function testCustomHeaderOption() {
     test:assertTrue(ct1br6 is CsvConversionError);
     test:assertEquals((<error>ct1br6).message(), generateErrorMessageForMissingRequiredField("c"));
 
-    record {string a; string b;}[]|CsvConversionError ct1br7 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    record {string a; string b;}[]|CsvConversionError ct1br7 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {
+        stringConversion: false
+    });
     test:assertEquals(ct1br7, [
         {a: "a", e: "1", b: "true"},
         {a: "a", e: "1", b: "true"}
     ]);
 
-    record {|string a; string b;|}[]|CsvConversionError ct1br8 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    record {|string a; string b;|}[]|CsvConversionError ct1br8 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {
+        stringConversion: false
+    });
     test:assertEquals(ct1br8, [
         {a: "a", b: "true"},
         {a: "a", b: "true"}
     ]);
 
-    record {|string...;|}[]|CsvConversionError ct1br9 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
+    record {|string...;|}[]|CsvConversionError ct1br9 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {
+        stringConversion: false
+    });
     test:assertEquals(ct1br9, [
         {a: "a", b: "true", e: "1"},
         {a: "a", b: "true", e: "1"}
     ]);
 
-    record {|string...;|}[]|CsvConversionError ct1br10 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], (), {});
+    record {|string...;|}[]|CsvConversionError ct1br10 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], (), {
+        stringConversion: false
+    });
     test:assertEquals(ct1br10, [
         {'1: "a", '3: "true", '2: "1"},
         {'1: "a", '3: "true", '2: "1"}

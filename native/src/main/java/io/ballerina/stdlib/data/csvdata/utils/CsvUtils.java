@@ -6,6 +6,8 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.*;
+import io.ballerina.stdlib.data.csvdata.FromString;
+import io.ballerina.stdlib.data.csvdata.csv.CsvCreator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,11 +106,10 @@ public class CsvUtils {
         if (csv == null) {
             csv = config.nilValue;
         }
-        try {
-            return ValueUtils.convert(csv, targetType);
-        } catch (BError e) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, csv, targetType);
+        if (config.stringConversion && csv instanceof BString) {
+            return CsvCreator.convertToExpectedType((BString) csv, targetType, config);
         }
+        return ValueUtils.convert(csv, targetType);
     }
 
     public static void checkRequiredFieldsAndLogError(Map<String, Field> filedHierarchy, boolean absentAsNilableType) {
@@ -131,9 +132,9 @@ public class CsvUtils {
         return true;
     }
 
-    public static boolean checkTypeCompatibility(Type constraintType, Object csv) {
+    public static boolean checkTypeCompatibility(Type constraintType, Object csv, boolean stringConversion) {
         int tag = constraintType.getTag();
-        if ((csv instanceof BString && (tag == TypeTags.STRING_TAG || isJsonOrAnyDataOrAny(tag)))
+        if ((csv instanceof BString && (stringConversion || tag == TypeTags.STRING_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Long && (tag == INT_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof BDecimal && ((tag == TypeTags.DECIMAL_TAG
                         || tag == TypeTags.FLOAT_TAG) || isJsonOrAnyDataOrAny(tag)))
@@ -163,9 +164,12 @@ public class CsvUtils {
             case TypeTags.JSON_TAG:
             case TypeTags.ANYDATA_TAG:
             case TypeTags.ANY_TAG:
-                if (checkTypeCompatibility(arrayElementType, csvElement)) {
-                    ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, arrayElementType, config));
-                    return;
+                if (checkTypeCompatibility(arrayElementType, csvElement, config.stringConversion)) {
+                    Object value = convertToBasicType(csvElement, arrayElementType, config);
+                    if (!(value instanceof BError)) {
+                        ((BArray) currentCsvNode).add(index, value);
+                        return;
+                    }
                 }
                 break;
             case TypeTags.UNION_TAG:
@@ -174,11 +178,15 @@ public class CsvUtils {
                         throw DiagnosticLog.error(DiagnosticErrorCode
                                 .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
                     }
-                    if (checkTypeCompatibility(memberType, csvElement)) {
-                        ((BArray) currentCsvNode).add(index, convertToBasicType(csvElement, memberType, config));
-                        return;
+                    if (checkTypeCompatibility(memberType, csvElement , config.stringConversion)) {
+                        Object value = convertToBasicType(csvElement, memberType, config);
+                        if (!(value instanceof BError)) {
+                            ((BArray) currentCsvNode).add(index, value);
+                            return;
+                        }
                     }
                 }
+                break;
         }
         throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_ARRAY, csvElement, index, arrayElementType);
     }

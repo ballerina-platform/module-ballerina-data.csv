@@ -19,6 +19,7 @@ public class Constants {
         public static BString ABSENT_AS_NILABLE = StringUtils.fromString("absentAsNilableType");
         public static BString ALLOW_DATA_PROJECTION = StringUtils.fromString("allowDataProjection");
         public static BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
+        public static BString STRING_CONVERSION = StringUtils.fromString("stringConversion");
     }
 
     public static class Values {
