@@ -23,6 +23,8 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.FiniteType;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.ReferenceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
@@ -31,13 +33,13 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isNullValue;
@@ -49,35 +51,36 @@ import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isNullValue;
  */
 public class FromString {
 
-    private static final HashMap<Integer, Integer> TYPE_PRIORITY_ORDER = new HashMap<>() {{
-        int precedence = 0;
-        put(TypeTags.INT_TAG, precedence++);
-        put(TypeTags.FLOAT_TAG, precedence++);
-        put(TypeTags.DECIMAL_TAG, precedence++);
-        put(TypeTags.NULL_TAG, precedence++);
-        put(TypeTags.BOOLEAN_TAG, precedence++);
-        put(TypeTags.JSON_TAG, precedence++);
-        put(TypeTags.STRING_TAG, precedence);
-    }};
+    private static final List<Integer> TYPE_PRIORITY_ORDER = List.of(
+            TypeTags.INT_TAG,
+            TypeTags.FLOAT_TAG,
+            TypeTags.DECIMAL_TAG,
+            TypeTags.NULL_TAG,
+            TypeTags.BOOLEAN_TAG,
+            TypeTags.JSON_TAG,
+            TypeTags.STRING_TAG
+    );
 
-    private static final ArrayList<Type> BASIC_JSON_MEMBER_TYPES = new ArrayList<>() {{
-        add(PredefinedTypes.TYPE_NULL);
-        add(PredefinedTypes.TYPE_BOOLEAN);
-        add(PredefinedTypes.TYPE_INT);
-        add(PredefinedTypes.TYPE_FLOAT);
-        add(PredefinedTypes.TYPE_DECIMAL);
-        add(PredefinedTypes.TYPE_STRING);
-    }};
+    private static final List<Type> BASIC_JSON_MEMBER_TYPES = List.of(
+            PredefinedTypes.TYPE_NULL,
+            PredefinedTypes.TYPE_BOOLEAN,
+            PredefinedTypes.TYPE_INT,
+            PredefinedTypes.TYPE_FLOAT,
+            PredefinedTypes.TYPE_DECIMAL,
+            PredefinedTypes.TYPE_STRING
+    );
     private static final UnionType JSON_TYPE_WITH_BASIC_TYPES = TypeCreator.createUnionType(BASIC_JSON_MEMBER_TYPES);
-
-    public static Object fromStringWithType(BString string, CsvConfig config, BTypedesc typed) {
-        Type expType = typed.getDescribingType();
-        try {
-            return fromStringWithType(string, expType, config);
-        } catch (NumberFormatException e) {
-            return returnError(string.getValue(), expType.toString());
-        }
-    }
+    public static final Integer BBYTE_MIN_VALUE = 0;
+    public static final Integer BBYTE_MAX_VALUE = 255;
+    public static final Integer SIGNED32_MAX_VALUE = 2147483647;
+    public static final Integer SIGNED32_MIN_VALUE = -2147483648;
+    public static final Integer SIGNED16_MAX_VALUE = 32767;
+    public static final Integer SIGNED16_MIN_VALUE = -32768;
+    public static final Integer SIGNED8_MAX_VALUE = 127;
+    public static final Integer SIGNED8_MIN_VALUE = -128;
+    public static final Long UNSIGNED32_MAX_VALUE = 4294967295L;
+    public static final Integer UNSIGNED16_MAX_VALUE = 65535;
+    public static final Integer UNSIGNED8_MAX_VALUE = 255;
 
     public static Object fromStringWithType(BString string, Type expType, CsvConfig config) {
         String value = string.getValue();
@@ -85,22 +88,43 @@ public class FromString {
             switch (expType.getTag()) {
                 case TypeTags.INT_TAG:
                     return stringToInt(value);
+                case TypeTags.BYTE_TAG:
+                    return stringToByte(value);
+                case TypeTags.SIGNED8_INT_TAG:
+                    return stringToSigned8Int(value);
+                case TypeTags.SIGNED16_INT_TAG:
+                    return stringToSigned16Int(value);
+                case TypeTags.SIGNED32_INT_TAG:
+                    return stringToSigned32Int(value);
+                case TypeTags.UNSIGNED8_INT_TAG:
+                    return stringToUnsigned8Int(value);
+                case TypeTags.UNSIGNED16_INT_TAG:
+                    return stringToUnsigned16Int(value);
+                case TypeTags.UNSIGNED32_INT_TAG:
+                    return stringToUnsigned32Int(value);
                 case TypeTags.FLOAT_TAG:
                     return stringToFloat(value);
                 case TypeTags.DECIMAL_TAG:
                     return stringToDecimal(value);
+                case TypeTags.CHAR_STRING_TAG:
+                    return stringToChar(value);
                 case TypeTags.STRING_TAG:
                     return string;
                 case TypeTags.BOOLEAN_TAG:
                     return stringToBoolean(value);
                 case TypeTags.NULL_TAG:
                     return stringToNull(value, config);
+                case TypeTags.FINITE_TYPE_TAG:
+                    return stringToFiniteType(value, (FiniteType) expType, config);
                 case TypeTags.UNION_TAG:
                     return stringToUnion(string, (UnionType) expType, config);
                 case TypeTags.JSON_TAG:
+                case TypeTags.ANYDATA_TAG:
                     return stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config);
                 case TypeTags.TYPE_REFERENCED_TYPE_TAG:
                     return fromStringWithType(string, ((ReferenceType) expType).getReferredType(), config);
+                case TypeTags.INTERSECTION_TAG:
+                    return fromStringWithType(string, ((IntersectionType) expType).getEffectiveType(), config);
                 default:
                     return returnError(value, expType.toString());
             }
@@ -109,8 +133,91 @@ public class FromString {
         }
     }
 
+    private static Object stringToFiniteType(String value, FiniteType finiteType, CsvConfig config) {
+        return finiteType.getValueSpace().stream()
+                .filter(finiteValue -> !(convertToSingletonValue(value, finiteValue, config) instanceof BError))
+                .findFirst()
+                .orElseGet(() -> returnError(value, finiteType.toString()));
+    }
+
+    private static Object convertToSingletonValue(String str, Object singletonValue, CsvConfig config) {
+        String singletonStr = String.valueOf(singletonValue);
+        if (str.equals(singletonStr)) {
+            return fromStringWithType(StringUtils.fromString(str), TypeUtils.getType(singletonValue), config);
+        } else {
+            return returnError(str, singletonStr);
+        }
+    }
+
     private static Long stringToInt(String value) throws NumberFormatException {
         return Long.parseLong(value);
+    }
+
+    private static int stringToByte(String value) throws NumberFormatException {
+        int intValue = Integer.parseInt(value);
+        if (!isByteLiteral(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_BYTE, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToSigned8Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isSigned8LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_8, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToSigned16Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isSigned16LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_16, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToSigned32Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isSigned32LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_32, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToUnsigned8Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isUnsigned8LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE,
+                    PredefinedTypes.TYPE_INT_UNSIGNED_8, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToUnsigned16Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isUnsigned16LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
+                    PredefinedTypes.TYPE_INT_UNSIGNED_16, value);
+        }
+        return intValue;
+    }
+
+    private static long stringToUnsigned32Int(String value) throws NumberFormatException {
+        long intValue = Long.parseLong(value);
+        if (!isUnsigned32LiteralValue(intValue)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
+                    PredefinedTypes.TYPE_INT_UNSIGNED_32, value);
+        }
+        return intValue;
+    }
+
+    private static BString stringToChar(String value) throws NumberFormatException {
+        if (!isCharLiteralValue(value)) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
+                    PredefinedTypes.TYPE_STRING_CHAR, value);
+        }
+        return StringUtils.fromString(value);
     }
 
     private static Double stringToFloat(String value) throws NumberFormatException {
@@ -144,27 +251,21 @@ public class FromString {
     }
 
     private static Object stringToUnion(BString string, UnionType expType, CsvConfig config) throws NumberFormatException {
-        List<Type> memberTypes = expType.getMemberTypes();
-        memberTypes.sort(Comparator.comparingInt(t -> TYPE_PRIORITY_ORDER.getOrDefault(
-                TypeUtils.getReferredType(t).getTag(), Integer.MAX_VALUE)));
-        boolean isStringExpType = false;
+        List<Type> memberTypes = new ArrayList<>(expType.getMemberTypes());
+        memberTypes.sort(Comparator.comparingInt(t -> {
+            int index = TYPE_PRIORITY_ORDER.indexOf(TypeUtils.getReferredType(t).getTag());
+            return index == -1 ? Integer.MAX_VALUE : index;
+        }));
         for (Type memberType : memberTypes) {
             try {
                 Object result = fromStringWithType(string, memberType, config);
-                if (result instanceof BString) {
-                    isStringExpType = true;
-                    continue;
-                } else if (result instanceof BError) {
+                if (result instanceof BError) {
                     continue;
                 }
                 return result;
             } catch (Exception e) {
                 // Skip
             }
-        }
-
-        if (isStringExpType) {
-            return string;
         }
         return returnError(string.getValue(), expType.toString());
     }
@@ -184,6 +285,38 @@ public class FromString {
             default:
                 return false;
         }
+    }
+
+    private static boolean isByteLiteral(long longValue) {
+        return (longValue >= BBYTE_MIN_VALUE && longValue <= BBYTE_MAX_VALUE);
+    }
+
+    private static boolean isSigned32LiteralValue(Long longObject) {
+        return (longObject >= SIGNED32_MIN_VALUE && longObject <= SIGNED32_MAX_VALUE);
+    }
+
+    private static boolean isSigned16LiteralValue(Long longObject) {
+        return (longObject.intValue() >= SIGNED16_MIN_VALUE && longObject.intValue() <= SIGNED16_MAX_VALUE);
+    }
+
+    private static boolean isSigned8LiteralValue(Long longObject) {
+        return (longObject.intValue() >= SIGNED8_MIN_VALUE && longObject.intValue() <= SIGNED8_MAX_VALUE);
+    }
+
+    private static boolean isUnsigned32LiteralValue(Long longObject) {
+        return (longObject >= 0 && longObject <= UNSIGNED32_MAX_VALUE);
+    }
+
+    private static boolean isUnsigned16LiteralValue(Long longObject) {
+        return (longObject.intValue() >= 0 && longObject.intValue() <= UNSIGNED16_MAX_VALUE);
+    }
+
+    private static boolean isUnsigned8LiteralValue(Long longObject) {
+        return (longObject.intValue() >= 0 && longObject.intValue() <= UNSIGNED8_MAX_VALUE);
+    }
+
+    private static boolean isCharLiteralValue(String value) {
+        return value.codePoints().count() == 1;
     }
 
     private static BError returnError(String string, String expType) {

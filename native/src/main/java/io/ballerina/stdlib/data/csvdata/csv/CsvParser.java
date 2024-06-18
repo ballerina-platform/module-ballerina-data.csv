@@ -25,9 +25,6 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BString;
-import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
@@ -299,9 +296,6 @@ public class CsvParser {
                         continue;
                     }
                     sm.isHeaderConfigExceedLineNumber = false;
-//                    if (!(isWhitespace(ch, sm.config.lineTerminator) && sm.isNewLineOrEof(ch))) {
-//                        headerStart = true;
-//                    }
                     if (customHeader != null) {
                         if (sm.isNewLineOrEof(ch)) {
                             checkAndAddCustomHeaders(sm, customHeader);

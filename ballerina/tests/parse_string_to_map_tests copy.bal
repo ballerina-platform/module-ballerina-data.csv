@@ -4,10 +4,11 @@ import ballerina/test;
 
 // @test:Config {enable: !enable}
 // function debugTest() {
-//     BooleanRecord1Array|CsvConversionError csvb4br1 = parseStringToRecord(csvStringWithBooleanValues4, {});
-//     test:assertEquals(csvb4br1, [
-//         {b1: true, b2: "()", b3: (), b4: false},
-//         {b1: true, b2: "()", b3: (), b4: false}
+//     NillableIntUnionBooleanMapArray|CsvConversionError bv4bniubma = parseStringToRecord(string `a
+//     0`);
+//     test:assertEquals(bv4bniubma, [
+//         {b1: true, b2: (), b3: (), b4: 0},
+//         {b1: 1, b2: (), b3: (), b4: false}
 //     ]);
 // }
 

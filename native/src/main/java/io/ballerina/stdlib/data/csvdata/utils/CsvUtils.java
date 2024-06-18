@@ -33,6 +33,8 @@ public class CsvUtils {
             case TypeTags.NULL_TAG:
             case TypeTags.JSON_TAG:
             case TypeTags.ANYDATA_TAG:
+            case TypeTags.UNION_TAG:
+            case TypeTags.INTERSECTION_TAG:
                 return true;
             default:
                 return false;
@@ -106,9 +108,6 @@ public class CsvUtils {
         if (csv == null) {
             csv = config.nilValue;
         }
-        if (config.stringConversion && csv instanceof BString) {
-            return CsvCreator.convertToExpectedType((BString) csv, targetType, config);
-        }
         return ValueUtils.convert(csv, targetType);
     }
 
@@ -135,11 +134,12 @@ public class CsvUtils {
     public static boolean checkTypeCompatibility(Type constraintType, Object csv, boolean stringConversion) {
         int tag = constraintType.getTag();
         if ((csv instanceof BString && (stringConversion || tag == TypeTags.STRING_TAG || isJsonOrAnyDataOrAny(tag)))
-                || (csv instanceof Long && (tag == INT_TAG || isJsonOrAnyDataOrAny(tag)))
+                || (csv instanceof Long && (tag == INT_TAG || tag == TypeTags.FLOAT_TAG
+                || tag == TypeTags.DECIMAL_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof BDecimal && ((tag == TypeTags.DECIMAL_TAG
-                        || tag == TypeTags.FLOAT_TAG) || isJsonOrAnyDataOrAny(tag)))
+                        || tag == TypeTags.FLOAT_TAG || tag == INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Double && ((tag == TypeTags.FLOAT_TAG
-                        || tag == TypeTags.DECIMAL_TAG) || isJsonOrAnyDataOrAny(tag)))
+                        || tag == TypeTags.DECIMAL_TAG || tag == INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (Boolean.class.isInstance(csv) && (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv == null && (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)))) {
             return true;
@@ -152,7 +152,7 @@ public class CsvUtils {
         return tag == TypeTags.JSON_TAG || tag == TypeTags.ANYDATA_TAG || tag == TypeTags.ANY_TAG;
     }
 
-    public static void addValuesToArrayType(Object csvElement, Type arrayElementType, int index,
+    public static void addValuesToArrayType2(Object csvElement, Type arrayElementType, int index,
                                       Object currentCsvNode, CsvConfig config) {
         switch (arrayElementType.getTag()) {
             case TypeTags.NULL_TAG:
@@ -163,7 +163,6 @@ public class CsvUtils {
             case TypeTags.STRING_TAG:
             case TypeTags.JSON_TAG:
             case TypeTags.ANYDATA_TAG:
-            case TypeTags.ANY_TAG:
                 if (checkTypeCompatibility(arrayElementType, csvElement, config.stringConversion)) {
                     Object value = convertToBasicType(csvElement, arrayElementType, config);
                     if (!(value instanceof BError)) {
@@ -336,6 +335,26 @@ public class CsvUtils {
         public SortConfigurations(Object columnName, Object sortOrder) {
             this.columnName = columnName;
             this.sortOrder = sortOrder;
+        }
+    }
+
+    public static class UnMappedValue {
+        private static UnMappedValue value = null;
+        public static UnMappedValue createUnMappedValue() {
+            if (value == null) {
+                value = new UnMappedValue();
+            }
+            return value;
+        }
+    }
+
+    public static class SkipMappedValue {
+        private static SkipMappedValue value = null;
+        public static SkipMappedValue createSkippedValue() {
+            if (value == null) {
+                value = new SkipMappedValue();
+            }
+            return value;
         }
     }
 }

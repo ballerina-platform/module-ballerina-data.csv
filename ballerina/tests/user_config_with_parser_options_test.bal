@@ -4,28 +4,10 @@ import ballerina/test;
 
 // @test:Config {enable: !enable}
 // function debugTest() returns error? {
-
-//     string csvValue1 = string `
-//         "a", b, c
-//                                 1, "2a\t", "3b\n"
-//                                 "1c\n", 2, 3
-//                                 1, "2a\"", 3
-                                
-//                                 "1a\\", "2b\\"", "3"`;
-
-//     string csvValue2 = string `
-//         "a\"", "\tb\t\n", c
-//                                 1, "2a\t", "3b\n"
-//                                 "1c\n", "/2/", 3
-//                                 1, "2a\"", "3"
-                                
-//                                 "1a\\", "2b\\"", "3"`;
-
-//     record {}[]|CsvConversionError cn = parseStringToRecord(csvValue1, {header: 1});
-//     test:assertEquals(cn, [{"a": 1, "b": "2a\t", "c": "3b\n"}, {"a": "1c\n", "b": 2, "c": 3}, {"a": 1, "b": "2a\"", "c": 3}, {"a": "1a\\", "b": "2b\\\"", "c": 3}]);
-
-//     record {}[]|CsvConversionError cn2 = parseStringToRecord(csvValue2, {header: 1});
-//     test:assertEquals(cn2, [{"a\"": 1, "\tb\t\n": "2a\t", "c": "3b\n"}, {"a\"": "1c\n", "\tb\t\n": "/2/", "c": 3}, {"a\"": 1, "\tb\t\n": "2a\"", "c": 3}, {"a\"": "1a\\", "\tb\t\n": "2b\\\"", "c": 3}]);
+//     record {|int a; int f?;|}[]|CsvConversionError cn3 = parseRecordAsRecordType([{"a": 1, "f": ()}, {"a": 2, "f": ()}, {"a": 3, "f": ()}], {
+//         allowDataProjection: {nilAsOptionalField: true}, skipLines: [3]
+//     });
+//     test:assertEquals(cn3, [{a: 1}, {a: 2}]);
 // }
 
 @test:Config {enable}

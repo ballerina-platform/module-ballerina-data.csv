@@ -1,39 +1,13 @@
 import ballerina/test;
 
-// boolean enable = !true;
+boolean enable = true;
 
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     // StringArrayArray|CsvConversionError st1saa = parseListAsListType([st1, st1], {}, StringArrayArray);
-//     // test:assertEquals(st1saa , [
-//     //     [s1, s2],
-//     //     [s1, s2]
-//     // ]);
-
-//     // StringArrayArray|CsvConversionError st2saa = parseListAsListType([st2, st2], {}, StringArrayArray);
-//     // test:assertEquals(st2saa , [
-//     //     [s1, s2, s3, s2],
-//     //     [s1, s2, s3, s2]
-//     // ]);
-
-//     // StringArrayArray|CsvConversionError st3saa = parseListAsListType([st3, st3], {}, StringArrayArray);
-//     // test:assertEquals(st3saa , [
-//     //     [s1, s2],
-//     //     [s1, s2]
-//     // ]);
-
-//     // StringArrayArray|CsvConversionError st4saa = parseListAsListType([st4, st4], {}, StringArrayArray);
-//     // test:assertEquals(st4saa , [
-//     //     [s1, s2, s3, s2],
-//     //     [s1, s2, s3, s2]
-//     // ]);
-
-//     // NillableStringArrayArray|CsvConversionError st1nsaa = parseListAsListType([st1, st1], {}, NillableStringArrayArray);
-//     // test:assertEquals(st1nsaa , [
-//     //     [s1, s2],
-//     //     [s1, s2]
-//     // ]);
-// }
+@test:Config {enable: !enable}
+function debugTest() returns error? {
+    RecordWithCustomAnnotation3[]|CsvConversionError cntr12 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
+    test:assertTrue(cntr12 is CsvConversionError);
+    test:assertEquals((<error>cntr12).message(), "Duplicate field found in record fields: 'a'");
+}
 
 @test:Config {enable}
 function testCustomNameAnnotation() returns error? {
@@ -223,7 +197,7 @@ function testCustomNameAnnotation() returns error? {
 }
 
 //TODO: Emable after fix tuple proj
-@test:Config {enable: false}
+@test:Config {enable}
 function testCustomNameAnnotation2() returns error? {
     RecordWithCustomAnnotation[]|CsvConversionError cntr1 = parseListAsRecordType([["1", "3"]], ["b", "c"], {});
     test:assertEquals(cntr1, [{b: 1, a: 3}]);
@@ -265,7 +239,7 @@ function testCustomNameAnnotation2() returns error? {
 
     RecordWithCustomAnnotation3[]|CsvConversionError cntr12 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
     test:assertTrue(cntr12 is CsvConversionError);
-    test:assertEquals((<error>cntr12).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr12).message(), generateErrorMessageForInvalidHeaders(string `["3","1"]`, "data.csv:RecordWithCustomAnnotation3"));
 
     RecordWithCustomAnnotation3[]|CsvConversionError cntr13 = parseListAsRecordType([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
     test:assertTrue(cntr13 is CsvConversionError);

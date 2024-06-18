@@ -155,8 +155,8 @@ public class CsvTraversal {
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
                     fields = new HashSet<>(recordType.getFields().keySet());
-                    this.updatedRecordFieldNames =
-                            processNameAnnotationsAndBuildCustomFieldMap(recordType, fieldHierarchy);
+                    this.updatedRecordFieldNames = processNameAnnotationsAndBuildCustomFieldMap(
+                            recordType, fieldHierarchy);
                     this.headerFieldHierarchy = new HashMap<>(recordType.getFields());
                     this.restType = recordType.getRestFieldType();
                     currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
@@ -353,8 +353,6 @@ public class CsvTraversal {
                     if (isHeaderFieldsEmpty(this.headerFieldHierarchy)) {
                         continue;
                     }
-
-
                     return false;
                 }
                 return true;
@@ -368,9 +366,9 @@ public class CsvTraversal {
                     return true;
                 }
 
-                for (String key: this.fieldHierarchy.keySet()) {
+                for (String key: this.fieldHierarchy.keySet()) { // fh -> a,b  |  headers -> d,c
                     for(String header: this.headers) {
-                        if (key.equals(header)) {
+                        if (key.equals(this.updatedRecordFieldNames.get(header))) {
                             return true;
                         }
                     }
@@ -460,7 +458,7 @@ public class CsvTraversal {
             fieldNames.push(key.toString());
         }
 
-        private void addCurrentFieldValue(Type currentFieldType, Object mapValue, BString key, boolean isMapType) {
+        private void addCurrentFieldValue2(Type currentFieldType, Object mapValue, BString key, boolean isMapType) {
             int currentFieldTypeTag = currentFieldType.getTag();
             Object nilValue = config.nilValue;
             if (config.nilAsOptionalField && !currentFieldType.isNilable()
@@ -514,52 +512,95 @@ public class CsvTraversal {
             }
         }
 
-        private void addRestField(Type restFieldType, BString key, Object csvMember) {
+        private Object getFieldValue(Type type, Object csvMember, boolean isRecursive) {
+            Type fieldType = TypeUtils.getReferredType(type);
             Object nilValue = config.nilValue;
-            if (config.nilAsOptionalField && !restFieldType.isNilable()
+            if (!isRecursive && config.nilAsOptionalField && !fieldType.isNilable()
                     && CsvUtils.isNullValue(nilValue, csvMember)
                     && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
-                return;
+                return SkipMappedValue.createSkippedValue();
             }
-            switch (restFieldType.getTag()) {
-                case TypeTags.ANYDATA_TAG:
-                case TypeTags.JSON_TAG:
-                case TypeTags.BOOLEAN_TAG:
-                case TypeTags.INT_TAG:
-                case TypeTags.FLOAT_TAG:
-                case TypeTags.DECIMAL_TAG:
-                case TypeTags.STRING_TAG:
-                case TypeTags.NULL_TAG:
-                    if (checkTypeCompatibility(restFieldType, csvMember, config.stringConversion)) {
-                        Object value = convertToBasicType(csvMember, restFieldType, config);
-                        if (!(value instanceof BError)) {
-                            ((BMap<BString, Object>) currentCsvNode).put(key, value);
-                        }
-                    }
-                    break;
-                case TypeTags.UNION_TAG:
-                    for (Type memberType: ((UnionType) restFieldType).getMemberTypes()) {
-                        if (!isBasicType(memberType)) {
-                            throw DiagnosticLog.error(DiagnosticErrorCode
-                                    .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
-                        }
-                        if (checkTypeCompatibility(memberType, csvMember, config.stringConversion)) {
-                            Object value = convertToBasicType(csvMember, memberType, config);
+            if (config.stringConversion && csvMember instanceof BString str) {
+                Object convertedValue =  CsvCreator.convertToExpectedType(str, type, config);
+                if (!(convertedValue instanceof BError)) {
+                    return convertedValue;
+                }
+            } else {
+                switch (fieldType.getTag()) {  // type.toString().equals("ballerina/data.csv:0:A")
+                    case TypeTags.NULL_TAG:
+                    case TypeTags.BOOLEAN_TAG:
+                    case TypeTags.INT_TAG:
+                    case TypeTags.FLOAT_TAG:
+                    case TypeTags.DECIMAL_TAG:
+                    case TypeTags.STRING_TAG:
+                    case TypeTags.JSON_TAG:
+                    case TypeTags.ANYDATA_TAG:
+                        if (checkTypeCompatibility(fieldType, csvMember, config.stringConversion)) {
+                            Object value = convertToBasicType(csvMember, fieldType, config);
                             if (!(value instanceof BError)) {
-                                ((BMap<BString, Object>) currentCsvNode).put(key, value);
-                                break;
+                                return value;
                             }
                         }
-                    }
-                    break;
-                case TypeTags.INTERSECTION_TAG:
-                    for (Type memberType: ((IntersectionType) restFieldType).getConstituentTypes()) {
-                        //
-                    }
-                    break;
-                default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, csvMember, key);
+                        break;
+                    case TypeTags.UNION_TAG:
+                        for (Type memberType : ((UnionType) fieldType).getMemberTypes()) {
+                            if (!isBasicType(memberType)) {
+                                throw DiagnosticLog.error(DiagnosticErrorCode
+                                        .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
+                            }
+                            Object value = getFieldValue(memberType, csvMember, true);
+                            if (!(value instanceof BError || value instanceof UnMappedValue)) {
+                                return value;
+                            }
+                        }
+                        break;
+                    case TypeTags.INTERSECTION_TAG:
+                        Type effectiveType = ((IntersectionType) fieldType).getEffectiveType();
+                        if (!SymbolFlags.isFlagOn(SymbolFlags.READONLY, effectiveType.getFlags())) {
+                            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
+                        }
+                        for (Type constituentType : ((IntersectionType) fieldType).getConstituentTypes()) {
+                            if (constituentType.getTag() == TypeTags.READONLY_TAG) {
+                                continue;
+                            }
+                            return CsvCreator.constructReadOnlyValue(getFieldValue(constituentType, csvMember, true));
+                        }
+                        break;
+                    default:
+                        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TYPE, type);
+                }
             }
+            return UnMappedValue.createUnMappedValue();
+        }
+
+        private void addRestField(Type type, BString key, Object csvMember) {
+            Object value = getFieldValue(type, csvMember, false);
+            if (!(value instanceof UnMappedValue)) {
+                ((BMap<BString, Object>) currentCsvNode).put(key, value);
+            }
+        }
+
+        private void addCurrentFieldValue(Type type, Object RecValue, BString key, boolean isMapType) {
+            Object value = getFieldValue(type, RecValue, false);
+            if (!(value instanceof UnMappedValue || value instanceof SkipMappedValue)) {
+                ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()), value);
+                return;
+            }
+
+            if (isMapType || value instanceof SkipMappedValue) {
+                return;
+            }
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, RecValue, key);
+        }
+
+        public void addValuesToArrayType(Object arrayValue, Type type, int index,
+                                                 Object currentCsvNode, CsvConfig config) {
+            Object value = getFieldValue(type, arrayValue, false);
+            if (!(value instanceof UnMappedValue)) {
+                ((BArray) currentCsvNode).add(index, value);
+                return;
+            }
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_ARRAY, arrayValue, index, type);
         }
 
         private void setRootCsvNode(Type referredType, Type type) {

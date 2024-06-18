@@ -1,17 +1,17 @@
 import ballerina/test;
 
-boolean enable = true;
+// boolean enable = true;
 
-@test:Config {enable: !enable}
-function debugTest() {
-        record{|()...;|}[]|CsvConversionError ct1br12 = parseListAsRecordType(
-        [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
-        ["f", "e", "d", "c", "b", "a"]);
-    test:assertEquals(ct1br12, [
-        {a: ()},
-        {a: ()}
-    ]);
-}
+// @test:Config {enable: !enable}
+// function debugTest() {
+//         record{|()...;|}[]|CsvConversionError ct1br12 = parseListAsRecordType(
+//         [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+//         ["f", "e", "d", "c", "b", "a"]);
+//     test:assertEquals(ct1br12, [
+//         {a: ()},
+//         {a: ()}
+//     ]);
+// }
 
 @test:Config {enable}
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
@@ -528,8 +528,8 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
         [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
         ["f", "e", "d", "c", "b", "a"]);
     test:assertEquals(ct1br9_2, [
-        {a: (), b: <float>2.23, c: <decimal>0, d: "true", e: 1, f: "a"},
-        {a: (), b: <float>0, c: <decimal>2.23, d: "true", e: 1, f: "a"}
+        {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
+        {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
     ]);
 
     record{|decimal c; boolean|string d; int e; string f; string...;|}[]|CsvConversionError ct1br10 = parseListAsRecordType(

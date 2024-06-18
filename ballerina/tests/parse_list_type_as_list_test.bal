@@ -4,11 +4,9 @@ import ballerina/test;
 
 // @test:Config {enable: !enable}
 // function debugTest() {
-//     // NillableStringArrayArray|CsvConversionError st1nsaa = parseListAsListType([st1, st1], {}, NillableStringArrayArray);
-//     // test:assertEquals(st1nsaa , [
-//     //     [s1, s2],
-//     //     [s1, s2]
-//     // ]);
+//     DecimalArray1Array|CsvConversionError st1dda = parseListAsListType([st1, st1], {}, DecimalArray1Array);
+//     test:assertTrue(st1dda is CsvConversionError);
+//     test:assertEquals((<CsvConversionError>st1dda).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
 // }
 
 @test:Config {enable}

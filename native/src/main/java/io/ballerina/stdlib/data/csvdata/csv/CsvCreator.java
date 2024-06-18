@@ -30,17 +30,15 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.FromString;
-import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
+import org.ballerinalang.langlib.value.CloneReadOnly;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getUpdatedHeaders;
-
 /**
  * Create objects for partially parsed csv.
  *
@@ -75,7 +73,7 @@ public class CsvCreator {
         }
         Object convertedValue = convertToExpectedType(StringUtils.fromString(value), type, config);
         sm.isCurrentCsvNodeEmpty = false;
-        if (convertedValue instanceof BError) {
+        if (convertedValue instanceof BError || convertedValue instanceof CsvUtils.UnMappedValue) {
             if (ignoreIncompatibilityErrorsForMaps(sm, exptype)) {
                 return null;
             }
@@ -160,5 +158,9 @@ public class CsvCreator {
             return FromString.fromStringWithType(value, PredefinedTypes.TYPE_JSON, config);
         }
         return FromString.fromStringWithType(value, type, config);
+    }
+
+    public static Object constructReadOnlyValue(Object value) {
+        return CloneReadOnly.cloneReadOnly(value);
     }
 }

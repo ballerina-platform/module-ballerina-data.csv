@@ -4,10 +4,13 @@ import ballerina/test;
 
 // @test:Config {enable: !enable}
 // function debugTest() {
-//     BooleanRecord1Array|CsvConversionError csvb4br1 = parseStringToRecord(csvStringWithBooleanValues4, {});
-//     test:assertEquals(csvb4br1, [
-//         {b1: true, b2: "()", b3: (), b4: false},
-//         {b1: true, b2: "()", b3: (), b4: false}
+//     record{A a; B b; C c;}[]|CsvConversionError rt12a = parseListAsRecordType(
+//         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
+
+//     test:assertEquals(rt12a , [
+//         {a: <decimal>1, b: "string", c: "true"},
+//         {a: <decimal>2, b: "string2", c: "false"},
+//         {a: <decimal>3, b: "string3", c: "true"}
 //     ]);
 // }
 
@@ -109,4 +112,359 @@ function testFromCsvWithTypeFunctionWithTypeCompatibility() {
         {a: <float>d2, b: <decimal>f2}, 
         {a: f2, b: d2}
     ]);
+}
+
+type A decimal|int;
+type A2 int|decimal;
+type B readonly & A | C;
+type B2 readonly & C | readonly & A2;
+type C string|boolean;
+type C2 boolean|string;
+
+@test:Config {enable}
+function testFromCsvWithIntersectionTypeCompatibility2() {
+    record{
+        readonly & int a; 
+        readonly & string b; 
+        (readonly & boolean) | (readonly & decimal) c;
+    }[]|CsvConversionError r1a = parseStringToRecord( string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r1a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{A a; B b; C c;}[]|CsvConversionError r2a = parseStringToRecord( string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r2a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{A2 a; B2 b; C2 c;}[]|CsvConversionError r3a = parseStringToRecord( string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r3a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{|A2 a; B2 b; C2...;|}[]|CsvConversionError r4a = parseStringToRecord( string `
+                                        a,b,c,d
+                                        1,string,true,string
+                                        2,string2,false,string2
+                                        3,string3,true,string3`, {header: 1});
+
+    test:assertEquals(r4a , [
+        {a: 1, b: "string", c: true, d: "string"},
+        {a: 2, b: "string2", c: false, d: "string2"},
+        {a: 3, b: "string3", c: true, d: "string3"}
+    ]);
+
+    record{|C2...;|}[]|CsvConversionError r5a = parseStringToRecord( string `a,b,c,d
+                                        1,string,true,string
+                                        2,string2,false,string2
+                                        3,string3,true,string3`);
+
+    test:assertEquals(r5a , [
+        {a: true, b: "string", c: true, d: "string"},
+        {a: "2", b: "string2", c: false, d: "string2"},
+        {a: "3", b: "string3", c: true, d: "string3"}
+    ]);
+
+    [readonly & int, readonly & string, (readonly & boolean) | (readonly & decimal)][]|CsvConversionError r16a = 
+    parseStringToList( string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r16a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A, B, C][]|CsvConversionError r17a = parseStringToList(
+        string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r17a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A2, B2, C2][]|CsvConversionError r18a = parseStringToList(
+        string `a,b,c
+                                        1,string,true
+                                        2,string2,false
+                                        3,string3,true`);
+
+    test:assertEquals(r18a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A2, B2, C2...][]|CsvConversionError r19a = parseStringToList(
+        string `a,b,c,d
+                                        1,string,true,string
+                                        2,string2,false,string2
+                                        3,string3,true,string3`);
+
+    test:assertEquals(r19a , [
+        [1, "string", true, "string"],
+        [2, "string2", false, "string2"],
+        [3, "string3", true, "string3"]
+    ]);
+
+    [C2...][]|CsvConversionError r20a = parseStringToList(
+        string `a,b,c,d
+                                        1,string,true,string
+                                        2,string2,false,string2
+                                        3,string3,true,string3`);
+
+    test:assertEquals(r20a, [[true, "string",true, "string"], 
+        ["2", "string2", false, "string2"], ["3", "string3",true, "string3"]]);
+
+
+    record{A a; B b; C c;}[]|CsvConversionError rt2a = parseRecordAsRecordType(
+        [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]);
+
+    test:assertEquals(rt2a , [
+        {a: <decimal>1, b: "string", c: true},
+        {a: <decimal>2, b: "string2", c: false},
+        {a: <decimal>3, b: "string3", c: true}
+    ]);
+
+    record{
+        readonly & int a; 
+        readonly & string b; 
+        (readonly & boolean) | (readonly & decimal) c;
+    }[]|CsvConversionError rt1a = parseRecordAsRecordType(
+        [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]);
+
+    test:assertEquals(rt1a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{A2 a; B2 b; C2 c;}[]|CsvConversionError rt3a = parseRecordAsRecordType(
+        [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]);
+
+    test:assertEquals(rt3a , [
+        {a: <int>1, b: "string", c: true},
+        {a: <int>2, b: "string2", c: false},
+        {a: <int>3, b: "string3", c: true}
+    ]);
+
+    record{|A2 a; B2 b; C2...;|}[]|CsvConversionError rt4a = parseRecordAsRecordType(
+        [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]);
+
+    test:assertEquals(rt4a , [
+        {a: <int>1, b: "string", c: true, d: "string"},
+        {a: <int>2, b: "string2", c: false, d: "string2"},
+        {a: <int>3, b: "string3", c: true, d: "string3"}
+    ]);
+
+    record{|C2...;|}[]|CsvConversionError rt5a = parseRecordAsRecordType(
+        [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]);
+
+    test:assertEquals(rt5a , [
+        {b: "string", c: true, d: "string"},
+        {b: "string2", c: false, d: "string2"},
+        {b: "string3", c: true, d: "string3"}
+    ]);
+
+    [readonly & int, readonly & string, (readonly & boolean) | (readonly & decimal)][]|CsvConversionError rt6a = 
+    parseRecordAsListType(
+        [{"a": 1, "b": "string", "c": true}, 
+        {"a": 2, "b": "string2", "c": false}, 
+        {"a": 3, "b": "string3", "c": true}
+    ], ["a", "b", "c"]);
+
+    test:assertEquals(rt6a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A, B, C][]|CsvConversionError rt7a = parseRecordAsListType(
+        [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]
+        , ["a", "b", "c"]);
+
+    test:assertEquals(rt7a , [
+        [<decimal>1, "string", true],
+        [<decimal>2, "string2", false],
+        [<decimal>3, "string3", true]
+    ]);
+
+    [A2, B2, C2][]|CsvConversionError rt8a = parseRecordAsListType(
+        [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]
+        , ["a", "b", "c"]);
+
+    test:assertEquals(rt8a , [
+        [<int>1, "string", true],
+        [<int>2, "string2", false],
+        [<int>3, "string3", true]
+    ]);
+
+    [A2, B2, C2...][]|CsvConversionError rt9a = parseRecordAsListType(
+        [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]
+        , ["a", "b", "c", "d"]);
+
+    test:assertEquals(rt9a , [
+        [<int>1, "string", true, "string"],
+        [<int>2, "string2", false, "string2"],
+        [<int>3, "string3", true, "string3"]
+    ]);
+
+    [C2...][]|CsvConversionError rt10a = parseRecordAsListType(
+        [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]
+        , ["a", "b", "c", "d"]);
+
+    test:assertTrue(rt10a is CsvConversionError);
+    test:assertEquals((<CsvConversionError>rt10a).message(), generateErrorMessageForInvalidValueForArrayType("1", "0", "data.csv:C2"));
+
+        record{
+        readonly & int a; 
+        readonly & string b; 
+        (readonly & boolean) | (readonly & decimal) c;
+    }[]|CsvConversionError rt11a = parseListAsRecordType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
+
+    test:assertEquals(rt11a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{A a; B b; C c;}[]|CsvConversionError rt12a = parseListAsRecordType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
+
+    test:assertEquals(rt12a , [
+        {a: 1, b: "string", c: true},
+        {a: 2, b: "string2", c: false},
+        {a: 3, b: "string3", c: true}
+    ]);
+
+    record{A a; B b; C c;}[]|CsvConversionError rt12a_2 = parseListAsRecordType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"], {stringConversion: false});
+
+    test:assertTrue(rt12a_2 is CsvConversionError);
+    test:assertEquals((<CsvConversionError>rt12a_2).message(), 
+        generateErrorMessageForInvalidFieldType("1", "a"));
+
+    record{string|decimal a; B b; C c;}[]|CsvConversionError rt12a_3 = parseListAsRecordType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
+
+    test:assertEquals(rt12a_3 , [
+        {a: <decimal>1, b: "string", c: true},
+        {a: <decimal>2, b: "string2", c: false},
+        {a: <decimal>3, b: "string3", c: true}
+    ]);
+
+    record{A2 a; B2 b; C2 c;}[]|CsvConversionError rt13a = parseListAsRecordType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
+
+    test:assertEquals(rt13a , [
+        {a: <int>1, b: "string", c: true},
+        {a: <int>2, b: "string2", c: false},
+        {a: <int>3, b: "string3", c: true}
+    ]);
+
+    record{|A2 a; B2 b; C2...;|}[]|CsvConversionError rt14a = parseListAsRecordType(
+        [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]
+        , ["a", "b", "c", "d"]);
+
+    test:assertEquals(rt14a , [
+        {a: <int>1, b: "string", c: true, d: "string"},
+        {a: <int>2, b: "string2", c: false, d: "string2"},
+        {a: <int>3, b: "string3", c: true, d: "string3"}
+    ]);
+
+    record{|C2...;|}[]|CsvConversionError rt15a = parseListAsRecordType(
+        [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]
+        , ["a", "b", "c", "d"]);
+
+    test:assertEquals(rt15a , [
+        {a: true, b: "string", c: true, d: "string"},
+        {a: "2", b: "string2", c: false, d: "string2"},
+        {a: "3", b: "string3", c: true, d: "string3"}
+    ]);
+
+    record{|C2...;|}[]|CsvConversionError rt15a_2 = parseListAsRecordType(
+        [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]
+        , ["a", "b", "c", "d"], {stringConversion: false});
+
+    test:assertEquals(rt15a_2 , [
+        {a: "1", b: "string", c: "true", d: "string"},
+        {a: "2", b: "string2", c: "false", d: "string2"},
+        {a: "3",b: "string3", c: "true", d: "string3"}
+    ]);
+
+    [readonly & int, readonly & string, (readonly & boolean) | (readonly & decimal)][]|CsvConversionError rt16a = 
+    parseListAsListType(
+        [["1", "string", "true"], 
+        ["2", "string2", "false"], 
+        ["3", "string3", "true"]]);
+
+    test:assertEquals(rt16a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A, B, C][]|CsvConversionError rt17a = parseListAsListType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]]);
+
+    test:assertEquals(rt17a , [
+        [1, "string", true],
+        [2, "string2", false],
+        [3, "string3", true]
+    ]);
+
+    [A, B, C][]|CsvConversionError rt17a_2 = parseListAsListType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {stringConversion: false});
+
+    test:assertTrue(rt17a_2 is CsvConversionError);
+    test:assertEquals((<error>rt17a_2).message(), generateErrorMessageForInvalidValueForArrayType("1", "0", "data.csv:A"));
+
+    [A2, B2, C2][]|CsvConversionError rt18a = parseListAsListType(
+        [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]]);
+
+    test:assertEquals(rt18a , [
+        [<int>1, "string", true],
+        [<int>2, "string2", false],
+        [<int>3, "string3", true]
+    ]);
+
+    [A2, B2, C2...][]|CsvConversionError rt19a = parseListAsListType(
+        [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]);
+
+    test:assertEquals(rt19a , [
+        [<int>1, "string", true, "string"],
+        [<int>2, "string2", false, "string2"],
+        [<int>3, "string3", true, "string3"]
+    ]);
+
+    [C2...][]|CsvConversionError rt20a = parseListAsListType(
+        [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]);
+
+    test:assertEquals(rt20a, [[true, "string",true, "string"], 
+        ["2", "string2", false, "string2"], ["3", "string3",true, "string3"]]);
 }
