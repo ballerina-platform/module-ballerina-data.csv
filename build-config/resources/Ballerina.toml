@@ -17,3 +17,9 @@ groupId = "io.ballerina.stdlib"
 artifactId = "data.csv-native"
 version = "@toml.version@"
 path = "../native/build/libs/data.csv-native-@project.version@.jar"
+
+[[platform.java17.dependency]]
+groupId = "io.ballerina.stdlib"
+artifactId = "constraint-native"
+version = "@constraint.version@"
+path = "./lib/constraint-native-@stdlib.constraintnative.version@.jar"

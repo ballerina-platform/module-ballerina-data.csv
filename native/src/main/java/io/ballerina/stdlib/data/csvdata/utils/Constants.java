@@ -20,6 +20,8 @@ public class Constants {
         public static BString ALLOW_DATA_PROJECTION = StringUtils.fromString("allowDataProjection");
         public static BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
         public static BString STRING_CONVERSION = StringUtils.fromString("stringConversion");
+        public static final BString ENABLE_CONSTRAINT_VALIDATION = StringUtils.
+                fromString("enableConstraintValidation");
     }
 
     public static class Values {

@@ -24,6 +24,7 @@ public class CsvConfig {
     public Object customHeader = null;
     public BArray headersOrder = null;
     public boolean stringConversion = false;
+    public boolean enableConstraintValidation = false;
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
                       boolean absentAsNilableType, boolean allowDataProjection) {
@@ -31,6 +32,15 @@ public class CsvConfig {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
+    }
+
+    private CsvConfig(boolean enableConstraintValidation, Object skipLines, boolean nilAsOptionalField,
+                      boolean absentAsNilableType, boolean allowDataProjection) {
+        this.skipLines = skipLines;
+        this.nilAsOptionalField = nilAsOptionalField;
+        this.absentAsNilableType = absentAsNilableType;
+        this.allowDataProjection = allowDataProjection;
+        this.enableConstraintValidation = enableConstraintValidation;
     }
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
@@ -51,14 +61,26 @@ public class CsvConfig {
         this.stringConversion = stringConversion;
     }
 
+//    private CsvConfig(Object skipLines, boolean nilAsOptionalField, boolean absentAsNilableType,
+//                      boolean allowDataProjection, boolean stringConversion, Object customHeader) {
+//        this.skipLines = skipLines;
+//        this.nilAsOptionalField = nilAsOptionalField;
+//        this.absentAsNilableType = absentAsNilableType;
+//        this.allowDataProjection = allowDataProjection;
+//        this.stringConversion = stringConversion;
+//        this.customHeader = customHeader;
+//    }
+
     private CsvConfig(Object skipLines, boolean nilAsOptionalField, boolean absentAsNilableType,
-                      boolean allowDataProjection, boolean stringConversion, Object customHeader) {
+                      boolean allowDataProjection, boolean stringConversion, Object customHeader,
+                      boolean enableConstraintValidation) {
         this.skipLines = skipLines;
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.stringConversion = stringConversion;
         this.customHeader = customHeader;
+        this.enableConstraintValidation = enableConstraintValidation;
     }
 
     public static CsvConfig createListTypeOptions(BMap<BString, Object> options) {
@@ -80,7 +102,8 @@ public class CsvConfig {
                 options.getBooleanValue(ABSENT_AS_NILABLE).booleanValue(),
                 options.getBooleanValue(ALLOW_DATA_PROJECTION).booleanValue(),
                 options.getBooleanValue(STRING_CONVERSION).booleanValue(),
-                options.get(CUSTOM_HEADERS)
+                options.get(CUSTOM_HEADERS),
+                options.getBooleanValue(ENABLE_CONSTRAINT_VALIDATION).booleanValue()
         );
     }
 
@@ -106,7 +129,7 @@ public class CsvConfig {
     private CsvConfig(char delimiter, char textEnclosure, Object header, char escapeChar, Object lineTerminator,
                       Object skipLines, Object nilValue, char comment, String locale, String encoding,
                       boolean nilAsOptionalField, boolean absentAsNilableType,
-                      boolean allowDataProjection, Object customHeaders) {
+                      boolean allowDataProjection, Object customHeaders, boolean enableConstraintValidation) {
         this.delimiter = delimiter;
         this.textEnclosure = textEnclosure;
         this.header = header;
@@ -121,15 +144,17 @@ public class CsvConfig {
         this.allowDataProjection = allowDataProjection;
         this.skipLines = skipLines;
         this.customHeader = customHeaders;
+        this.enableConstraintValidation = enableConstraintValidation;
     }
 
-    public static CsvConfig createOptions(BMap<BString, Object> options) {
+    public static CsvConfig createRecordAsRecordOption(BMap<BString, Object> options) {
         updateDataProjectOptions(options);
         return new CsvConfig(
-            options.get(SKIP_LINES),
-            options.getBooleanValue(NIL_AS_OPTIONAL),
-            options.getBooleanValue(ABSENT_AS_NILABLE),
-            options.getBooleanValue(ALLOW_DATA_PROJECTION)
+                options.getBooleanValue(ENABLE_CONSTRAINT_VALIDATION),
+                options.get(SKIP_LINES),
+                options.getBooleanValue(NIL_AS_OPTIONAL),
+                options.getBooleanValue(ABSENT_AS_NILABLE),
+                options.getBooleanValue(ALLOW_DATA_PROJECTION)
         );
     }
 
@@ -168,7 +193,8 @@ public class CsvConfig {
                 options.getBooleanValue(NIL_AS_OPTIONAL),
                 options.getBooleanValue(ABSENT_AS_NILABLE),
                 options.getBooleanValue(ALLOW_DATA_PROJECTION),
-                options.get(CUSTOM_HEADERS)
+                options.get(CUSTOM_HEADERS),
+                options.getBooleanValue(ENABLE_CONSTRAINT_VALIDATION)
         );
     }
 

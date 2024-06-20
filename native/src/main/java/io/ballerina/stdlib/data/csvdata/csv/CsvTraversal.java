@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.*;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
+import io.ballerina.stdlib.data.csvdata.utils.DataUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 
@@ -42,10 +43,11 @@ import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
  */
 public class CsvTraversal {
     private static final ThreadLocal<CsvTree> tlCsvTree = ThreadLocal.withInitial(CsvTree::new);
-    public static Object traverse(BArray csv, CsvConfig config, Type type) {
+    public static Object traverse(BArray csv, CsvConfig config, BTypedesc type) {
         CsvTree csvTree = tlCsvTree.get();
         try {
-            return csvTree.traverseCsv(csv, config, type);
+            Object convertedValue = csvTree.traverseCsv(csv, config, type.getDescribingType());
+            return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } catch (BError e) {
             return e;
         } finally {

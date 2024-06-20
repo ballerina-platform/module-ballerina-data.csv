@@ -373,7 +373,10 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
         [true, false, (), true],
         [true, false, (), true]
     ]);
+}
 
+@test:Config {enable}
+function testFromCsvWithTypeForMapAndTupleAsExpectedType2() {
     NillableBooleanTuple8Array|CsvConversionError bm1nb8t = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {}, NillableBooleanTuple8Array);
     test:assertEquals(bm1nb8t, [
         [true, false],

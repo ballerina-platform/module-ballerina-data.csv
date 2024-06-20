@@ -1,13 +1,14 @@
 import ballerina/test;
 
-boolean enable = true;
+// boolean enable = true;
 
-@test:Config {enable: !enable}
-function debugTest() returns error? {
-    RecordWithCustomAnnotation3[]|CsvConversionError cntr12 = parseListAsRecordType([["3", "1"]], ["a", "b"], {});
-    test:assertTrue(cntr12 is CsvConversionError);
-    test:assertEquals((<error>cntr12).message(), "Duplicate field found in record fields: 'a'");
-}
+// @test:Config {enable: !enable}
+// function debugTest() returns error? {
+//     record {|int a; int? g; int? h;|}[]|CsvConversionError cn = parseStringToRecord(csvStringData1, {
+//         allowDataProjection: {absentAsNilableType: true},
+//         header: 1
+//     });
+// }
 
 @test:Config {enable}
 function testCustomNameAnnotation() returns error? {

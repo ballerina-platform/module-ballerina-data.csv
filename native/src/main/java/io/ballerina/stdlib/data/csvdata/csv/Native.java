@@ -42,7 +42,7 @@ public class Native {
     public static Object parseStringToRecord(BString csv, BMap<BString, Object> options, BTypedesc type) {
         try {
             return CsvParser.parse(new StringReader(csv.getValue()),
-                    type.getDescribingType(), CsvConfig.createParserToRecordOptions(options));
+                    type, CsvConfig.createParserToRecordOptions(options));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class Native {
         try {
             byte[] bytes = csv.getBytes();
                 return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
-                        type.getDescribingType(), CsvConfig.createParserToRecordOptions(options));
+                        type, CsvConfig.createParserToRecordOptions(options));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class Native {
     public static Object parseStringToList(BString csv, BMap<BString, Object> options, BTypedesc type) {
         try {
             return CsvParser.parse(new StringReader(csv.getValue()),
-                    type.getDescribingType(), CsvConfig.createParseOptions(options));
+                    type, CsvConfig.createParseOptions(options));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class Native {
         try {
             byte[] bytes = csv.getBytes();
                 return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
-                        type.getDescribingType(), CsvConfig.createParseOptions(options));
+                        type, CsvConfig.createParseOptions(options));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -118,7 +118,7 @@ public class Native {
 
     public static Object parseRecordAsRecordType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createRecordAsRecordOption(options), type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
@@ -128,7 +128,7 @@ public class Native {
         try {
             CsvConfig toRecordOptions = CsvConfig.createToRecordOptions(options);
             toRecordOptions.headersOrder = headers;
-            return CsvTraversal.traverse(csv, toRecordOptions, type.getDescribingType());
+            return CsvTraversal.traverse(csv, toRecordOptions, type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
@@ -138,7 +138,7 @@ public class Native {
                                                BMap<BString, Object> options, BTypedesc type) {
         try {
             options.put(Constants.ConfigConstants.CUSTOM_HEADERS, customHeaders);
-            return CsvTraversal.traverse(csv, CsvConfig.createListAsRecordTypeOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createListAsRecordTypeOptions(options), type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
@@ -146,7 +146,7 @@ public class Native {
 
     public static Object parseListAsListType(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createListTypeOptions(options), type.getDescribingType());
+            return CsvTraversal.traverse(csv, CsvConfig.createListTypeOptions(options), type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

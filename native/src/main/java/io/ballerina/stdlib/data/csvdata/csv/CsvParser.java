@@ -25,8 +25,10 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
+import io.ballerina.stdlib.data.csvdata.utils.DataUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -59,11 +61,12 @@ public class CsvParser {
 
     private static final ThreadLocal<StateMachine> tlStateMachine = ThreadLocal.withInitial(StateMachine::new);
 
-    public static Object parse(Reader reader, Type type, CsvConfig config)
+    public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
         StateMachine sm = tlStateMachine.get();
         try {
-            return sm.execute(reader, TypeUtils.getReferredType(type), config);
+            Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()), config);
+            return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } finally {
             // Need to reset the state machine before leaving. Otherwise, references to the created
             // CSV values will be maintained and the java GC will not happen properly.
@@ -165,6 +168,9 @@ public class CsvParser {
         }
 
         private String value() {
+            if (this.charBuffIndex == 0) {
+                return "";
+            }
             String result = new String(this.charBuff, 0, this.charBuffIndex);
             this.charBuffIndex = 0;
             return result;
@@ -669,7 +675,7 @@ public class CsvParser {
                         state = STRING_ESCAPE_VALUE_STATE;
                         sm.isQuoteClosed = false;
                         break;
-                    } else if (!sm.isQuoteClosed && ch == EOF) {
+                    } else if (!sm.isQuoteClosed && !sm.peek().isEmpty() && ch == EOF) {
                         throw new CsvParserException("unexpected end of csv stream");
                     } else {
                         if (!sm.isQuoteClosed) {

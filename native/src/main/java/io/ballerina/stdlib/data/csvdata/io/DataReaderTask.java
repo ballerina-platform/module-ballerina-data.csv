@@ -85,7 +85,7 @@ public class DataReaderTask implements Runnable {
         try (var byteBlockSteam = new BallerinaByteBlockInputStream(env, iteratorObj, resolveNextMethod(iteratorObj),
                 resolveCloseMethod(iteratorObj), resultConsumer)) {
             Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam),
-                        typed.getDescribingType(), this.config);
+                        typed, this.config);
             future.complete(result);
         } catch (Exception e) {
             future.complete(DiagnosticLog.getCsvError("Error occurred while reading the stream: " + e.getMessage()));

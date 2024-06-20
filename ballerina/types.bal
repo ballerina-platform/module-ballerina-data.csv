@@ -40,17 +40,22 @@ public type parseToRecordOption record {|
 
   // if header = false and this value is null, Then compiler time error.
   string[]? customHeaders = ();
+   boolean enableConstraintValidation = true;
 |};
 
-public type ToRecordOptions record {
-   *Options;
-
-   // if source is array and this field is null => compile time error
-   string[]? customHeaders = ();
-};
-
-public type ListTypeOption record {|
+public type ListAsListOption record {|
     *Options;
+    boolean stringConversion = true;
+|};
+
+public type RecordAsRecordOption record {|
+    *Options;
+   boolean enableConstraintValidation = true;
+|};
+
+public type ListAsRecordOption record {|
+    *Options;
+    boolean enableConstraintValidation = true;
     boolean stringConversion = true;
 |};
 

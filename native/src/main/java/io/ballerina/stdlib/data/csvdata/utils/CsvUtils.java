@@ -41,47 +41,6 @@ public class CsvUtils {
         }
     }
 
-    public static Object getRowValueForSort(Object row, Object columnName) {
-        if (row instanceof BMap) {
-            return ((BMap) row).get(columnName);
-        } else {
-            if (columnName instanceof Long) {
-                return ((BArray) row).get((long) columnName);
-            } else {
-                // TODO: Add a new error
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, "Test", "Test");
-            }
-        }
-    }
-
-    public static int compareTwoColumnAndGetValue(Object o1, Object o2) {
-        if (o1 == null && o2 ==null) {
-            return 0;
-        }
-        if (o1 == null) {
-            return -1;
-        }
-        if (o2 == null) {
-            return 1;
-        }
-        if (o1 instanceof Long && o2 instanceof Long) {
-            return ((Long) o1).compareTo((Long) o2);
-        }
-        if (o1 instanceof Boolean && o2 instanceof Boolean) {
-            return ((Boolean) o1).compareTo((Boolean) o2);
-        }
-        if (o1 instanceof BDecimal && o2 instanceof BDecimal) {
-            return (((BDecimal) o1).decimalValue()).compareTo(((BDecimal) o1).decimalValue());
-        }
-        if (o1 instanceof Float && o2 instanceof Float) {
-            return ((Float) o1).compareTo((Float) o2);
-        }
-        if (o1 instanceof Double && o2 instanceof Double) {
-            return ((Double) o1).compareTo((Double) o2);
-        }
-        return (StringUtils.getStringValue(o1)).compareTo(StringUtils.getStringValue(o2));
-    }
-
     public static String[] createHeaders(String[] headers, CsvConfig config) {
         Object customHeaders = config.customHeader;
 
@@ -150,44 +109,6 @@ public class CsvUtils {
 
     private static boolean isJsonOrAnyDataOrAny(int tag) {
         return tag == TypeTags.JSON_TAG || tag == TypeTags.ANYDATA_TAG || tag == TypeTags.ANY_TAG;
-    }
-
-    public static void addValuesToArrayType2(Object csvElement, Type arrayElementType, int index,
-                                      Object currentCsvNode, CsvConfig config) {
-        switch (arrayElementType.getTag()) {
-            case TypeTags.NULL_TAG:
-            case TypeTags.BOOLEAN_TAG:
-            case TypeTags.INT_TAG:
-            case TypeTags.FLOAT_TAG:
-            case TypeTags.DECIMAL_TAG:
-            case TypeTags.STRING_TAG:
-            case TypeTags.JSON_TAG:
-            case TypeTags.ANYDATA_TAG:
-                if (checkTypeCompatibility(arrayElementType, csvElement, config.stringConversion)) {
-                    Object value = convertToBasicType(csvElement, arrayElementType, config);
-                    if (!(value instanceof BError)) {
-                        ((BArray) currentCsvNode).add(index, value);
-                        return;
-                    }
-                }
-                break;
-            case TypeTags.UNION_TAG:
-                for (Type memberType: ((UnionType) arrayElementType).getMemberTypes()) {
-                    if (!isBasicType(memberType)) {
-                        throw DiagnosticLog.error(DiagnosticErrorCode
-                                .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
-                    }
-                    if (checkTypeCompatibility(memberType, csvElement , config.stringConversion)) {
-                        Object value = convertToBasicType(csvElement, memberType, config);
-                        if (!(value instanceof BError)) {
-                            ((BArray) currentCsvNode).add(index, value);
-                            return;
-                        }
-                    }
-                }
-                break;
-        }
-        throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_ARRAY, csvElement, index, arrayElementType);
     }
 
     public static int getTheActualExpectedType(Type type) {
