@@ -105,12 +105,12 @@ function testFromCsvStringWithTypeCompatibility() {
     test:assertTrue(m3rrta is CsvConversionError);
     test:assertEquals((<CsvConversionError>m3rrta).message(), generateErrorMessageForInvalidCast("1.2", "int"));
 
-    [boolean, int][]|CsvConversionError m4rrta = parseStringToList(string `a, b
+    [boolean|int, int|boolean][]|CsvConversionError m4rrta = parseStringToList(string `a, b
                                                                             1, 1
                                                                             0,0`);
     test:assertEquals(m4rrta, [
-        [true, 1],
-        [false, 0]
+        [1, 1],
+        [0, 0]
     ]);
 
     record {|int...;|}[]|CsvConversionError irrma = parseStringToRecord(string `
@@ -193,12 +193,4 @@ function testFromCsvStringWithTypeCompatibility() {
                                                                             1.2, abc, true,1.0`);
     test:assertTrue(m3rra is CsvConversionError);
     test:assertEquals((<CsvConversionError>m3rra).message(), generateErrorMessageForInvalidCast("1.0", "int"));
-
-    record {int b; boolean a;}[]|CsvConversionError m4rra = parseStringToRecord(string `a, b
-                                                                            1, 1
-                                                                            0,0`);
-    test:assertEquals(m4rra, [
-        {a: true, b: 1},
-        {a: false, b: 0}
-    ]);
 }

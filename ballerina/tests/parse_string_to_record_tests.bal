@@ -140,7 +140,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
 
     BooleanRecord4Array|CsvConversionError csvb4br4 = parseStringToRecord(csvStringWithBooleanValues4, {});
     test:assertEquals(csvb4br4, [
-        {b1: true, b2: (), b3: (), b4: 0},
+        {b1: true, b2: (), b3: (), b4: false},
         {b1: true, b2: (), b3: (), b4: false}
     ]);
 
@@ -177,7 +177,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
 
     BooleanRecord5Array|CsvConversionError csvb4br5 = parseStringToRecord(csvStringWithBooleanValues4, {});
     test:assertEquals(csvb4br5, [
-        {b1: true, b2: (), b3: (), b4: 0, defaultableField: "", nillableField: ()},
+        {b1: true, b2: (), b3: (), b4: false, defaultableField: "", nillableField: ()},
         {b1: true, b2: (), b3: (), b4: false, defaultableField: "", nillableField: ()}
     ]);
 
@@ -472,7 +472,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType2() {
     test:assertEquals(csvb1br17, [{}, {}, {}]);
 
     BooleanRecord17Array|CsvConversionError csvb4br17 = parseStringToRecord(csvStringWithBooleanValues4, {});
-    test:assertEquals(csvb4br17, [{b4: 0}, {b1: 1}]);
+    test:assertEquals(csvb4br17, [{}, {}]);
 
     BooleanRecord17Array|CsvConversionError csvb6br17 = parseStringToRecord(csvStringWithBooleanValues6, {});
     test:assertEquals(csvb6br17, [{}]);

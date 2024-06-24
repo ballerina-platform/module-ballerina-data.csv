@@ -18,13 +18,16 @@
 
 package io.ballerina.stdlib.data.csvdata.csv;
 
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
@@ -65,7 +68,8 @@ public class CsvParser {
             throws BError {
         StateMachine sm = tlStateMachine.get();
         try {
-            Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()), config);
+            Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
+                    config, type);
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } finally {
             // Need to reset the state machine before leaving. Otherwise, references to the created
@@ -184,7 +188,7 @@ public class CsvParser {
             return new String(this.charBuff, 0, this.charBuffIndex);
         }
 
-        public Object execute(Reader reader, Type type, CsvConfig config) throws BError {
+        public Object execute(Reader reader, Type type, CsvConfig config, BTypedesc bTypedesc) throws BError {
             this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() != TypeTags.ARRAY_TAG) {
@@ -210,9 +214,14 @@ public class CsvParser {
                 case TypeTags.ARRAY_TAG:
                     break;
                 case TypeTags.UNION_TAG:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.UNION_TYPES_NOT_ALLOWED, expectedArrayElementType);
+                    Object mapValue = execute(reader, TypeCreator.createArrayType(
+                            TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
+                    ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
+                    config.stringConversion = true;
+                    return CsvTraversal.traverse((BArray) mapValue, config, bTypedesc);
                 default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
+                            expectedArrayElementType);
             }
 
             State currentState;

@@ -41,7 +41,7 @@ function testFromCsvStringWithParserOptions() {
     record {}[]|CsvConversionError csv2op4_3 = parseStringToRecord(csvStringData2, ptOption4);
     test:assertEquals(csv2op4_3, [
         {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
-        {a: 3, b: "string3", c: 0, d: 1.23, e: 1.23, f: "()"},
+        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
         {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
     ]);
 
@@ -55,7 +55,7 @@ function testFromCsvStringWithParserOptions() {
     record {}[]|CsvConversionError csv3op3_2 = parseStringToRecord(csvStringData3, ptOption1);
     test:assertEquals(csv3op3_2, [
         {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
-        {a: 3, b: "string3", c: 0, d: 1.23, e: 1.23, f: "()"},
+        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
         {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
     ]);
 
@@ -67,7 +67,7 @@ function testFromCsvStringWithParserOptions() {
 
     record {}[]|CsvConversionError csv3op3_4 = parseStringToRecord(csvStringData3, {header: 9, skipLines: "2-10"});
     test:assertEquals(csv3op3_4, [
-        {'4: 5, string4: "string5", '1: true, "-6.51": 3, "()": null}
+        {'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": null}
     ]);
 }
 
@@ -81,7 +81,7 @@ function testFromCsvStringWithHeaderLessParserOptions() {
     test:assertEquals(csv1op5_2, [
         {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
@@ -89,35 +89,35 @@ function testFromCsvStringWithHeaderLessParserOptions() {
     test:assertEquals(csv1op6_2, [
         {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
     record {}[]|CsvConversionError csv3op6_2 = parseStringToRecord(csvStringData3, {header: false, skipLines: [1, 3, 5, -1, 100, 100]});
     test:assertEquals(csv3op6_2, [
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
     record {}[]|CsvConversionError csv4op6_2 = parseStringToRecord(csvStringData4, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv4op6_2, [
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
     record {}[]|CsvConversionError csv5op6_2 = parseStringToRecord(csvStringData5, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv5op6_2, [
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
     record {}[]|CsvConversionError csv6op6_2 = parseStringToRecord(csvStringData6, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv6op6_2, [
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 
@@ -127,7 +127,7 @@ function testFromCsvStringWithHeaderLessParserOptions() {
         {'1: "//comment"},
         {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: 0, '4: 1.23, '5: 1.23, '6: ()},
+        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
         {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
     ]);
 }
@@ -138,8 +138,8 @@ function testHeaderOption() {
     test:assertEquals(csv2cop1, [
         {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
         {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
-        {a: 3, b: "string3", c: 0, d: 1.23, e: 1.23, f: ()},
-        {a: 4, b: "string4", c: 1, d: -6.51, e: -6.51, f: ()},
+        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
+        {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
         {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
     ]);
 
@@ -150,7 +150,7 @@ function testHeaderOption() {
     test:assertEquals(csv2cop3, []);
 
     record {}[]|CsvConversionError csv2cop4 = parseStringToRecord(csvStringData2, {header: 10});
-    test:assertEquals(csv2cop4, [{'4: 5, string4: "string5", '1: true, "-6.51": 3, "()": ()}]);
+    test:assertEquals(csv2cop4, [{'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": ()}]);
 
     record {}[]|CsvConversionError csv1cop5 = parseStringToRecord(csvStringData1, {});
     test:assertTrue(csv1cop5 is CsvConversionError);
@@ -683,8 +683,8 @@ function testCustomHeaderParserOption2() {
     test:assertEquals(ct1br12, [
         {e1: "string1", d1: "true"},
         {e1: "string2", d1: "false"},
-        {e1: "string3", d1: "0"},
-        {e1: "string4", d1: "1"},
+        {e1: "string3", d1: "false"},
+        {e1: "string4", d1: "true"},
         {e1: "string5", d1: "true"}
     ]);
 

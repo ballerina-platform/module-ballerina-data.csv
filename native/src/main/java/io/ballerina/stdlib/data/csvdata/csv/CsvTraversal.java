@@ -20,6 +20,7 @@ package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
@@ -97,11 +98,12 @@ public class CsvTraversal {
             setRootCsvNode(referredType, type);
             validateExpectedArraySize(expectedArraySize, sourceArraySize);
 
-            traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv);
+            traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv, config);
             return rootCsvNode;
         }
 
-        private void traverseCsvWithExpectedType(int expectedArraySize, int sourceArraySize, BArray csv) {
+        private void traverseCsvWithExpectedType(int expectedArraySize,
+                                                 int sourceArraySize, BArray csv, CsvConfig config) {
             switch (expectedArrayElementType.getTag()) {
                 case TypeTags.RECORD_TYPE_TAG:
                 case TypeTags.MAP_TAG:
@@ -114,8 +116,20 @@ public class CsvTraversal {
                     traverseCsvArrayMembersWithArrayAsCsvElementType(expectedArraySize == -1 ?
                             sourceArraySize : expectedArraySize, csv, expectedArrayElementType);
                     break;
+                case TypeTags.UNION_TAG:
+                    for (Type memberType : ((UnionType) expectedArrayElementType).getMemberTypes()) {
+                        try {
+                            traverseCsv(csv, config, TypeCreator.createArrayType(memberType));
+                            return;
+                        } catch (Exception e) {
+                            //ignore
+                        }
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
+                            expectedArrayElementType);
                 default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedArrayElementType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
+                            expectedArrayElementType);
             }
         }
 

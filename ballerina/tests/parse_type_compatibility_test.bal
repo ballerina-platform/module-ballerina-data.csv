@@ -178,7 +178,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
                                         3,string3,true,string3`);
 
     test:assertEquals(r5a , [
-        {a: true, b: "string", c: true, d: "string"},
+        {a: "1", b: "string", c: true, d: "string"},
         {a: "2", b: "string2", c: false, d: "string2"},
         {a: "3", b: "string3", c: true, d: "string3"}
     ]);
@@ -237,7 +237,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
                                         2,string2,false,string2
                                         3,string3,true,string3`);
 
-    test:assertEquals(r20a, [[true, "string",true, "string"], 
+    test:assertEquals(r20a, [["1", "string",true, "string"], 
         ["2", "string2", false, "string2"], ["3", "string3",true, "string3"]]);
 
 
@@ -402,7 +402,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         , ["a", "b", "c", "d"]);
 
     test:assertEquals(rt15a , [
-        {a: true, b: "string", c: true, d: "string"},
+        {a: "1", b: "string", c: true, d: "string"},
         {a: "2", b: "string2", c: false, d: "string2"},
         {a: "3", b: "string3", c: true, d: "string3"}
     ]);
@@ -465,6 +465,6 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
     [C2...][]|CsvConversionError rt20a = parseListAsListType(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]);
 
-    test:assertEquals(rt20a, [[true, "string",true, "string"], 
+    test:assertEquals(rt20a, [["1", "string",true, "string"], 
         ["2", "string2", false, "string2"], ["3", "string3",true, "string3"]]);
 }

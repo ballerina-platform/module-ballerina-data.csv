@@ -298,8 +298,8 @@ function testFromCsvStringWithTypeForStringAndTupleAsExpectedType() {
 
     NillableIntBooleanTuple9Array|CsvConversionError cbv4bt9 = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cbv4bt9, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     NillableIntBooleanTuple9Array|CsvConversionError cbv5bt9 = parseStringToList(csvStringWithBooleanValues5);
@@ -353,8 +353,8 @@ function testFromCsvStringWithTypeForStringAndTupleAsExpectedType() {
 
     AnydataTuple3Array|CsvConversionError cbv4anyd3 = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cbv4anyd3, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     AnydataTuple3Array|CsvConversionError cbv5anyd3 = parseStringToList(csvStringWithBooleanValues5);
@@ -398,8 +398,8 @@ function testFromCsvStringWithTypeForStringAndTupleAsExpectedType2() {
 
     JsonTuple3Array|CsvConversionError cbv4j3 = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cbv4j3, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     JsonTuple3Array|CsvConversionError cbv5j3 = parseStringToList(csvStringWithBooleanValues5);
@@ -440,8 +440,8 @@ function testFromCsvStringWithTypeForStringAndTupleAsExpectedType2() {
 
     StringTuple3Array|CsvConversionError cbv4s3 = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cbv4s3, [
-        ["true", "()", "()", "0"],
-        ["1", "()", "null", "false"]
+        ["true", "()", "()", "false"],
+        ["true", "()", "null", "false"]
     ]);
 
     StringTuple3Array|CsvConversionError cbv5s3 = parseStringToList(csvStringWithBooleanValues5);

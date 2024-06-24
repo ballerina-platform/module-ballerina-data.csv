@@ -108,8 +108,8 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType() {
 
     NillableIntOrUnionBooleanArrayArray|CsvConversionError cv4niubaa = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cv4niubaa, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     NillableIntOrUnionBooleanArrayArray|CsvConversionError cv5niubaa = parseStringToList(csvStringWithBooleanValues5);
@@ -150,8 +150,8 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType() {
 
     StringArray1Array|CsvConversionError cv4saa = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cv4saa, [
-        ["true", "()", "()", "0"],
-        ["1", "()", "null", "false"]
+        ["true", "()", "()", "false"],
+        ["true", "()", "null", "false"]
     ]);
 
     StringArray1Array|CsvConversionError cv5saa = parseStringToList(csvStringWithBooleanValues5);
@@ -193,7 +193,7 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType() {
     StringArray2Array|CsvConversionError cv4s2aa = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cv4s2aa, [
         ["true", "()"],
-        ["1", "()"]
+        ["true", "()"]
     ]);
 
     StringArray2Array|CsvConversionError cv5s2aa = parseStringToList(csvStringWithBooleanValues5);
@@ -234,8 +234,8 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType() {
 
     JsonArray1Array|CsvConversionError cv4jaa = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cv4jaa, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     JsonArray1Array|CsvConversionError cv5jaa = parseStringToList(csvStringWithBooleanValues5);
@@ -276,8 +276,8 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType() {
 
     AnydataArray1Array|CsvConversionError cv4anydaa = parseStringToList(csvStringWithBooleanValues4);
     test:assertEquals(cv4anydaa, [
-        [true, (), (), 0],
-        [1, (), (), false]
+        [true, (), (), false],
+        [true, (), (), false]
     ]);
 
     AnydataArray1Array|CsvConversionError cv5anydaa = parseStringToList(csvStringWithBooleanValues5);

@@ -143,8 +143,8 @@ true, true,FALSE
 `;
 
 string csvStringWithBooleanValues4 = string `b1,b2,b3,b4
-    true,(), (),0
- 1,(), null,false
+    true,(), (),false
+ true,(), null,false
 
 `;
 
@@ -168,8 +168,8 @@ string csvStringData1 = string `
                         a, b, c, d, e, f
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
-                        3, string3, 0, 1.23, 1.23, ()
-                        4, string4, 1, -6.51, -6.51, ()
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
 string csvStringData2 = string `
@@ -181,8 +181,8 @@ string csvStringData2 = string `
 
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
-                        3, string3, 0, 1.23, 1.23, ()
-                        4, string4, 1, -6.51, -6.51, ()
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
 string csvStringData3 = string `
@@ -192,16 +192,16 @@ string csvStringData3 = string `
 
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
-                        3, string3, 0, 1.23, 1.23, ()
+                        3, string3, false, 1.23, 1.23, ()
 
-                        4, string4, 1, -6.51, -6.51, ()
+                        4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
 string csvStringData4 = string `
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
-                        3, string3, 0, 1.23, 1.23, ()
-                        4, string4, 1, -6.51, -6.51, ()
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;  
 
 string csvStringData5 = string `
@@ -211,8 +211,8 @@ string csvStringData5 = string `
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
 
-                        3, string3, 0, 1.23, 1.23, ()
-                        4, string4, 1, -6.51, -6.51, ()
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.51, ()
 
                         5, string5, true, 3, 3, ()`;   
 
@@ -221,8 +221,8 @@ string csvStringData6 = string `
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
 
-                        3, string3, 0, 1.23, 1.23, ()
-                        4, string4, 1, -6.51, -6.51, ()
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.51, ()
 
                         5, string5, true, 3, 3, ()`;
 

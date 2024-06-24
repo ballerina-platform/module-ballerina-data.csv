@@ -232,11 +232,11 @@ public class FromString {
     }
 
     private static Object stringToBoolean(String value) throws NumberFormatException {
-        if ("true".equalsIgnoreCase(value) || "TRUE".equalsIgnoreCase(value) || "1".equalsIgnoreCase(value)) {
+        if ("true".equalsIgnoreCase(value) || "TRUE".equalsIgnoreCase(value)) {
             return true;
         }
 
-        if ("false".equalsIgnoreCase(value)  || "FALSE".equalsIgnoreCase(value) || "0".equalsIgnoreCase(value)) {
+        if ("false".equalsIgnoreCase(value)  || "FALSE".equalsIgnoreCase(value)) {
             return false;
         }
         return returnError(value, "boolean");

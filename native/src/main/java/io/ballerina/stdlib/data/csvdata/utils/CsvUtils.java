@@ -200,10 +200,13 @@ public class CsvUtils {
 
     public static long[] getSkipDataRows(Object skipLines) {
         long[] skipDataRows;
+        if (skipLines == null) {
+            return new long[]{};
+        }
         if (skipLines instanceof BArray) {
             BArray skipLinesArray = (BArray) skipLines;
             if (skipLinesArray.getLength() == 0) {
-                return new long[]{-1};
+                return new long[]{};
             }
             skipDataRows = (skipLinesArray).getIntArray();
             return skipDataRows;
@@ -245,7 +248,7 @@ public class CsvUtils {
             return false;
         }
 
-        String lineTerminator = StringUtils.getStringValue(lineTerminatorObj);
+        String lineTerminator = StringUtils.getStringValue(StringUtils.fromString(lineTerminatorObj.toString()));
         return lineTerminator.equals(stringValue);
     }
 

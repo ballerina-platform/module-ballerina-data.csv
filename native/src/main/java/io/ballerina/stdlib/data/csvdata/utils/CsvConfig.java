@@ -1,5 +1,6 @@
 package io.ballerina.stdlib.data.csvdata.utils;
 
+import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
@@ -10,7 +11,7 @@ import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.*
 public class CsvConfig {
     public char delimiter = ',';
     public char textEnclosure = '\\';
-    public Object header = 0;
+    public Object header = (long) 0;
     public char escapeChar = '\\';
     public Object lineTerminator = '\n';
     public Object skipLines = null;
@@ -25,6 +26,19 @@ public class CsvConfig {
     public BArray headersOrder = null;
     public boolean stringConversion = false;
     public boolean enableConstraintValidation = false;
+
+    private CsvConfig(CsvConfig config) {
+        this.allowDataProjection = false;
+        this.header = config.header;
+        this.delimiter = config.delimiter;
+        this.textEnclosure = config.textEnclosure;
+        this.escapeChar = config.escapeChar;
+        this.lineTerminator = config.lineTerminator;
+        this.nilValue = config.nilValue;
+        this.comment = config.comment;
+        this.locale = config.locale;
+        this.encoding = config.encoding;
+    }
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
                       boolean absentAsNilableType, boolean allowDataProjection) {
@@ -207,6 +221,11 @@ public class CsvConfig {
                 options.getBooleanValue(ALLOW_DATA_PROJECTION),
                 options.get(CUSTOM_HEADERS)
         );
+    }
+
+
+    public static CsvConfig createConfigOptionsForUnion(CsvConfig config) {
+        return new CsvConfig(config);
     }
 
     private static void updateDataProjectOptions(BMap<BString, Object> options) {

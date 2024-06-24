@@ -120,8 +120,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     NillableIntUnionBooleanMapArray|CsvConversionError bv4bniubma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4bniubma, [
-        {b1: true, b2: (), b3: (), b4: 0},
-        {b1: 1, b2: (), b3: (), b4: false}
+        {b1: true, b2: (), b3: (), b4: false},
+        {b1: true, b2: (), b3: (), b4: false}
     ]);
 
     NillableIntUnionBooleanMapArray|CsvConversionError bv5bniubma = parseStringToRecord(csvStringWithBooleanValues5);
@@ -162,8 +162,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     IntUnionBooleanMapArray|CsvConversionError bv4biubma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4biubma, [
-        {b1: true, b4: 0},
-        {b1: 1, b4: false}
+        {b1: true, b4: false},
+        {b1: true, b4: false}
     ]);
 
     IntUnionBooleanMapArray|CsvConversionError bv5biubma = parseStringToRecord(csvStringWithBooleanValues5);
@@ -246,8 +246,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     JsonMapArray|CsvConversionError bv4bjma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4bjma, [
-        {b1: true, b2: (), b3: (), b4: 0},
-        {b1: 1, b2: (), b3: (), b4: false}
+        {b1: true, b2: (), b3: (), b4: false},
+        {b1: true, b2: (), b3: (), b4: false}
     ]);
 
     JsonMapArray|CsvConversionError bv5bjma = parseStringToRecord(csvStringWithBooleanValues5);
@@ -288,8 +288,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     AnydataMapArray|CsvConversionError bv4banydma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4banydma, [
-        {b1: true, b2: (), b3: (), b4: 0},
-        {b1: 1, b2: (), b3: (), b4: false}
+        {b1: true, b2: (), b3: (), b4: false},
+        {b1: true, b2: (), b3: (), b4: false}
     ]);
 
     AnydataMapArray|CsvConversionError bv5banydma = parseStringToRecord(csvStringWithBooleanValues5);
@@ -330,8 +330,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     CustomMapArray|CsvConversionError bv4bcma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4bcma, [
-        {b1: "true", b2: "()", b3: "()", b4: 0},
-        {b1: 1, b2: "()", b3: "null", b4: "false"}
+        {b1: "true", b2: "()", b3: "()", b4: "false"},
+        {b1: "true", b2: "()", b3: "null", b4: "false"}
     ]);
 
     CustomMapArray|CsvConversionError bv5bcma = parseStringToRecord(csvStringWithBooleanValues5);
@@ -372,8 +372,8 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
 
     StringMapArray|CsvConversionError bv4bsma = parseStringToRecord(csvStringWithBooleanValues4);
     test:assertEquals(bv4bsma, [
-        {b1: "true", b2: "()", b3: "()", b4: "0"},
-        {b1: "1", b2: "()", b3: "null", b4: "false"}
+        {b1: "true", b2: "()", b3: "()", b4: "false"},
+        {b1: "true", b2: "()", b3: "null", b4: "false"}
     ]);
 
     StringMapArray|CsvConversionError bv5bsma = parseStringToRecord(csvStringWithBooleanValues5);
