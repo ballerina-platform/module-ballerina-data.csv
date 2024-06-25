@@ -27,7 +27,6 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
@@ -119,7 +118,7 @@ public class CsvParser {
         boolean isCurrentCsvNodeEmpty = true;
         boolean isHeaderConfigExceedLineNumber = false;
         boolean isQuoteClosed = false;
-
+        boolean isIntersectionElementType = false;
         private StringBuilder hexBuilder = new StringBuilder(4);
         StateMachine() {
             reset();
@@ -151,6 +150,7 @@ public class CsvParser {
             isHeaderConfigExceedLineNumber = false;
             hexBuilder = new StringBuilder(4);
             isQuoteClosed = false;
+            isIntersectionElementType = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -191,13 +191,25 @@ public class CsvParser {
         public Object execute(Reader reader, Type type, CsvConfig config, BTypedesc bTypedesc) throws BError {
             this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
-            if (referredType.getTag() != TypeTags.ARRAY_TAG) {
+            if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
+                for (Type constituentType : ((IntersectionType) referredType).getConstituentTypes()) {
+                    if (constituentType.getTag() == TypeTags.READONLY_TAG) {
+                        continue;
+                    }
+                    return CsvCreator.constructReadOnlyValue(execute(reader, constituentType, config, bTypedesc));
+                }
+            }
+
+            if (referredType.getTag() == TypeTags.UNION_TAG) {
+                expectedArrayElementType = referredType;
+            } else if (referredType.getTag() != TypeTags.ARRAY_TAG) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
             } else {
-                rootArrayType = (ArrayType) type;
+                rootArrayType = (ArrayType) referredType;
+                expectedArrayElementType = TypeUtils.getReferredType(rootArrayType.getElementType());
                 rootCsvNode = ValueCreator.createArrayValue(rootArrayType);
-                expectedArrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
             }
+
             switch (expectedArrayElementType.getTag()) {
                 // TODO: Handle readonly and singleton type as expType.
                 case TypeTags.RECORD_TYPE_TAG:
@@ -213,6 +225,21 @@ public class CsvParser {
                 case TypeTags.MAP_TAG:
                 case TypeTags.ARRAY_TAG:
                     break;
+                case TypeTags.INTERSECTION_TAG:
+                    for (Type constituentType : ((IntersectionType) expectedArrayElementType).getConstituentTypes()) {
+                        if (constituentType.getTag() == TypeTags.READONLY_TAG) {
+                            continue;
+                        }
+                        Object mapValue = execute(reader, TypeCreator.createArrayType(
+                                TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
+                        ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
+                        config.stringConversion = true;
+                        return CsvCreator.constructReadOnlyValue(CsvTraversal
+                                .traverse((BArray) mapValue, config, bTypedesc,
+                                        TypeCreator.createArrayType(constituentType)));
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
+                            expectedArrayElementType);
                 case TypeTags.UNION_TAG:
                     Object mapValue = execute(reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)

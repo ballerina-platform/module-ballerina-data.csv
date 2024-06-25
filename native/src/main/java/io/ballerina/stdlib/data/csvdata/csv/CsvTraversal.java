@@ -20,7 +20,6 @@ package io.ballerina.stdlib.data.csvdata.csv;
 
 import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.*;
@@ -49,6 +48,18 @@ public class CsvTraversal {
         try {
             Object convertedValue = csvTree.traverseCsv(csv, config, type.getDescribingType());
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
+        } catch (BError e) {
+            return e;
+        } finally {
+            csvTree.reset();
+        }
+    }
+
+    public static Object traverse(BArray csv, CsvConfig config, BTypedesc typed, Type type) {
+        CsvTree csvTree = tlCsvTree.get();
+        try {
+            Object convertedValue = csvTree.traverseCsv(csv, config, type);
+            return DataUtils.validateConstraints(convertedValue, typed, config.enableConstraintValidation);
         } catch (BError e) {
             return e;
         } finally {
@@ -92,18 +103,48 @@ public class CsvTraversal {
             this.config = config;
             sourceArrayElementType = TypeUtils.getReferredType(csv.getElementType());
             Type referredType = TypeUtils.getReferredType(type);
-            int expectedArraySize = ((ArrayType) referredType).getSize();
             int sourceArraySize = (int) csv.getLength();
+            if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
+                return CsvCreator.constructReadOnlyValue(traverseCsv(csv, config,
+                        ((IntersectionType) referredType).getEffectiveType()));
+            }
 
-            setRootCsvNode(referredType, type);
-            validateExpectedArraySize(expectedArraySize, sourceArraySize);
-
-            traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv, config);
+            if (referredType.getTag() != TypeTags.UNION_TAG) {
+                int expectedArraySize = ((ArrayType) referredType).getSize();
+                setRootCsvNodeForNonUnionArrays(referredType, type);
+                validateExpectedArraySize(expectedArraySize, sourceArraySize);
+                traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv, type);
+            } else {
+                traverseCsvWithUnionExpectedType(referredType, type, sourceArraySize, csv, config);
+            }
             return rootCsvNode;
         }
 
-        private void traverseCsvWithExpectedType(int expectedArraySize,
-                                                 int sourceArraySize, BArray csv, CsvConfig config) {
+        private void traverseCsvWithUnionExpectedType(Type referredType, Type type, int sourceArraySize,
+                                                      BArray csv, CsvConfig config) {
+            for (Type memberType: ((UnionType) referredType).getMemberTypes()) {
+                Type mType = TypeUtils.getReferredType(memberType);
+                if (mType.getTag() == TypeTags.ARRAY_TAG) {
+                    int expectedArraySize = ((ArrayType) mType).getSize();
+                    try {
+                        setRootCsvNodeForNonUnionArrays(mType, mType);
+                        validateExpectedArraySize(expectedArraySize, sourceArraySize);
+                        traverseCsvWithExpectedType(expectedArraySize, sourceArraySize, csv, type);
+                        return;
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+            }
+            throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
+        }
+
+        private void traverseCsvWithExpectedType(int expectedArraySize, int sourceArraySize,
+                                                 BArray csv, Type type) {
+            if (expectedArrayElementType.getTag() == TypeTags.INTERSECTION_TAG) {
+                expectedArrayElementType = ((IntersectionType) expectedArrayElementType).getEffectiveType();
+            }
+
             switch (expectedArrayElementType.getTag()) {
                 case TypeTags.RECORD_TYPE_TAG:
                 case TypeTags.MAP_TAG:
@@ -117,19 +158,11 @@ public class CsvTraversal {
                             sourceArraySize : expectedArraySize, csv, expectedArrayElementType);
                     break;
                 case TypeTags.UNION_TAG:
-                    for (Type memberType : ((UnionType) expectedArrayElementType).getMemberTypes()) {
-                        try {
-                            traverseCsv(csv, config, TypeCreator.createArrayType(memberType));
-                            return;
-                        } catch (Exception e) {
-                            //ignore
-                        }
-                    }
-                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
-                            expectedArrayElementType);
+                    traverseCsvArrayMembersWithUnionAsCsvElementType(expectedArraySize == -1 ?
+                            sourceArraySize : expectedArraySize, csv, (UnionType) expectedArrayElementType, type);
+                    break;
                 default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
-                            expectedArrayElementType);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
             }
         }
 
@@ -155,6 +188,40 @@ public class CsvTraversal {
             }
         }
 
+        public void traverseCsvArrayMembersWithUnionAsCsvElementType(long length, BArray csv,
+                                                                     UnionType expectedArrayType, Type type) {
+            Object rowValue;
+            for (int i = 0; i < length; i++) {
+                boolean isCompatible = false;
+                if (ignoreRow(i + 1, config.skipLines)) {
+                    continue;
+                }
+                Object csvData = csv.get(i);
+                for (Type memberType: expectedArrayType.getMemberTypes()) {
+                    try {
+                        memberType = TypeUtils.getReferredType(memberType);
+                        if (memberType.getTag() == TypeTags.MAP_TAG
+                                || memberType.getTag() == TypeTags.RECORD_TYPE_TAG) {
+                            rowValue = traverseCsvElementWithMapOrRecord(csvData, memberType);
+                        } else if (memberType.getTag() == TypeTags.TUPLE_TAG
+                                || memberType.getTag() == TypeTags.ARRAY_TAG) {
+                            rowValue = traverseCsvElementWithArray(csvData, memberType);
+                        } else {
+                            continue;
+                        }
+                        rootCsvNode.append(rowValue);
+                        isCompatible = true;
+                        break;
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                if (!isCompatible) {
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
+                }
+            }
+        }
+
         private static boolean ignoreRow(int index, Object skipLinesConfig) {
             long[] skipLines = getSkipDataRows(skipLinesConfig);
             for (long skipLine: skipLines) {
@@ -166,6 +233,7 @@ public class CsvTraversal {
         }
 
         public Object traverseCsvElementWithMapOrRecord(Object csvElement, Type expectedType) {
+            expectedType = TypeUtils.getReferredType(expectedType);
             switch (expectedType.getTag()) {
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedType;
@@ -190,6 +258,7 @@ public class CsvTraversal {
         }
 
         public Object traverseCsvElementWithArray(Object csvElement, Type expectedType) {
+            expectedType = TypeUtils.getReferredType(expectedType);
             switch (expectedType.getTag()) {
                 case TypeTags.ARRAY_TAG:
                     ArrayType arrayType = (ArrayType) expectedType;
@@ -619,13 +688,18 @@ public class CsvTraversal {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_ARRAY, arrayValue, index, type);
         }
 
-        private void setRootCsvNode(Type referredType, Type type) {
-            if (referredType.getTag() != TypeTags.ARRAY_TAG) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
-            } else {
-                rootCsvNode = ValueCreator.createArrayValue((ArrayType) referredType);
-                expectedArrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
+        private void setRootCsvNodeForNonUnionArrays(Type referredType, Type type) {
+            referredType = TypeUtils.getReferredType(referredType);
+            if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
+                referredType = ((IntersectionType) referredType).getEffectiveType();
             }
+            if (referredType.getTag() == TypeTags.ARRAY_TAG) {
+                ArrayType arrayType = (ArrayType) referredType;
+                rootCsvNode = ValueCreator.createArrayValue(arrayType);
+                expectedArrayElementType = TypeUtils.getReferredType((arrayType).getElementType());
+                return;
+            }
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
         }
     }
 }

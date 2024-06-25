@@ -47,6 +47,11 @@ import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getUpdatedHeaders;
 public class CsvCreator {
 
     static Object initRowValue(Type expectedType) {
+        expectedType = TypeUtils.getReferredType(expectedType);
+        if (expectedType.getTag() == TypeTags.INTERSECTION_TAG) {
+            expectedType = ((IntersectionType) expectedType).getEffectiveType();
+        }
+
         switch (expectedType.getTag()) {
             case TypeTags.RECORD_TYPE_TAG:
                 return ValueCreator.createRecordValue(expectedType.getPackage(), expectedType.getName());
