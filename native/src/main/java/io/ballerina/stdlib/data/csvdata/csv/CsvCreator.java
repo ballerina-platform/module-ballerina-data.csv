@@ -37,6 +37,7 @@ import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import org.ballerinalang.langlib.value.CloneReadOnly;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getUpdatedHeaders;
 /**
@@ -49,7 +50,10 @@ public class CsvCreator {
     static Object initRowValue(Type expectedType) {
         expectedType = TypeUtils.getReferredType(expectedType);
         if (expectedType.getTag() == TypeTags.INTERSECTION_TAG) {
-            expectedType = ((IntersectionType) expectedType).getEffectiveType();
+            Optional<Type> mutableType = CsvUtils.getMutableType((IntersectionType) expectedType);
+            if (!mutableType.isEmpty()) {
+                expectedType = mutableType.get();
+            }
         }
 
         switch (expectedType.getTag()) {
