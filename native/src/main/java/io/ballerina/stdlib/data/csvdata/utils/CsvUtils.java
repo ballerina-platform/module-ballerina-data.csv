@@ -6,15 +6,12 @@ import io.ballerina.runtime.api.types.*;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.*;
-import io.ballerina.stdlib.data.csvdata.FromString;
-import io.ballerina.stdlib.data.csvdata.csv.CsvCreator;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.ballerina.runtime.api.TypeTags.INT_TAG;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.SKIP_LINE_RANGE_SEP;
 
 public class CsvUtils {
@@ -36,6 +33,14 @@ public class CsvUtils {
             case TypeTags.ANYDATA_TAG:
             case TypeTags.UNION_TAG:
             case TypeTags.INTERSECTION_TAG:
+            case TypeTags.CHAR_STRING_TAG:
+            case TypeTags.BYTE_TAG:
+            case TypeTags.SIGNED8_INT_TAG:
+            case TypeTags.SIGNED16_INT_TAG:
+            case TypeTags.SIGNED32_INT_TAG:
+            case TypeTags.UNSIGNED8_INT_TAG:
+            case TypeTags.UNSIGNED16_INT_TAG:
+            case TypeTags.UNSIGNED32_INT_TAG:
                 return true;
             default:
                 return false;
@@ -105,16 +110,16 @@ public class CsvUtils {
         int tag = constraintType.getTag();
         if ((csv instanceof BString && (stringConversion || tag == TypeTags.STRING_TAG
                         || tag == TypeTags.CHAR_STRING_TAG || isJsonOrAnyDataOrAny(tag)))
-                || (csv instanceof Long && (tag == INT_TAG
+                || (csv instanceof Long && (tag == TypeTags.INT_TAG
                     || tag == TypeTags.FLOAT_TAG || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BYTE_TAG
                     || tag == TypeTags.SIGNED8_INT_TAG || tag == TypeTags.SIGNED16_INT_TAG
                     || tag == TypeTags.SIGNED32_INT_TAG || tag == TypeTags.UNSIGNED8_INT_TAG
                     || tag == TypeTags.UNSIGNED16_INT_TAG || tag == TypeTags.UNSIGNED32_INT_TAG
                     || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof BDecimal && ((tag == TypeTags.DECIMAL_TAG
-                        || tag == TypeTags.FLOAT_TAG || tag == INT_TAG) || isJsonOrAnyDataOrAny(tag)))
+                        || tag == TypeTags.FLOAT_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Double && ((tag == TypeTags.FLOAT_TAG
-                        || tag == TypeTags.DECIMAL_TAG || tag == INT_TAG) || isJsonOrAnyDataOrAny(tag)))
+                        || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (Boolean.class.isInstance(csv) && (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv == null && (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)))) {
             return true;

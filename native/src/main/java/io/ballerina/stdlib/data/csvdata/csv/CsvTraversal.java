@@ -102,7 +102,7 @@ public class CsvTraversal {
         @SuppressWarnings("unchecked")
         public Object traverseCsv(BArray csv, CsvConfig config, Type type) {
             this.config = config;
-            sourceArrayElementType = TypeUtils.getReferredType(csv.getElementType());
+            sourceArrayElementType = TypeUtils.getReferredType(getSourceElementTypeForTupleAndArrays(csv));
             Type referredType = TypeUtils.getReferredType(type);
             int sourceArraySize = (int) csv.getLength();
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -476,7 +476,7 @@ public class CsvTraversal {
                     Field field = this.headerFieldHierarchy.remove(header);
 
                     if (field != null) {
-                        if (type.getTag() != field.getFieldType().getTag()) {
+                        if (!config.stringConversion && type.getTag() != field.getFieldType().getTag()) {
                             return false;
                         }
                         continue;
@@ -635,6 +635,7 @@ public class CsvTraversal {
                         break;
                     case TypeTags.UNION_TAG:
                         for (Type memberType : ((UnionType) fieldType).getMemberTypes()) {
+                            memberType = TypeUtils.getReferredType(memberType);
                             if (!isBasicType(memberType)) {
                                 throw DiagnosticLog.error(DiagnosticErrorCode
                                         .EXPECTED_TYPE_CAN_ONLY_CONTAIN_BASIC_TYPES, memberType);
@@ -647,10 +648,12 @@ public class CsvTraversal {
                         break;
                     case TypeTags.INTERSECTION_TAG:
                         Type effectiveType = ((IntersectionType) fieldType).getEffectiveType();
+                        effectiveType = TypeUtils.getReferredType(effectiveType);
                         if (!SymbolFlags.isFlagOn(SymbolFlags.READONLY, effectiveType.getFlags())) {
                             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type);
                         }
                         for (Type constituentType : ((IntersectionType) fieldType).getConstituentTypes()) {
+                            constituentType = TypeUtils.getReferredType(constituentType);
                             if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                                 continue;
                             }
@@ -703,6 +706,17 @@ public class CsvTraversal {
                 return;
             }
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, type, PredefinedTypes.TYPE_ANYDATA_ARRAY);
+        }
+
+        private Type getSourceElementTypeForTupleAndArrays(BArray csv) {
+            List<Type> memberTypes = new ArrayList<>();
+            if (csv.getType() instanceof TupleType tupleType) {
+                for (Type memberType: tupleType.getTupleTypes()) {
+                    memberTypes.add(memberType);
+                }
+                return TypeCreator.createUnionType(memberTypes);
+            }
+            return csv.getElementType();
         }
     }
 }

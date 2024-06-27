@@ -229,19 +229,19 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
 
     CustomRecord25Array|CsvConversionError st1cr25 = parseListAsRecordType([st1, st1], (), {}, CustomRecord25Array);
     test:assertTrue(st1cr25 is CsvConversionError);
-    test:assertEquals((<CsvConversionError>st1cr25).message(), generateErrorMessageForInvalidHeaders("[\"string\",\"\"]", "data.csv:CustomRecord25"));
+    test:assertEquals((<CsvConversionError>st1cr25).message(), generateErrorMessageForInvalidFieldType("string", "1"));
 
     CustomRecord25Array|CsvConversionError st2cr25 = parseListAsRecordType([st2, st2], (), {}, CustomRecord25Array);
     test:assertTrue(st2cr25 is CsvConversionError);
-    test:assertEquals((<CsvConversionError>st2cr25).message(), generateErrorMessageForInvalidHeaders("[\"string\",\"\",\"a\",\"\"]","data.csv:CustomRecord25"));
+    test:assertEquals((<CsvConversionError>st2cr25).message(), generateErrorMessageForInvalidFieldType("string", "1"));
 
     CustomRecord25Array|CsvConversionError st3cr25 = parseListAsRecordType([st3, st3], (), {}, CustomRecord25Array);
     test:assertTrue(st3cr25 is CsvConversionError);
-    test:assertEquals((<CsvConversionError>st3cr25).message(), generateErrorMessageForInvalidHeaders("[\"string\",\"\"]", "data.csv:CustomRecord25"));
+    test:assertEquals((<CsvConversionError>st3cr25).message(), generateErrorMessageForInvalidFieldType("string", "1"));
 
     CustomRecord25Array|CsvConversionError st4cr25 = parseListAsRecordType([st4, st4], (), {}, CustomRecord25Array);
     test:assertTrue(st4cr25 is CsvConversionError);
-    test:assertEquals((<CsvConversionError>st4cr25).message(), generateErrorMessageForInvalidHeaders("[\"string\",\"\",\"a\",\"\"]","data.csv:CustomRecord25"));
+    test:assertEquals((<CsvConversionError>st4cr25).message(), generateErrorMessageForInvalidFieldType("string", "1"));
 
     CustomRecord26Array|CsvConversionError st1cr26 = parseListAsRecordType([st1, st1], (), {}, CustomRecord26Array);
     test:assertEquals(st1cr26 , [
