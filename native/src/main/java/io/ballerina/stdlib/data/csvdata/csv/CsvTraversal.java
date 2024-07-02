@@ -23,19 +23,49 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
-import io.ballerina.runtime.api.types.*;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
+import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.TupleType;
+import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
-import io.ballerina.runtime.api.values.*;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DataUtils;
-import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.SkipMappedValue;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.UnMappedValue;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.checkRequiredFieldsAndLogError;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.checkTypeCompatibility;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.convertToBasicType;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.createHeaders;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getMutableType;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getSkipDataRows;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getTheActualExpectedType;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isBasicType;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isHeaderFieldsEmpty;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.processNameAnnotationsAndBuildCustomFieldMap;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.validateExpectedArraySize;
 
 /**
  * Convert Csv value to a ballerina record.
@@ -482,7 +512,7 @@ public class CsvTraversal {
                         continue;
                     }
 
-                    if ((tupleRestType != null && (type == this.restType ||this.restType == tupleRestType))) {
+                    if ((tupleRestType != null && (type == this.restType || this.restType == tupleRestType))) {
                         continue;
                     }
 
@@ -503,7 +533,7 @@ public class CsvTraversal {
                 }
 
                 for (String key: this.fieldHierarchy.keySet()) { // fh -> a,b  |  headers -> d,c
-                    for(String header: this.headers) {
+                    for (String header: this.headers) {
                         if (key.equals(this.updatedRecordFieldNames.get(header))) {
                             return true;
                         }
@@ -513,7 +543,8 @@ public class CsvTraversal {
             return false;
         }
 
-        private void traverseArrayValueWithMapAsExpectedType(BArray csvElement, boolean mappingType, Type expectedType) {
+        private void traverseArrayValueWithMapAsExpectedType(BArray csvElement,
+                                                             boolean mappingType, Type expectedType) {
             int arraySize = csvElement.size();
             String[] headers = new String[arraySize];
             if (this.headers == null) {
@@ -533,10 +564,10 @@ public class CsvTraversal {
             BString key;
 
             // TODO: Canges the logic with headers parameter
-            for(int i = 1; i <= arraySize; i++) {
+            for (int i = 1; i <= arraySize; i++) {
                 key = StringUtils.fromString(this.headers[i - 1]);
                 if (!mappingType) {
-                    if (!isKeyBelongsToNonRestType(csvElement.get(i-1), key)) {
+                    if (!isKeyBelongsToNonRestType(csvElement.get(i - 1), key)) {
                         continue;
                     }
                     fieldType = TypeUtils.getReferredType(currentField.getFieldType());
@@ -657,7 +688,8 @@ public class CsvTraversal {
                             if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                                 continue;
                             }
-                            return CsvCreator.constructReadOnlyValue(getFieldValue(constituentType, csvMember, true));
+                            return CsvCreator.constructReadOnlyValue(getFieldValue(constituentType,
+                                    csvMember, true));
                         }
                         break;
                     default:
@@ -674,8 +706,8 @@ public class CsvTraversal {
             }
         }
 
-        private void addCurrentFieldValue(Type type, Object RecValue, BString key, boolean isMapType) {
-            Object value = getFieldValue(type, RecValue, false);
+        private void addCurrentFieldValue(Type type, Object recValue, BString key, boolean isMapType) {
+            Object value = getFieldValue(type, recValue, false);
             if (!(value instanceof UnMappedValue || value instanceof SkipMappedValue)) {
                 ((BMap<BString, Object>) currentCsvNode).put(StringUtils.fromString(fieldNames.pop()), value);
                 return;
@@ -684,7 +716,7 @@ public class CsvTraversal {
             if (isMapType || value instanceof SkipMappedValue) {
                 return;
             }
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, RecValue, key);
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, recValue, key);
         }
 
         public void addValuesToArrayType(Object arrayValue, Type type, int index,

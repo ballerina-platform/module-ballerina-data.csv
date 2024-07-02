@@ -250,7 +250,8 @@ public class FromString {
         return returnError(value, nullValue == null ? Constants.Values.BALLERINA_NULL : nullValue.toString());
     }
 
-    private static Object stringToUnion(BString string, UnionType expType, CsvConfig config) throws NumberFormatException {
+    private static Object stringToUnion(BString string, UnionType expType, CsvConfig config)
+            throws NumberFormatException {
         List<Type> memberTypes = new ArrayList<>(expType.getMemberTypes());
         memberTypes.sort(Comparator.comparingInt(t -> {
             int index = TYPE_PRIORITY_ORDER.indexOf(TypeUtils.getReferredType(t).getTag());

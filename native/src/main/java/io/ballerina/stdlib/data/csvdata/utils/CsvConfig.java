@@ -1,12 +1,26 @@
 package io.ballerina.stdlib.data.csvdata.utils;
 
-import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
-import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.*;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ABSENT_AS_NILABLE;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ALLOW_DATA_PROJECTION;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.COMMENT_CHAR;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.CUSTOM_HEADERS;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.DELIMITER;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ENCODING;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ESCAPE_CHAR;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.HEADER;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.LINE_TERMINATOR;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.LOCALE;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.NIL_AS_OPTIONAL;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.NIL_VALUE;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.SKIP_LINES;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.STRING_CONVERSION;
+import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.TEXT_ENCLOSURE;
 
 public class CsvConfig {
     public char delimiter = ',';

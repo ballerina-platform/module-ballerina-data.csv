@@ -2,10 +2,18 @@ package io.ballerina.stdlib.data.csvdata.utils;
 
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.flags.SymbolFlags;
-import io.ballerina.runtime.api.types.*;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
+import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.TupleType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
-import io.ballerina.runtime.api.values.*;
+import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BDecimal;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,7 +60,7 @@ public class CsvUtils {
 
         if (customHeaders == null) {
             for (int i = 0; i < headers.length; i++) {
-                headers[i] = String.valueOf( i + 1);
+                headers[i] = String.valueOf(i + 1);
             }
         }
 
@@ -144,8 +152,9 @@ public class CsvUtils {
         }
     }
 
-    public static HashMap<String, String> processNameAnnotationsAndBuildCustomFieldMap(RecordType recordType,
-                                                                                       Map<String, Field> fieldHierarchy) {
+    public static HashMap<String, String>
+            processNameAnnotationsAndBuildCustomFieldMap(RecordType recordType,
+                                                         Map<String, Field> fieldHierarchy) {
         BMap<BString, Object> annotations = recordType.getAnnotations();
         HashMap<String, String> updatedRecordFieldNames = new HashMap<>();
         HashSet<String> updatedFields = new HashSet<>();

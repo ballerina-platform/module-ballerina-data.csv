@@ -1,12 +1,12 @@
-/**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+/*
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -22,37 +22,31 @@ plugins {
     id 'com.github.spotbugs'
 }
 
-description = 'Ballerina - Data.CSV Java Utils'
+description = 'Ballerina - Csv Data Compiler Plugin'
 
 dependencies {
-    implementation 'junit:junit:4.13.1'
-//    checkstyle project(':checkstyle')
+    checkstyle project(':checkstyle')
     checkstyle "com.puppycrawl.tools:checkstyle:${puppycrawlCheckstyleVersion}"
-    implementation 'org.apache.commons:commons-lang3:3.6'
 
     implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'value', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'value', version: "${ballerinaLangVersion}"
-    implementation group: 'io.ballerina.stdlib', name: 'constraint-native', version: "${stdlibConstraintVersion}"
-    // ballerinaStdLibs "io.ballerina.stdlib:constraint-ballerina:${stdlibConstraintVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-tools-api', version: "${ballerinaLangVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-parser', version: "${ballerinaLangVersion}"
 }
-
-checkstyle {
-    toolVersion "${checkstyleToolVersion}"
-    configFile rootProject.file("build-config/checkstyle/build/checkstyle.xml")
-    configProperties = ["suppressionFile" : file("${rootDir}/build-config/checkstyle/build/suppressions.xml")]
-}
-
-checkstyleMain.dependsOn(":checkstyle:downloadCheckstyleRuleFiles")
 
 def excludePattern = '**/module-info.java'
 tasks.withType(Checkstyle) {
     exclude excludePattern
 }
 
+checkstyle {
+    toolVersion "${project.puppycrawlCheckstyleVersion}"
+    configFile rootProject.file("build-config/checkstyle/build/checkstyle.xml")
+    configProperties = ["suppressionFile" : file("${rootDir}/build-config/checkstyle/build/suppressions.xml")]
+}
+
+checkstyleMain.dependsOn(":checkstyle:downloadCheckstyleRuleFiles")
+
 spotbugsMain {
-    enabled=false
     effort "max"
     reportLevel "low"
     reportsDir = file("$project.buildDir/reports/spotbugs")
@@ -60,14 +54,14 @@ spotbugsMain {
         html.enabled true
         text.enabled = true
     }
-    def excludeFile = file("${rootDir}/spotbugs-exclude.csv")
+    def excludeFile = file("${rootDir}/spotbugs-exclude.xml")
     if(excludeFile.exists()) {
         excludeFilter = excludeFile
     }
 }
 
-spotbugsTest {
-    enabled = false
+spotbugsMain {
+    enabled false
 }
 
 compileJava {

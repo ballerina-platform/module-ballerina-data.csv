@@ -23,7 +23,13 @@ import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
-import io.ballerina.runtime.api.types.*;
+import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
+import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.TupleType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -31,17 +37,26 @@ import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DataUtils;
-import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
+import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.checkAndAddCustomHeaders;
 import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.getHeaderValueForColumnIndex;
-import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.*;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.checkRequiredFieldsAndLogError;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.getSkipDataRows;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isCharContainsInLineTerminatorUserConfig;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.processNameAnnotationsAndBuildCustomFieldMap;
+import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.validateExpectedArraySize;
 
 /**
  * Convert Csv string to a ballerina record.
@@ -61,11 +76,12 @@ public class CsvParser {
     private static final char NEWLINE = 0x000A;
 
 
-    private static final ThreadLocal<StateMachine> tlStateMachine = ThreadLocal.withInitial(StateMachine::new);
+    private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
+            = ThreadLocal.withInitial(StateMachine::new);
 
     public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
-        StateMachine sm = tlStateMachine.get();
+        StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
         try {
             Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
@@ -78,20 +94,20 @@ public class CsvParser {
     }
 
     static class StateMachine {
-        private static State HEADER_START_STATE = new HeaderStartState();
-        private static State HEADER_END_STATE = new HeaderEndState();
-        private static State ROW_START_STATE = new RowStartState();
-        private static State ROW_END_STATE = new RowEndState();
-        private static State STRING_ESCAPE_VALUE_STATE = new StringValueEscapedCharacterProcessingState();
-        private static State STRING_UNICODE_CHAR_STATE = new StringValueUnicodeHexProcessingState();
-        private static State HEADER_UNICODE_CHAR_STATE = new HeaderUnicodeHexProcessingState();
-        private static State HEADER_ESCAPE_CHAR_STATE = new HeaderEscapedCharacterProcessingState();
-        private static State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
-        private static State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
+        private static final State HEADER_START_STATE = new HeaderStartState();
+        private static final State HEADER_END_STATE = new HeaderEndState();
+        private static final State ROW_START_STATE = new RowStartState();
+        private static final State ROW_END_STATE = new RowEndState();
+        private static final State STRING_ESCAPE_VALUE_STATE = new StringValueEscapedCharacterProcessingState();
+        private static final State STRING_UNICODE_CHAR_STATE = new StringValueUnicodeHexProcessingState();
+        private static final State HEADER_UNICODE_CHAR_STATE = new HeaderUnicodeHexProcessingState();
+        private static final State HEADER_ESCAPE_CHAR_STATE = new HeaderEscapedCharacterProcessingState();
+        private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
+        private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
 
 
 
-        private static char LINE_BREAK = '\n';
+        private static final char LINE_BREAK = '\n';
 
         Object currentCsvNode;
         Stack<String> currentEscapeCharacters = new Stack<>();
@@ -472,7 +488,6 @@ public class CsvParser {
                     ch = buff[i];
                     sm.processLocation(ch);
                     if (sm.skipTheRow) {
-//                        buff[i-10],buff[i-9],buff[i-8],buff[i-7],buff[i-6],buff[i-5],buff[i-4],buff[i-3],buff[i-2],buff[i-1],buff[i],buff[i+1],buff[i+2],buff[i+3]
                         if (sm.isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
                             sm.insideComment = false;
                             sm.skipTheRow = false;

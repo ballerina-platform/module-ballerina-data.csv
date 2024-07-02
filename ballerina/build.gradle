@@ -87,9 +87,6 @@ task updateTomlFiles {
         newConfig = newConfig.replace("@constraint.version@", stdlibDependentConstraintVersion)
 
         ballerinaTomlFile.text = newConfig
-
-        // def newCompilerPluginToml = compilerPluginTomlFilePlaceHolder.text.replace("@project.version@", project.version)
-        // compilerPluginTomlFile.text = newCompilerPluginToml
     }
 }
 
@@ -97,11 +94,11 @@ task commitTomlFiles {
     doLast {
         project.exec {
             ignoreExitValue true
-            // if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            //     commandLine 'cmd', '/c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m '[Automated] Update the native jar versions'"
-            // } else {
-            //     commandLine 'sh', '-c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m '[Automated] Update the native jar versions'"
-            // }
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m '[Automated] Update the native jar versions'"
+            } else {
+                commandLine 'sh', '-c', "git commit Ballerina.toml Dependencies.toml CompilerPlugin.toml -m '[Automated] Update the native jar versions'"
+            }
         }
     }
 }
@@ -136,8 +133,10 @@ updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn "generatePomFileForMavenPublication"
 build.dependsOn ":${packageName}-native:build"
-//build.dependsOn ":${packageName}-compiler-plugin:build"
+build.dependsOn deleteDependencyTomlFiles
+build.dependsOn ":${packageName}-compiler-plugin:build"
 build.dependsOn deleteDependencyTomlFiles
 
 test.dependsOn ":${packageName}-native:build"
-//test.dependsOn ":${packageName}-compiler-plugin:build"
+test.dependsOn ":${packageName}-native:build"
+test.dependsOn ":${packageName}-compiler-plugin:build"
