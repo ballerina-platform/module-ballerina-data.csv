@@ -101,7 +101,6 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                         processTypeDefinitionNode((TypeDefinitionNode) member, ctx);
             }
         }
-
         reset();
     }
 
@@ -205,17 +204,18 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private void validateExpectedType(TypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
         typeSymbol.getLocation().ifPresent(location -> currentLocation = location);
-        if (!isSupportedExpectedType(typeSymbol)) {
-            reportDiagnosticInfo(ctx, typeSymbol.getLocation(), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
-            return;
-        }
 
         switch (typeSymbol.typeKind()) {
             case UNION -> validateUnionType((UnionTypeSymbol) typeSymbol, typeSymbol.getLocation(), ctx);
             case ARRAY -> validateArrayType((ArrayTypeSymbol) typeSymbol, ctx);
+            case TUPLE -> validateTupleType((TupleTypeSymbol) typeSymbol, ctx);
             case TYPE_REFERENCE -> validateExpectedType(((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor(), ctx);
             case INTERSECTION -> validateExpectedType(getRawType(typeSymbol), ctx);
         }
+    }
+
+    private void validateTupleType(TupleTypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
+        reportDiagnosticInfo(ctx, typeSymbol.getLocation(), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
     }
 
     private void validateArrayType(ArrayTypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
@@ -229,10 +229,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         boolean isHasUnsupportedType = false;
         List<TypeSymbol> memberTypeSymbols = unionTypeSymbol.memberTypeDescriptors();
         for (TypeSymbol memberTypeSymbol : memberTypeSymbols) {
-            if (isSupportedUnionMemberType(getRawType(memberTypeSymbol))) {
-                continue;
-            }
-            isHasUnsupportedType = true;
+            validateExpectedType(memberTypeSymbol, ctx);
         }
 
         if (isHasUnsupportedType) {
@@ -263,7 +260,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
 
         switch (kind) {
-            case RECORD, ARRAY, TUPLE, MAP -> {
+            case RECORD, ARRAY, TUPLE, MAP, UNION, INTERSECTION -> {
                 return true;
             }
             default -> {
@@ -284,22 +281,6 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             }
             default -> {
                 return false;
-            }
-        }
-    }
-
-    private boolean isSupportedMemberType(TypeSymbol typeSymbol) {
-        TypeDescKind kind = typeSymbol.typeKind();
-        if (kind == TypeDescKind.TYPE_REFERENCE) {
-            kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();
-        }
-
-        switch (kind) {
-            case TABLE, XML, REGEXP, RECORD, TUPLE, MAP, ARRAY -> {
-                return false;
-            }
-            default -> {
-                return true;
             }
         }
     }

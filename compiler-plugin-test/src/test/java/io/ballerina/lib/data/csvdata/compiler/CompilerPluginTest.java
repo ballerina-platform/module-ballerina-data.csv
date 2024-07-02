@@ -18,139 +18,51 @@
 
 package io.ballerina.lib.data.csvdata.compiler;
 
-//import io.ballerina.projects.DiagnosticResult;
-//import io.ballerina.tools.diagnostics.Diagnostic;
-//import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-//import org.testng.Assert;
-//import org.testng.annotations.Test;
-//
-//import java.util.List;
-//import java.util.stream.Collectors;
+import io.ballerina.projects.DiagnosticResult;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class includes tests for Ballerina Csv Data compiler plugin.
  */
 public class CompilerPluginTest {
 
-//    static final String UNSUPPORTED_TYPE = "unsupported type: type is not supported";
-//
-//    @Test
-//    public void testInvalidExpectedUnionType1() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_1").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 1);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testInvalidExpectedUnionType2() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_2").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 1);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testInvalidRecordFieldType1() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_3").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 2);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testInvalidRecordFieldType2() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_4").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 2);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testDuplicateField1() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_5").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 1);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(),
-//                "invalid field: duplicate field found");
-//    }
-//
-//    @Test
-//    public void testDuplicateField2() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_6").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 2);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(),
-//                "invalid field: duplicate field found");
-//        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(),
-//                "invalid field: duplicate field found");
-//    }
-//
-//    @Test
-//    public void testComplexUnionTypeAsExpectedType() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_7").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 2);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testComplexUnionTypeAsMemberOfIntersection() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_8").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 1);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testComplexUnionTypeCaseWhenUserDefinedModulePrefix1() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_9").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 1);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(),
-//                UNSUPPORTED_TYPE);
-//    }
-//
-//    @Test
-//    public void testComplexUnionTypeCaseWhenUserDefinedModulePrefix2() {
-//        DiagnosticResult diagnosticResult =
-//                CompilerPluginTestUtils.loadPackage("sample_package_10").getCompilation().diagnosticResult();
-//        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
-//                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
-//                .collect(Collectors.toList());
-//        Assert.assertEquals(errorDiagnosticsList.size(), 3);
-//        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-//    }
+    static final String UNSUPPORTED_TYPE = "unsupported type: type is not supported";
+    static final String DUPLICATE_FIELD = "invalid field: duplicate field found";
+
+    @Test
+    public void testInvalidExpectedUnionType() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_1").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 10);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+    }
+
+    @Test
+    public void testInvalidRecordFields() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_2").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 1);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
+    }
 }
