@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithParserOptions() {
     [int, string, boolean, decimal, float, string][]|Error csv1op3 = parseStringToList(csvStringData1, option3);
     test:assertEquals(csv1op3, [
@@ -61,7 +61,7 @@ function testFromCsvStringWithParserOptions() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithHeaderLessParserOptions() {
     [int, string, boolean, decimal, float, ()][]|Error csv1op6 = parseStringToList(csvStringData1, option6);
     test:assertTrue(csv1op6 is Error);
@@ -122,7 +122,7 @@ function testFromCsvStringWithHeaderLessParserOptions() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testHeaderOption() {
     record {}[]|Error csv2cop1 = parseStringToRecord(csvStringData2, {header: 4});
     test:assertEquals(csv2cop1, [
@@ -147,7 +147,7 @@ function testHeaderOption() {
     test:assertEquals((<error>csv1cop5).message(), "The provided header row is empty");
 }
 
-@test:Config {enable}
+@test:Config
 function testNullConfigOption() {
     string csvValue1 = string `a
                                 ()`;
@@ -216,7 +216,7 @@ function testNullConfigOption() {
     test:assertEquals((<error>cn).message(), generateErrorMessageForInvalidCast("()", "()"));
 }
 
-@test:Config {enable}
+@test:Config
 function testCommentConfigOption() {
     string csvValue1 = string `a
                                 1`;
@@ -278,7 +278,7 @@ function testCommentConfigOption() {
     test:assertEquals(cn, [{a: 1}]);
 }
 
-@test:Config {enable}
+@test:Config
 function testCommentConfigOption2() {
     string csvValue1 = string `a
                                 1`;
@@ -358,7 +358,7 @@ function testCommentConfigOption2() {
     test:assertEquals((<error>cn2).message(), generateErrorMessageForMissingRequiredField("c"));
 }
 
-@test:Config {enable}
+@test:Config
 function testSkipLineParserOption() {
     [int, string, boolean, decimal, float, ()][]|Error csv1cp = parseStringToList(csvStringData1, {skipLines: [], header: 1});
     test:assertEquals(csv1cp, [
@@ -459,7 +459,7 @@ function testSkipLineParserOption() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testCustomHeaderOption() {
     anydata[][]|Error bm1ba = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {});
     test:assertEquals(bm1ba, [
@@ -551,7 +551,7 @@ function testCustomHeaderOption() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testCustomHeaderParserOption2() {
     record {}[]|Error ct1br = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b"]});
     test:assertTrue(ct1br is Error);
@@ -668,7 +668,7 @@ function testCustomHeaderParserOption2() {
     test:assertEquals((<error>ct1br13).message(), generateErrorMessageForMissingRequiredField("d1"));
 }
 
-@test:Config {enable}
+@test:Config
 function testTextQuotesWithParserOptions() {
     string csvValue1 = string `
         a, b, c
@@ -731,7 +731,7 @@ function testTextQuotesWithParserOptions() {
     test:assertEquals((<error>cn6).message(), "Invalid length for the custom headers");
 }
 
-@test:Config {enable}
+@test:Config
 function testHeaderQuotesWithParserOptions() {
     string csvValue1 = string `
         "a", b, c
@@ -766,7 +766,7 @@ function testHeaderQuotesWithParserOptions() {
     test:assertEquals(cn3, [{"a '1'a5,6": 1, "b\", \" \",\"\"\"": 2, "c": 3}, {"a '1'a5,6": 4, "b\", \" \",\"\"\"": "5, '6'7", c: 8}, {"a '1'a5,6": 4, "b\", \" \",\"\"\"": "\"5\"", c: "4, '5\"a\", ,\",\" a '6'7"}]);
 }
 
-@test:Config {enable}
+@test:Config
 function testEscapeCharactersWithParserOptions() {
     string csvValue1 = string `
     "a", b, c
@@ -811,7 +811,7 @@ function testEscapeCharactersWithParserOptions() {
     test:assertEquals(cn3_2, [[1, 2.0, 3.0], [1.0, 2, 3], [1, "2\"", 3], ["1\\", "2\\\"", 3]]);
 }
 
-@test:Config {enable}
+@test:Config
 function testDelimiterWithParserOptions() {
     record {}[]|Error cn = parseStringToRecord(csvStringData7, {header: 1, delimiter: "@"});
     test:assertEquals(cn, [
@@ -832,7 +832,7 @@ function testDelimiterWithParserOptions() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testLineTerminatorWithParserOptions() {
     string csvValue = string `a,b${"\n"} 1,"2\n3"`;
 

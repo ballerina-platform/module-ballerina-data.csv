@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeCompatibility() {
     string value = string `i1,i2,s1,s2,  b1,b2,n1,n2,f1,f2, d1,d2,j1,a1,j2,a2
         ${i1},${i2},${s1},${s2},${b1},${b2},(),(),${f1}, ${f2},${d1},${d2},${b1},${d1},${b2},${d2}
@@ -62,10 +62,6 @@ function testFromCsvStringWithTypeCompatibility() {
     test:assertEquals(v3ct7a, <CustomTuple7[]>[
         [i1, s1, b1, n1, 2.234, 2.234, b1, 2.234, s2, s3]
     ]);
-
-    // CustomTuple8Array|Error v2ct8a = fromCsvStringWithType(value2);
-    // test:assertTrue(v2ct8a is Error);
-    // test:assertEquals((<Error>v2ct8a).message(), generateErrorMessageForInvalidValueForArrayType("false", "10", "int"));
 
     [float, decimal, string][]|Error mrrta = parseStringToList(string `a, b,c
                                                                             1.23, 1.23, 1.23

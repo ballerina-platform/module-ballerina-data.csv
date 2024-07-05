@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     BooleanArrayArray|Error bm1ba = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {}, BooleanArrayArray);
     test:assertEquals(bm1ba, [
@@ -181,7 +181,7 @@ function testFromCsvWithTypeForMapAndArrayAsExpectedType() {
     test:assertEquals((<Error>bm5sa).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "string"));
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     BooleanTuple1Array|Error bm1bt = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {}, BooleanTuple1Array);
     test:assertEquals(bm1bt, [
@@ -364,7 +364,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndTupleAsExpectedType2() {
     NillableBooleanTuple8Array|Error bm1nb8t = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {}, NillableBooleanTuple8Array);
     test:assertEquals(bm1nb8t, [
@@ -447,7 +447,7 @@ function testFromCsvWithTypeForMapAndTupleAsExpectedType2() {
     test:assertEquals((<Error>bm5n3t).message(), generateErrorMessageForInvalidValueForArrayType("true", "0", "()"));
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndArrayAsExpectedType2() {
 
     AnydataTuple3Array|Error bm1anyd3t = parseRecordAsListType([bm1, bm1], ["b1", "b2"], {}, AnydataTuple3Array);

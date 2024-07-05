@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
     BooleanRecord1Array|Error bm1br1 = parseRecordAsRecordType([bm1, bm1], {}, BooleanRecord1Array);
     test:assertTrue(bm1br1 is Error);
@@ -192,7 +192,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
     test:assertEquals((<Error>bm5br8).message(), generateErrorMessageForMissingRequiredField("requiredField"));
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
     BooleanRecord9Array|Error bm1br9 = parseRecordAsRecordType([bm1, bm1], {}, BooleanRecord9Array);
     test:assertTrue(bm1br9 is Error);
@@ -449,7 +449,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForMapAndMapAsExpectedType() {
     BooleanMapArray|Error bm1bma = parseRecordAsRecordType([bm1, bm1], {}, BooleanMapArray);
     test:assertEquals(bm1bma, [

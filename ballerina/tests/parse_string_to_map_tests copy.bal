@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
     BooleanMapArray|Error bv1bma = parseStringToRecord(csvStringWithBooleanValues1);
     test:assertEquals(bv1bma, [

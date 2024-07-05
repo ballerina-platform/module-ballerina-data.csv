@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeFunctionWithTypeCompatibility() {
     var value = {i1, i2, s1, s2, b1, b2, n1, n2, f1, f2, d1, d2, j1: b1, a1: d1, j2: b2, a2: d2};
     var value2 = {i1, s1, b1, n1, f1, d1, j1: b1, a1: d1, s2, s3, j2: b2, a2: d2};
@@ -88,7 +88,7 @@ type B2 readonly & C | readonly & A2;
 type C string|boolean;
 type C2 boolean|string;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithIntersectionTypeCompatibility2() {
     record{
         readonly & int a; 

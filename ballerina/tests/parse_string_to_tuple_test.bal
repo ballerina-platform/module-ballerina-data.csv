@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeForStringAndTupleAsExpectedType() {
     BooleanTuple1Array|Error cbv1bt1 = parseStringToList(csvStringWithBooleanValues1);
     test:assertEquals(cbv1bt1, [
@@ -363,7 +363,7 @@ function testFromCsvStringWithTypeForStringAndTupleAsExpectedType() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeForStringAndTupleAsExpectedType2() {
     JsonTuple3Array|Error cbv1j3 = parseStringToList(csvStringWithBooleanValues1);
     test:assertEquals(cbv1j3, [

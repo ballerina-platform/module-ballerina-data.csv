@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
     BooleanRecord1Array|Error csvb1br1 = parseStringToRecord(csvStringWithBooleanValues1, {});
     test:assertEquals(csvb1br1, [
@@ -401,7 +401,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
     test:assertEquals((<Error>csvb7br14).message(), generateErrorMessageForMissingRequiredField("requiredField"));
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvStringWithTypeForStringAndRecordAsExpectedType2() {
     BooleanRecord15Array|Error csvb1br15 = parseStringToRecord(csvStringWithBooleanValues1, {});
     test:assertTrue(csvb1br15 is Error);

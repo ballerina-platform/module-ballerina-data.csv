@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testCustomNameAnnotation() returns error? {
     RecordWithCustomAnnotation[]|Error cn1 = parseStringToRecord(string `b,c
                                                            1,3`, {});
@@ -187,7 +187,7 @@ function testCustomNameAnnotation() returns error? {
     test:assertEquals((<error>cnrr22).message(), "Duplicate field found in record fields: 'c'");
 }
 
-@test:Config {enable}
+@test:Config
 function testCustomNameAnnotation2() returns error? {
     RecordWithCustomAnnotation[]|Error cntr1 = parseListAsRecordType([["1", "3"]], ["b", "c"], {});
     test:assertEquals(cntr1, [{b: 1, a: 3}]);
@@ -271,7 +271,7 @@ function testCustomNameAnnotation2() returns error? {
     test:assertEquals((<error>cntr22).message(), "Duplicate field found in record fields: 'c'");
 }
 
-@test:Config {enable}
+@test:Config
 function testAbsentAsNilableConfig() returns error? {
     record {|int a; int? g; int? h;|}[]|Error cn = parseStringToRecord(csvStringData1, {
         allowDataProjection: {absentAsNilableType: true},
@@ -346,7 +346,7 @@ function testAbsentAsNilableConfig() returns error? {
     test:assertEquals(cn10, [[1, "string1", true, <decimal>2.234, <float>2.234, null, null]]);
 }
 
-@test:Config {enable}
+@test:Config
 function testAbsentAsNilableConfig2() returns error? {
     record {|int a; int? g; int? h;|}[]|Error cn = parseRecordAsRecordType([{"a": 1}, {"a": 2}, {"a": 3}], {
         allowDataProjection: {absentAsNilableType: true}, skipLines: [3]
@@ -391,7 +391,7 @@ function testAbsentAsNilableConfig2() returns error? {
     test:assertEquals((<error>cn8).message(), generateErrorMessageForMissingRequiredField("g"));
 }
 
-@test:Config {enable}
+@test:Config
 function testNilAsOptionalConfig() returns error? {
     record {|int a; int f?;|}[]|Error cn = parseStringToRecord(csvStringData1, {
         allowDataProjection: {nilAsOptionalField: true},
@@ -466,7 +466,7 @@ function testNilAsOptionalConfig() returns error? {
     test:assertEquals(cn10, [[1, "string1", true, <decimal>2.234, <float>2.234, null, null]]);
 }
 
-@test:Config {enable}
+@test:Config
 function testNilAsOptionalConfig2() returns error? {
     record {|int a; int? f;|}[]|Error cn = parseRecordAsRecordType([{"a": 1, "f": ()}, {"a": 2, "f": ()}, {"a": 3, "f": ()}], {
         allowDataProjection: {nilAsOptionalField: true}, skipLines: [3]
@@ -490,7 +490,7 @@ function testNilAsOptionalConfig2() returns error? {
     test:assertEquals((<error>cn4).message(), generateErrorMessageForInvalidFieldType("null", "f"));
 }
 
-@test:Config {enable}
+@test:Config
 function testDataProjectionConfig() returns error? {
     string csvValue1 = string `a,b
                              "a",2

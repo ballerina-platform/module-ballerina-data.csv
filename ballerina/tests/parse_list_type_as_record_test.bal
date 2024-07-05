@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
     StringRecord1Array|Error st1sr1 = parseListAsRecordType([st1, st1], (), {}, StringRecord1Array);
     test:assertTrue(st1sr1 is Error);
@@ -255,7 +255,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType2() {
     StringRecord1Array|Error st3sr1 = parseListAsRecordType([st3, st3], (), {}, StringRecord1Array);
     test:assertTrue(st3sr1 is Error);
@@ -470,7 +470,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType2() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
     record{string a; boolean b; int c;}[]|Error ct1br4 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "c", "b"], {});
     test:assertEquals(ct1br4, [
@@ -576,7 +576,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndMapAsExpectedType() {
     StringMapArray|Error st1sma = parseListAsRecordType([st1, st1], (), {}, StringMapArray);
     test:assertEquals(st1sma , [

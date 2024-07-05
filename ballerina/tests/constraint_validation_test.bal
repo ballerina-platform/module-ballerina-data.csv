@@ -13,7 +13,7 @@ type ConstrainedRec record {
     string b;
 };
 
-@test:Config {enable}
+@test:Config
 function testConstraintWithRecords() returns error? {
     ConstrainedRec[]|Error cRec1 = parseStringToRecord(string `a,b
                 4,abc

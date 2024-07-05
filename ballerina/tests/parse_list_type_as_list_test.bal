@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     StringTuple1Array|Error st1st1 = parseListAsListType([st1, st1], {}, StringTuple1Array);
     test:assertEquals(st1st1, [

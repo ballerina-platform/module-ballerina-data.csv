@@ -1,6 +1,6 @@
 import ballerina/test;
 
-@test:Config {enable}
+@test:Config
 function testIntersectionExpectedTypes() returns error? {
     (int[] & readonly)[]|Error a = parseStringToList(string `a,b
                                                                             1,2
@@ -64,7 +64,7 @@ function testIntersectionExpectedTypes() returns error? {
     test:assertEquals(a10, [{a: "a", b: "a"}, {a: "1", b: "2"}]);
 }
 
-@test:Config {enable}
+@test:Config
 function testIntersectionExpectedTypes2() returns error? {
     (int[] & readonly)[]|Error a = parseRecordAsListType([{"a": 1, "b": 2}, {"a": 4, "b": 5}], ["a", "b"], {});
     test:assertTrue(a is (int[] & readonly)[]);                                                                       
@@ -108,7 +108,7 @@ function testIntersectionExpectedTypes2() returns error? {
     test:assertEquals(a10, [{a: "a", b: "a"}, {a: 1, b: 2}]);
 }
 
-@test:Config {enable}
+@test:Config
 function testIntersectionExpectedTypes3() returns error? {
     (int[] & readonly)[]|Error a = parseListAsListType([["1", "2"], ["4", "5"]], {});
     test:assertTrue(a is (int[] & readonly)[]);                                                                       

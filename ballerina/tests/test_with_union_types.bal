@@ -7,7 +7,7 @@ type TupA [int, string, boolean, decimal, float, ()];
 type TupB [int...];
 type TupC [int, int, int];
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes() returns error? {
     (RecA|RecC)[]|Error csv1op1 = parseStringToRecord(csvStringData1, {header: 1});
     test:assertEquals(csv1op1, [
@@ -116,7 +116,7 @@ function testParseToStringWithUnionExpectedTypes() returns error? {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes2() returns error? {
     record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -225,7 +225,7 @@ function testParseToStringWithUnionExpectedTypes2() returns error? {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes3() returns error? {
     string[][] value = [
         ["1", "string1", "true", "2.234", "2.234", "()"],
@@ -340,7 +340,7 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
 }
 
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes4() returns error? {
     record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -433,7 +433,7 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes5() returns error? {
     string[][] value = [
         ["1", "string1", "true", "2.234", "2.234", "()"],
@@ -537,7 +537,7 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes6() returns error? {
     RecA[]|RecC[]|Error csv1op1 = parseStringToRecord(csvStringData1, {header: 1});
     test:assertEquals(csv1op1, [
@@ -637,7 +637,7 @@ function testParseToStringWithUnionExpectedTypes6() returns error? {
     ]);
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes7() returns error? {
     record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -740,7 +740,7 @@ function testParseToStringWithUnionExpectedTypes7() returns error? {
     test:assertEquals((<Error>csv1op12).message(), "The source value cannot convert in to the '(data.csv:record {| string a; int...; |}[]|data.csv:record {| string a; string...; |}[])'");
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes8() returns error? {
     string[][] value = [
         ["1", "string1", "true", "2.234", "2.234", "()"],
@@ -855,7 +855,7 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
 }
 
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes9() returns error? {
     record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -942,7 +942,7 @@ function testParseToStringWithUnionExpectedTypes9() returns error? {
     test:assertEquals((<Error>csv1op12).message(), "The source value cannot convert in to the '([string,int...][]|[string,string...][])'");
 }
 
-@test:Config {enable}
+@test:Config
 function testParseToStringWithUnionExpectedTypes10() returns error? {
     string[][] value = [
         ["1", "string1", "true", "2.234", "2.234", "()"],
