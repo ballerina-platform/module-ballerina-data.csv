@@ -16,12 +16,19 @@ public const annotation NameConfig Name on record field;
 
 # Represents options for data projection.
 public type Options record {
+   # Allows data projection with specific settings.
+   #
+   # This field can be either a record or a boolean. If it's a record, it contains the following fields:
+   # - `nilAsOptionalField`: If `true`, nil values will be considered as optional fields in the projection.
+   # - `absentAsNilableType`: If `true`, absent fields will be considered as nilable types in the projection.
+   # If it's set to `false`, data projection is not allowed.
    record {
        # If `true`, nil values will be considered as optional fields in the projection.
        boolean nilAsOptionalField = false;
        # If `true`, absent fields will be considered as nilable types in the projection.
        boolean absentAsNilableType = false;
    }|false allowDataProjection = {};
+   
    # Lines to skip during processing, specified either as an array of integers or a string.
    int[]|string skipLines = [];
 };

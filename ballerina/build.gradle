@@ -60,6 +60,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
+    testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.data.*:ballerina.*"
     packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
@@ -140,3 +141,6 @@ build.dependsOn deleteDependencyTomlFiles
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-compiler-plugin:build"
+
+publish.dependsOn build
+publishToMavenLocal.dependsOn build
