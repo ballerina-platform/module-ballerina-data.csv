@@ -1,13 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     (int[] & readonly)[]|Error a = parseRecordAsListType([{"a": 1, "b": 2}, {"a": 4, "b": 5}], ["a", "b"], {});
-//     test:assertEquals(a, "");
-// }
-
 @test:Config {enable}
 function testIntersectionExpectedTypes() returns error? {
     (int[] & readonly)[]|Error a = parseStringToList(string `a,b
@@ -164,7 +156,3 @@ function testIntersectionExpectedTypes3() returns error? {
     test:assertTrue(a11 is ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[] & readonly);
     test:assertEquals(a11, [{a: "a", b: "a"}, {a: 1, b: 2}]);
 }
-
-// TODO: Add tetsts for, table
-// Ignore whitespace in certain conditions
-// tests for unicodes

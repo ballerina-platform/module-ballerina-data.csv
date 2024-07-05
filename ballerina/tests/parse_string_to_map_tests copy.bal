@@ -1,17 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//     NillableIntUnionBooleanMapArray|Error bv4bniubma = parseStringToRecord(string `a
-//     0`);
-//     test:assertEquals(bv4bniubma, [
-//         {b1: true, b2: (), b3: (), b4: 0},
-//         {b1: 1, b2: (), b3: (), b4: false}
-//     ]);
-// }
-
 @test:Config {enable}
 function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
     BooleanMapArray|Error bv1bma = parseStringToRecord(csvStringWithBooleanValues1);
@@ -407,10 +395,4 @@ function testFromCsvStringWithTypeForStringAndMapAsExpectedType() {
     test:assertEquals(bv7dsma, [
         {}
     ]);
-
-    //TODO: Fix the test case
-    // string csvValue1 = string `a,
-    //                             1,,`;
-    // record{}[]|error a = parseStringToRecord(csvValue1, {});
-    // test:assertEquals(a, [{a: 1}]);
 }

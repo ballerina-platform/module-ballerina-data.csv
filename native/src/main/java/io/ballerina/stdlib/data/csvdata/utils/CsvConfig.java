@@ -89,16 +89,6 @@ public class CsvConfig {
         this.stringConversion = stringConversion;
     }
 
-//    private CsvConfig(Object skipLines, boolean nilAsOptionalField, boolean absentAsNilableType,
-//                      boolean allowDataProjection, boolean stringConversion, Object customHeader) {
-//        this.skipLines = skipLines;
-//        this.nilAsOptionalField = nilAsOptionalField;
-//        this.absentAsNilableType = absentAsNilableType;
-//        this.allowDataProjection = allowDataProjection;
-//        this.stringConversion = stringConversion;
-//        this.customHeader = customHeader;
-//    }
-
     private CsvConfig(Object skipLines, boolean nilAsOptionalField, boolean absentAsNilableType,
                       boolean allowDataProjection, boolean stringConversion, Object customHeader,
                       boolean enableConstraintValidation) {

@@ -1,18 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//         record{|()...;|}[]|Error ct1br12 = parseListAsRecordType(
-//         [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
-//         ["f", "e", "d", "c", "b", "a"]);
-//     test:assertEquals(ct1br12, [
-//         {a: ()},
-//         {a: ()}
-//     ]);
-// }
-
 @test:Config {enable}
 function testFromCsvWithTypeForTupleAndRecordAsExpectedType() {
     StringRecord1Array|Error st1sr1 = parseListAsRecordType([st1, st1], (), {}, StringRecord1Array);
@@ -523,7 +510,6 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
         {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
     ]);
 
-// TODO: Check this
     record{|int|() a; float b; decimal? c; string|boolean d; int|string e; string f; string...;|}[]|Error ct1br9_2 = parseListAsRecordType(
         [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
         ["f", "e", "d", "c", "b", "a"]);
@@ -555,8 +541,6 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType3() {
         {a: ()},
         {a: ()}
     ]);
-
-// TODO: Add more tests with union types
 
     record{|string?...;|}[]|Error ct1br13 = parseListAsRecordType(
         [["a", "1"], ["a", "1"]], 

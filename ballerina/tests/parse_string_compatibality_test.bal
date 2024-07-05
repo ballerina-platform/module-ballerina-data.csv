@@ -1,16 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//     BooleanRecord1Array|Error csvb4br1 = parseStringToRecord(csvStringWithBooleanValues4, {});
-//     test:assertEquals(csvb4br1, [
-//         {b1: true, b2: "()", b3: (), b4: false},
-//         {b1: true, b2: "()", b3: (), b4: false}
-//     ]);
-// }
-
 @test:Config {enable}
 function testFromCsvStringWithTypeCompatibility() {
     string value = string `i1,i2,s1,s2,  b1,b2,n1,n2,f1,f2, d1,d2,j1,a1,j2,a2

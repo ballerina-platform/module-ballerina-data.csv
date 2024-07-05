@@ -221,5 +221,3 @@ function testSubtypeExpectedTypes() returns error? {
     SubtypeTuple3[]|Error a18 = parseListAsListType(value4, {});
     test:assertEquals(a18, value3);   
 }
-
-// Add implementation for source as Tuples

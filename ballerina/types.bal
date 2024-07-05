@@ -13,9 +13,9 @@ public const annotation NameConfig Name on record field;
 public type Options record {
    record {
        # If `true`, nil values will be considered as optional fields in the projection.
-       boolean nilAsOptionalField = false; // () assign to op
+       boolean nilAsOptionalField = false;
        # If `true`, absent fields will be considered as nilable types in the projection.
-       boolean absentAsNilableType = false; // source haven't () && expected type contains op => ()
+       boolean absentAsNilableType = false;
    }|false allowDataProjection = {};
    int[]|string skipLines = [];
 };
@@ -25,20 +25,16 @@ public type ParseOption record {|
   string:Char delimiter = ",";
   string encoding = "UTF-8";
   string locale = "en_US";
-//  TODO: Add " for Strings"
   string:Char textEnclosure = "\"";
   string:Char escapeChar = "\\";
   LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];
   NilValue? nilValue = ();
-  // string commentStartingSequence = "#";
   string:Char comment = "#";
   false|int:Unsigned32 header = 0;
 |};
 
 public type parseToRecordOption record {|
   *ParseOption;
-
-  // if header = false and this value is null, Then compiler time error.
   string[]? customHeaders = ();
    boolean enableConstraintValidation = true;
 |};

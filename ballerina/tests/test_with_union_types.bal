@@ -1,20 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
-//         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
-//         {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
-//         {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
-//         {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
-//         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
-//     ];
-
-//     RecA[]|RecC[]|Error csv1op1 = parseStringToRecord(csvStringData1, {header: 1});
-// }
-
 type RecA record {int a; string b; boolean c; decimal d; float e; () f;};
 type RecB record {|string...;|};
 type RecC record {int a; int b; int c;};
@@ -24,7 +9,6 @@ type TupC [int, int, int];
 
 @test:Config {enable}
 function testParseToStringWithUnionExpectedTypes() returns error? {
-    // TODO: Fix with tests RecA[]|RecC[]
     (RecA|RecC)[]|Error csv1op1 = parseStringToRecord(csvStringData1, {header: 1});
     test:assertEquals(csv1op1, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -344,7 +328,6 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: "5", d: 3}
     ]);
 
-// Error Message is Wrong, Needs to check
     (record{|int a; int...;|}|record{|int a; string...;|})[]|Error csv1op12 = parseListAsRecordType(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: false});
     test:assertTrue(csv1op12 is Error);
     test:assertEquals((<Error>csv1op12).message(), "The source value cannot convert in to the '(data.csv:record {| int a; int...; |}|data.csv:record {| int a; string...; |})[]'");
@@ -398,7 +381,6 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    // TODO: Change the Error Message
     (TupB|[boolean])[]|Error csv1op4_2 = parseRecordAsListType(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is Error);
     test:assertEquals((<Error>csv1op4_2).message(), "The source value cannot convert in to the '(data.csv:TupB|[boolean])[]'");
@@ -492,7 +474,6 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    // TODO: Change the Error Message
     (TupB|[boolean])[]|Error csv1op4_2 = parseListAsListType(value, {skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is Error);
     test:assertEquals((<Error>csv1op4_2).message(), "The source value cannot convert in to the '(data.csv:TupB|[boolean])[]'");
@@ -558,7 +539,6 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
 
 @test:Config {enable}
 function testParseToStringWithUnionExpectedTypes6() returns error? {
-    // TODO: Fix with tests RecA[]|RecC[]
     RecA[]|RecC[]|Error csv1op1 = parseStringToRecord(csvStringData1, {header: 1});
     test:assertEquals(csv1op1, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -916,7 +896,6 @@ function testParseToStringWithUnionExpectedTypes9() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    // TODO: Change the Error Message
     TupB[]|[boolean][]|Error csv1op4_2 = parseRecordAsListType(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is Error);
     test:assertEquals((<Error>csv1op4_2).message(), "The source value cannot convert in to the '(data.csv:TupB[]|[boolean][])'");
@@ -1004,7 +983,6 @@ function testParseToStringWithUnionExpectedTypes10() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    // TODO: Change the Error Message
     TupB[]|[boolean][]|Error csv1op4_2 = parseListAsListType(value, {skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is Error);
     test:assertEquals((<Error>csv1op4_2).message(), "The source value cannot convert in to the '(data.csv:TupB[]|[boolean][])'");
@@ -1061,5 +1039,3 @@ function testParseToStringWithUnionExpectedTypes10() returns error? {
     [string, int...][]|[string, string...][]|Error csv1op12 = parseListAsListType(value, {});
     test:assertEquals(csv1op12, value);
 }
-
-//TODO: Add test for intersection type in exp type

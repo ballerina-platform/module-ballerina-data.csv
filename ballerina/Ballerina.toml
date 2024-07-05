@@ -2,7 +2,7 @@
 org = "ballerina"
 name = "data.csv"
 version = "0.1.0"
-authors = ["Ballerina"]
+authors = ["SasinduDilshara"]
 keywords = ["csv"]
 repository = "https://github.com/ballerina-platform/module-ballerina-data.csv"
 license = ["Apache-2.0"]

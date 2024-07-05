@@ -1,15 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     record {|int a; int f?;|}[]|Error cn3 = parseRecordAsRecordType([{"a": 1, "f": ()}, {"a": 2, "f": ()}, {"a": 3, "f": ()}], {
-//         allowDataProjection: {nilAsOptionalField: true}, skipLines: [3]
-//     });
-//     test:assertEquals(cn3, [{a: 1}, {a: 2}]);
-// }
-
 @test:Config {enable}
 function testFromCsvStringWithParserOptions() {
     [int, string, boolean, decimal, float, string][]|Error csv1op3 = parseStringToList(csvStringData1, option3);
@@ -224,8 +214,6 @@ function testNullConfigOption() {
     cn = parseStringToRecord(csvValue1, {nilValue: "null"});
     test:assertTrue(cn is Error);
     test:assertEquals((<error>cn).message(), generateErrorMessageForInvalidCast("()", "()"));
-
-    // TODO: add nilValue -> "", with str quotes
 }
 
 @test:Config {enable}
@@ -283,7 +271,7 @@ function testCommentConfigOption() {
 
     cn = parseStringToRecord(csvValue8);
     test:assertTrue(cn is Error);
-    // TODO:Fix
+    // TODO:Fix the error message
     // test:assertEquals((<error> cn).message(), generateErrorMessageForInvalidCast("1, 2", "int"));
 
     cn = parseStringToRecord(csvValue9);
@@ -337,7 +325,7 @@ function testCommentConfigOption2() {
 
     cn = parseStringToRecord(csvValue5, {comment: "&"});
     test:assertTrue(cn is Error);
-    // TODO: Fix
+    // TODO: Fix the error message
     // test:assertEquals((<error> cn).message(), generateErrorMessageForMissingRequiredField("b"));
 
     cn = parseStringToRecord(csvValue6, {comment: "&", header: 2});
@@ -362,7 +350,7 @@ function testCommentConfigOption2() {
 
     cn2 = parseStringToRecord(csvValue5, {comment: "&"});
     test:assertTrue(cn2 is Error);
-    // TODO: Fix
+    // TODO: Fix the error message
     // test:assertEquals((<error> cn2).message(), generateErrorMessageForMissingRequiredField("c"));
 
     cn2 = parseStringToRecord(csvValue6, {header: 2, comment: "&"});
@@ -469,8 +457,6 @@ function testSkipLineParserOption() {
         [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
-
-    // Fix:- Add tests for parseType
 }
 
 @test:Config {enable}
@@ -507,8 +493,6 @@ function testCustomHeaderOption() {
     test:assertTrue(bm3ba5 is Error);
     test:assertEquals((<error>bm3ba5).message(), "Invalid length for the header names");
 
-    // -------------------------------------------------------------
-
     record {}[]|Error ct1br = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "b"], {});
     test:assertTrue(ct1br is Error);
     test:assertEquals((<error>ct1br).message(), "Invalid length for the custom headers");
@@ -527,7 +511,7 @@ function testCustomHeaderOption() {
 
     record {|string a; string b; string c;|}[]|Error ct1br5 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
     test:assertTrue(ct1br5 is Error);
-    // TODO: Fix
+    // TODO: Fix the error message
     test:assertEquals((<error>ct1br5).message(), generateErrorMessageForMissingRequiredField("c"));
 
     record {string a; string b; string c;}[]|Error ct1br6 = parseListAsRecordType([["a", "1", "true"], ["a", "1", "true"]], ["a", "e", "b"], {});
@@ -569,17 +553,9 @@ function testCustomHeaderOption() {
 
 @test:Config {enable}
 function testCustomHeaderParserOption2() {
-    // parseStringToRecord
-    // parseRecordAsRecordType
-
     record {}[]|Error ct1br = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b"]});
     test:assertTrue(ct1br is Error);
     test:assertEquals((<error>ct1br).message(), "Invalid length for the custom headers");
-
-    // record{}[]|Error ct1br2 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["a", "b", "aa", "aaa", "aaaaa", "bb", "ccc"]});
-    // // TODO: Fix this
-    // test:assertTrue(ct1br2 is Error);
-    // test:assertEquals((<error> ct1br2).message(), "Invalid length for the custom headers");
 
     record {}[]|Error ct1br2 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: []});
     test:assertTrue(ct1br2 is Error);
@@ -653,7 +629,6 @@ function testCustomHeaderParserOption2() {
     ]);
 
     record {|boolean d1; string e1;|}[]|Error ct1br8 = parseStringToRecord(csvStringData1, {header: 1, customHeaders: ["e1", "d1"]});
-    // TODO: Fix
     test:assertTrue(ct1br8 is Error);
     test:assertEquals((<error>ct1br8).message(), generateErrorMessageForInvalidCast("string1", "boolean"));
 
@@ -855,8 +830,6 @@ function testDelimiterWithParserOptions() {
         [4, "string", true, 2.234, -3.21, ()],
         [5, "string", true, 2.234, -3.21, ()]
     ]);
-
-    //TODO: Add tests for Unicodes
 }
 
 @test:Config {enable}

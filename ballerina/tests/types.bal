@@ -2094,7 +2094,6 @@ type CustomRecord53Array CustomRecord53[];
 type CustomRecord54Array CustomRecord54[];
 type CustomRecord55Array CustomRecord55[];
 type CustomRecord56Array CustomRecord56[];
-// type CustomRecord57Array CustomRecord57[];
 
 type BooleanTuple1Array BooleanTuple1[];
 

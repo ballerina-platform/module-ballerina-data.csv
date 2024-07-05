@@ -1,14 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//     DecimalArray1Array|Error st1dda = parseListAsListType([st1, st1], {}, DecimalArray1Array);
-//     test:assertTrue(st1dda is Error);
-//     test:assertEquals((<Error>st1dda).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
-// }
-
 @test:Config {enable}
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     StringTuple1Array|Error st1st1 = parseListAsListType([st1, st1], {}, StringTuple1Array);
@@ -224,7 +215,6 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
     [(), decimal, float, boolean, ()...][]|Error ct1bt11_2 = parseListAsListType(
         [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertTrue(ct1bt11_2 is Error);
-    //TODO: Fix the message
     test:assertEquals((<error>ct1bt11_2).message(), generateErrorMessageForInvalidValueForArrayType("1", "4", "()"));
 
     [()...][]|Error ct1bt12 = parseListAsListType(
@@ -260,8 +250,6 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
         [["a", "b"], ["a", "b"]]);
     test:assertTrue(ct1bt17 is Error);
     test:assertEquals((<error>ct1bt17).message(), generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
-
-    // TODO: Add tests with union types, string|boolean => true
 }
 
 

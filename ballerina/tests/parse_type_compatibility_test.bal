@@ -1,19 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//     record{A a; B b; C c;}[]|Error rt12a = parseListAsRecordType(
-//         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], ["a", "b", "c"]);
-
-//     test:assertEquals(rt12a , [
-//         {a: <decimal>1, b: "string", c: "true"},
-//         {a: <decimal>2, b: "string2", c: "false"},
-//         {a: <decimal>3, b: "string3", c: "true"}
-//     ]);
-// }
-
 @test:Config {enable}
 function testFromCsvWithTypeFunctionWithTypeCompatibility() {
     var value = {i1, i2, s1, s2, b1, b2, n1, n2, f1, f2, d1, d2, j1: b1, a1: d1, j2: b2, a2: d2};
@@ -26,25 +12,6 @@ function testFromCsvWithTypeFunctionWithTypeCompatibility() {
         {i1, s1, s2, b1, n1, f1, d1, j1: b1, a1: d1, defaultableField: "", nillableField: ()},
         {i1, s1, s2, b1, n1, f1, d1, j1: b1, a1: d1, defaultableField: "", nillableField: ()}
     ]);
-
-    // TODO: 
-    // CustomTuple7Array|Error v2ct7a = parseRecordAsListType([value2, value2, value2], {}, CustomTuple7Array);
-    // test:assertTrue(v2ct7a is Error);
-    // test:assertEquals((<Error>v2ct7a).message(), generateErrorMessageForInvalidValueForArrayType("false", "10", "string"));
-
-    // CustomTuple7Array|Error v3ct7a = parseRecordAsListType([value3, value3, value3], {}, CustomTuple7Array);
-    // test:assertEquals(v3ct7a , [
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3]
-    // ]);
-
-    // AnydataArray1Array|Error v3anyd1a = parseRecordAsListType([value3, value3, value3], {}, AnydataArray1Array);
-    // test:assertEquals(v3anyd1a , [
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3],
-    //     [i1, s1, b1, n1, f1, d1, b1, d1, s2, s3]
-    // ]);
 
     AnydataMapArray|Error vanydma = parseRecordAsRecordType([value, value, value], {}, AnydataMapArray);
     test:assertEquals(vanydma , [

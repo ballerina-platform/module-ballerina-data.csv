@@ -29,8 +29,6 @@ import java.util.concurrent.TimeUnit;
  * @since 0.1.0
  */
 public class DataReaderThreadPool {
-
-    // TODO : Make this configurable, in Ballerina Library.
     private static final int CORE_POOL_SIZE = 0;
     private static final int MAX_POOL_SIZE = 50;
     private static final long KEEP_ALIVE_TIME = 60L;

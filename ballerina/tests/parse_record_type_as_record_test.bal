@@ -1,16 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() {
-//         StringRecord10Array|Error st1sr10 = parseListAsRecordType([st1, st1], (), {}, StringRecord10Array);
-//     test:assertEquals(st1sr10, [
-//         {'1: "string", '2: ""},
-//         {'1: "string", '2: ""}
-//     ]);
-// }
-
 @test:Config {enable}
 function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
     BooleanRecord1Array|Error bm1br1 = parseRecordAsRecordType([bm1, bm1], {}, BooleanRecord1Array);

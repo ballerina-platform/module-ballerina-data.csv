@@ -227,7 +227,6 @@ public class CsvParser {
             }
 
             switch (expectedArrayElementType.getTag()) {
-                // TODO: Handle readonly and singleton type as expType.
                 case TypeTags.RECORD_TYPE_TAG:
                     RecordType recordType = (RecordType) expectedArrayElementType;
                     restType = (recordType).getRestFieldType();
@@ -339,7 +338,6 @@ public class CsvParser {
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
                 char ch;
                 State state = HEADER_START_STATE;
-                //TODO: If the header is not present make the headers and fieldnames to be default values
                 char separator = sm.config.delimiter;
                 Object customHeader = sm.config.customHeader;
                 int headerStartRowNumber = getHeaderStartRowWhenHeaderIsPresent(sm.config.header);
@@ -421,9 +419,6 @@ public class CsvParser {
             if (expType instanceof RecordType) {
                 validateRemainingRecordFields(sm);
             } else if (expType instanceof ArrayType) {
-                // TODO: Get the other validation into here
-                //TODO: Replace arraysize -1 with
-                // TODO: Can remove using fillers
                 validateExpectedArraySize(((ArrayType) expType).getSize(), sm.headers.size());
             } else if (expType instanceof MapType) {
                 //ignore
@@ -436,7 +431,6 @@ public class CsvParser {
 
         private static void validateTupleTypes(TupleType tupleType, Type restType, int currentSize) {
             if (restType != null && tupleType.getTupleTypes().size() > currentSize) {
-                // TODO: Can remove using fillers
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, currentSize);
             }
         }
@@ -483,7 +477,6 @@ public class CsvParser {
                 char separator = sm.config.delimiter;
                 long[] skipLines = getSkipDataRows(sm.config.skipLines);
 
-                // TODO: Ignore this in future
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
@@ -501,7 +494,6 @@ public class CsvParser {
                         continue;
                     }
 
-                    //TODO: Handle empty values and create again and again
                     if (sm.isCurrentCsvNodeEmpty) {
                         if (ignoreRow(skipLines, sm.rowIndex)) {
                             updateLineAndColumnIndexes(sm);
@@ -592,14 +584,12 @@ public class CsvParser {
 
         private static void finalizeTheRow(StateMachine sm) {
             int rootArraySize = sm.rootArrayType.getSize();
-//            updateOptionalFields(sm);
             if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
                 sm.rootCsvNode.append(sm.currentCsvNode);
             }
         }
 
         private static void addRowValue(StateMachine sm) throws CsvParserException {
-            // TODO: Can convert all at once by storing in a Object[]
             Type type;
             Type exptype = sm.expectedArrayElementType;
             String value = sm.value();
@@ -644,7 +634,6 @@ public class CsvParser {
         }
 
         private static Type getExpectedRowTypeOfArray(StateMachine sm, ArrayType arrayType) {
-            // TODO: add to a constant
             if (arrayType.getSize() != -1 && arrayType.getSize() <= sm.columnIndex) {
                 sm.charBuffIndex = 0;
                 if (sm.config.allowDataProjection) {
@@ -656,11 +645,9 @@ public class CsvParser {
         }
 
         private static Type getExpectedRowTypeOfRecord(StateMachine sm) {
-            // TODO: These can be make as module level variables
             String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;
             if (fields.containsKey(header)) {
-                //TODO: Optimize
                 return fields.get(header).getFieldType();
             } else {
                 Type restType = sm.restType;

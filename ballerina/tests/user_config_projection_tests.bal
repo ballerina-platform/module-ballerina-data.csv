@@ -1,15 +1,5 @@
 import ballerina/test;
 
-// boolean enable = true;
-
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     record {|int a; int? g; int? h;|}[]|Error cn = parseStringToRecord(csvStringData1, {
-//         allowDataProjection: {absentAsNilableType: true},
-//         header: 1
-//     });
-// }
-
 @test:Config {enable}
 function testCustomNameAnnotation() returns error? {
     RecordWithCustomAnnotation[]|Error cn1 = parseStringToRecord(string `b,c
@@ -197,7 +187,6 @@ function testCustomNameAnnotation() returns error? {
     test:assertEquals((<error>cnrr22).message(), "Duplicate field found in record fields: 'c'");
 }
 
-//TODO: Emable after fix tuple proj
 @test:Config {enable}
 function testCustomNameAnnotation2() returns error? {
     RecordWithCustomAnnotation[]|Error cntr1 = parseListAsRecordType([["1", "3"]], ["b", "c"], {});
@@ -499,29 +488,6 @@ function testNilAsOptionalConfig2() returns error? {
     });
     test:assertTrue(cn4 is Error);
     test:assertEquals((<error>cn4).message(), generateErrorMessageForInvalidFieldType("null", "f"));
-
-    // TODO: After add string[] => anydata[]
-
-    // record {|string a; int? f;|}[]|Error cn5 = parseListAsRecordType([["a"], ["a"], ["a"]], ["a"], {
-    //     allowDataProjection: {nilAsOptionalField: true}, skipLines: [3]
-    // });
-    // test:assertEquals(cn5, [{a: "a", f: ()}, {a: "a", f: ()}]);
-
-    // record {|string a; int? f?;|}[]|Error cn6 = parseListAsRecordType([["a", ()], ["a", ()], ["a", ()]], ["a", "f"], {
-    //     allowDataProjection: {nilAsOptionalField: true}, skipLines: [3],
-    // });
-    // test:assertEquals(cn6, [{a: "a"}, {a: "a"}]);
-
-    // record {|string a; int f?;|}[]|Error cn7 = parseListAsRecordType([["a"], ["a"], ["b"]], ["a"], {
-    //     allowDataProjection: {nilAsOptionalField: true}, skipLines: [2]
-    // });
-    // test:assertEquals(cn7, [{a: "a"}, {a: "b"}]);
-
-    // record {|string a; int f;|}[]|Error cn8 = parseListAsRecordType([["a"], ["a"], ["a"]], ["a"], {
-    //     allowDataProjection: {nilAsOptionalField: true}, skipLines: [3]
-    // });
-    // test:assertTrue(cn8 is Error);
-    // test:assertEquals((<error>cn8).message(), generateErrorMessageForInvalidCast("()", "int"));
 }
 
 @test:Config {enable}
@@ -530,7 +496,6 @@ function testDataProjectionConfig() returns error? {
                              "a",2
                              b,4`;
     record{}[] csvValue2 = [{"a": "a", "b": 2}, {"a": "b", "b": 4}];
-    [string, int][] csvValue3 = [["a", 2], ["b", 4]];
 
     record{}[]|Error cn = parseStringToRecord(csvValue1, {
         allowDataProjection: false
@@ -717,100 +682,4 @@ function testDataProjectionConfig() returns error? {
     });
     test:assertTrue(cn26 is Error);
     test:assertEquals((<error>cn26).message(), "invalid array size for expected array type, cannot be greater than '1'");
-
-    // TODO: After fixing the issue with the anydata[]
-
-    // record{}[]|Error cnl14 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl14, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
-
-    // record{|string a; int b;|}[]|Error cnl14_2 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl14_2, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
-
-    // record{|string a;|}[]|Error cnl15 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl15 is Error);
-    // test:assertEquals((<error>cnl15).message(), "No mapping field in the expected type for header 'b'");
-
-    // record{|string a; int...;|}[]|Error cnl16 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl16, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
-
-    // record{|string...;|}[]|Error cnl17 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl17, [{"a": "a"}, {"a": "b"}]);
-
-    // record{|string a?;|}[]|Error cnl18 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl18 is Error);
-    // test:assertEquals((<error>cnl18).message(), "No mapping field in the expected type for header 'b'");
-
-    // record{|string? a;|}[]|Error cnl19 = parseListAsRecordType(csvValue3, ["a", "b"], {
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl19 is Error);
-    // test:assertEquals((<error>cnl19).message(), "No mapping field in the expected type for header 'b'");
-
-    // anydata[][]|Error cnl20 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl20, [["a", 2], ["b", 4]]);
-
-    // [string, int][]|Error cnl20_2 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl20_2, [["a", 2], ["b", 4]]);
-
-    // [string][]|Error cnl21 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl21 is Error);
-    // test:assertEquals((<error>cnl21).message(), "invalid array size for expected tuple type, cannot be greater than '1'");
-
-    // [string][]|Error cnl21_2 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: {}
-    // });
-    // test:assertEquals(cnl21_2, [["a"], ["b"]]);
-
-    // [int][]|Error cnl21_3 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: {}
-    // });
-    // test:assertTrue(cnl21_3 is Error);
-    // test:assertEquals((<error>cnl21_3).message(), generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
-
-    // [string, int...][]|Error cnl22 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertEquals(cnl22, [["a", 2], ["b", 4]]);
-
-    // [string...][]|Error cnl23 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl23 is Error);
-    // test:assertEquals((<error> cnl23).message(), generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
-
-    // [string, ()][]|Error cnl24 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl24 is Error);
-    // test:assertEquals((<error>cnl24).message(), generateErrorMessageForInvalidValueForArrayType("2", "1", "()"));
-
-    // string[][]|Error cnl25 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl25 is Error);
-    // test:assertEquals((<error> cnl25).message(), generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
-
-    // string[][1]|Error cnl26 = parseListAsListType(csvValue3 ,{
-    //     allowDataProjection: false
-    // });
-    // test:assertTrue(cnl26 is Error);
-    // test:assertEquals((<error>cnl26).message(), "invalid array size for expected array type, cannot be greater than '1'");
 }

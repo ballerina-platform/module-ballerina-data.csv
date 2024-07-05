@@ -134,7 +134,6 @@ public class BallerinaByteBlockInputStream extends InputStream {
                 futureResultConsumer.accept(bError);
                 currentChunk = new byte[0];
                 semaphore.release();
-                // TODO : Should we panic here?
             }
 
             @Override

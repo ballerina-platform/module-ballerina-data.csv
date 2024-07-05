@@ -532,7 +532,7 @@ public class CsvTraversal {
                     return true;
                 }
 
-                for (String key: this.fieldHierarchy.keySet()) { // fh -> a,b  |  headers -> d,c
+                for (String key: this.fieldHierarchy.keySet()) {
                     for (String header: this.headers) {
                         if (key.equals(this.updatedRecordFieldNames.get(header))) {
                             return true;
@@ -555,15 +555,12 @@ public class CsvTraversal {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP,
                         csvElement, expectedType);
             }
-            // TODO: Add headers from config
             addValuesToMapType(csvElement, arraySize, mappingType, expectedType);
         }
 
         private void addValuesToMapType(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
             Type fieldType;
             BString key;
-
-            // TODO: Canges the logic with headers parameter
             for (int i = 1; i <= arraySize; i++) {
                 key = StringUtils.fromString(this.headers[i - 1]);
                 if (!mappingType) {
@@ -639,7 +636,7 @@ public class CsvTraversal {
                     return convertedValue;
                 }
             } else {
-                switch (fieldType.getTag()) {  // type.toString().equals("ballerina/data.csv:0:A")
+                switch (fieldType.getTag()) {
                     case TypeTags.NULL_TAG:
                     case TypeTags.BOOLEAN_TAG:
                     case TypeTags.INT_TAG:

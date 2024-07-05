@@ -1,29 +1,6 @@
 import ballerina/test;
 import ballerina/constraint;
 
-// boolean enable = true;
-
-// // TODO: 
-
-// @test:Config {enable: !enable}
-// function debugTest() returns error? {
-//     ConstrainedRec[]|Error cRec3 = parseStringToRecord(string `a,b
-//                 4,abc
-//                 5, "d"`);
-//     test:assertEquals(cRec3, "");
-// }
-
-//TODO: Fix the below test cases
-    // ConstrainedRec[]|Error cRec3 = parseStringToRecord(string `a,b
-    //             4,abc
-    //             5, "" `);
-    // test:assertEquals(cRec3, "");
-
-// ConstrainedRec[]|Error cRec3 = parseStringToRecord(string `a,b
-//                 4,abc
-//                 5, "" `);
-//     test:assertEquals(cRec3, "");
-
 type ConstrainedRec record {
     @constraint:Int {
         minValue: 3,
