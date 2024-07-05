@@ -4,7 +4,7 @@ import ballerina/test;
 
 // @test:Config {enable: !enable}
 // function debugTest() returns  error? {
-//     record{}[]|CsvConversionError csv1op4_3 = parseStringToRecord(csvStringData2, ptOption4);
+//     record{}[]|Error csv1op4_3 = parseStringToRecord(csvStringData2, ptOption4);
 //     test:assertEquals(csv1op4_3, [
 //         {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
 //         {a: 3, b: "string3", c: 0, d: 1.23, e: 1.23, f: "()"},
@@ -15,7 +15,7 @@ import ballerina/test;
 function errorTest() returns  error? {
     // check
 
-    record{}[]|CsvConversionError csv3op3_4 = parseStringToRecord(csvStringData3, {header: 11});
+    record{}[]|Error csv3op3_4 = parseStringToRecord(csvStringData3, {header: 11});
     test:assertEquals(csv3op3_4, []);
 
     csv3op3_4 = parseStringToRecord(csvStringData3, {header: 3});

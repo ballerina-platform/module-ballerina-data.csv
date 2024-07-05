@@ -1,4 +1,4 @@
-public type CsvConversionError error;
+public type Error error;
 
 # Defines the name of the JSON Object key.
 #
