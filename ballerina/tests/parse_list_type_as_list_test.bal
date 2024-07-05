@@ -163,7 +163,7 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
     test:assertEquals((<Error>st4bta).message(), generateErrorMessageForInvalidValueForArrayType("string", "0", "boolean"));
 }
 
-@test:Config{enable} 
+@test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
     [string, boolean, int][]|Error ct1bt4 = parseListAsListType([["a", "true", "1"], ["a", "true", "1"]], {});
     test:assertEquals(ct1bt4, [
@@ -253,7 +253,7 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
 }
 
 
-@test:Config {enable: enable}
+@test:Config
 function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
     StringArrayArray|Error st1saa = parseListAsListType([st1, st1], {}, StringArrayArray);
     test:assertEquals(st1saa , [
