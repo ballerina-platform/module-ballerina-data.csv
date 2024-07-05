@@ -75,7 +75,7 @@ public isolated function parseStreamToList(stream<byte[], error?> s,
 
 # Convert value of type record{}[] to subtype of record{}[].
 #
-# + v - Source Ballerina record array value
+# + s - Source Ballerina record array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
@@ -85,7 +85,7 @@ public isolated function parseRecordAsRecordType(record{}[] s,
 
 # Convert value of type record{}[] to subtype of anydata[][].
 #
-# + v - Source Ballerina record array value
+# + s - Source Ballerina record array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
@@ -95,7 +95,7 @@ public isolated function parseRecordAsListType(record{}[] s, string[] headerName
 
 # Convert value of type string[][] to subtype of record{}[].
 #
-# + v - Source Ballerina string array of array value
+# + s - Source Ballerina string array of array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
@@ -105,7 +105,7 @@ public isolated function parseListAsRecordType(string[][] s, string[]? customHea
 
 # Convert value of type string[][] to subtype of anydata[][].
 #
-# + v - Source Ballerina string array of array value
+# + s - Source Ballerina string array of array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
