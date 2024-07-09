@@ -125,8 +125,12 @@ public class CsvTraversal {
             rootCsvNode = null;
             expectedArrayElementType = null;
             sourceArrayElementType = null;
-            headers = null;
             config = null;
+            headers = null;
+        }
+
+        CsvTree() {
+            reset();
         }
 
         @SuppressWarnings("unchecked")

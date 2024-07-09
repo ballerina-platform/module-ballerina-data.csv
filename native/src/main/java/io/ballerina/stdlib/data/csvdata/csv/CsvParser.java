@@ -141,32 +141,33 @@ public class CsvParser {
         }
 
         public void reset() {
-            index = 0;
             currentCsvNode = null;
-            line = 1;
-            column = 0;
-            restType = null;
+            currentEscapeCharacters.clear();
+            headers.clear();
             rootCsvNode = null;
-            columnIndex = 0;
-            rowIndex = 1;
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
             fields.clear();
             fieldNames.clear();
-            rootArrayType = null;
-            config = null;
-            lineNumber = 0;
-            expectedArrayElementType = null;
-            headers = new ArrayList<>();
-            currentEscapeCharacters = new Stack<>();
             charBuff = new char[1024];
             charBuffIndex = 0;
+            index = 0;
+            line = 1;
+            column = 0;
+            restType = null;
+            expectedArrayElementType = null;
+            columnIndex = 0;
+            rowIndex = 1;
+            lineNumber = 0;
+            rootArrayType = null;
+            config = null;
             skipTheRow = false;
+            insideComment = false;
             isCurrentCsvNodeEmpty = true;
             isHeaderConfigExceedLineNumber = false;
-            hexBuilder = new StringBuilder(4);
             isQuoteClosed = false;
             isIntersectionElementType = false;
+            hexBuilder = new StringBuilder(4);
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
