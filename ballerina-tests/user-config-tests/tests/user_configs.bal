@@ -2,7 +2,7 @@ import ballerina/data.csv as csv;
 
 // Valid parser options
 csv:ParseOption option1 = {delimiter: "@", nilValue: "null", lineTerminator: [csv:LF]};
-csv:ParseOption option2 = {nilValue: "N/A", lineTerminator: [csv:CR, csv:LF], comment: "/"};
+csv:ParseOption option2 = {nilValue: "N/A", lineTerminator: [csv:CRLF, csv:LF], comment: "/"};
 csv:ParseOption option3 = {nilValue: "()", header: 1, skipLines: [1, 2]};
 csv:ParseOption option4 = {nilValue: "", header: 4, skipLines: "1-5"};
 csv:ParseOption option5 = {nilValue: "", header: 4, skipLines: "1-1"};
@@ -17,7 +17,7 @@ csv:parseToRecordOption ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
 // Invalid parser options
 csv:ParseOption invalidParserOptions1 = {header: 4};
 csv:ParseOption invalidParserOptions2 = {comment: "$"};
-csv:ParseOption invalidParserOptions3 = {lineTerminator: csv:CR};
+csv:ParseOption invalidParserOptions3 = {lineTerminator: csv:CRLF};
 csv:ParseOption invalidParserOptions4 = {skipLines: [1000, 1001]};
 csv:ParseOption invalidParserOptions5 = {skipLines: "a-b"};
 csv:ParseOption invalidParserOptions6 = {skipLines: "3-1"};

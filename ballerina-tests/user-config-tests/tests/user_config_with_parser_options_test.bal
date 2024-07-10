@@ -153,11 +153,11 @@ function testHeaderOption() {
 function testNullConfigOption() {
     string csvValue1 = string `a
                                 ()`;
-    string csvValue2 = string `a 
+    string csvValue2 = string `a
                                 null`;
-    string csvValue3 = string `c, a 
+    string csvValue3 = string `c, a
                             true, e`;
-    string csvValue4 = string `a 
+    string csvValue4 = string `a
                                 Null`;
     string csvValue5 = string `b, a
                                 bN/Aa,N/A`;
@@ -224,9 +224,9 @@ function testCommentConfigOption() {
                                 1`;
     string csvValue2 = string `a # comment
                                 1`;
-    string csvValue3 = string `a #, c 
+    string csvValue3 = string `a #, c
                             1#, e`;
-    string csvValue4 = string `a 
+    string csvValue4 = string `a
                         # comment
                                 1`;
     string csvValue5 = string `a, b
@@ -286,21 +286,21 @@ function testCommentConfigOption2() {
                                 1`;
     string csvValue2 = string `a & comment
                                 1`;
-    string csvValue3 = string `a &, c 
+    string csvValue3 = string `a &, c
                             1&, e`;
-    string csvValue4 = string `a 
-                        
-                        
-                        
+    string csvValue4 = string `a
+
+
+
                         & comment
                                 1`;
     string csvValue5 = string `a&, b
                                 1, 2 & comment
-                                
-                                
+
+
                                 & comment`;
     string csvValue6 = string `
-    
+
     a,& b
                                 1 ,&2 & comment
 
@@ -677,7 +677,7 @@ function testTextQuotesWithParserOptions() {
                                 1, "2", "3"
                                 "1", 2, 3
                                 1, "2", 3
-                                
+
                                 "1", "2", "3"`;
 
     string csvValue2 = string `
@@ -740,7 +740,7 @@ function testHeaderQuotesWithParserOptions() {
                                 1, "2", "3"
                                 "1", 2, 3
                                 1, "2", 3
-                                
+
                                 "1", "2", "3"`;
 
     string csvValue2 = string `
@@ -775,7 +775,7 @@ function testEscapeCharactersWithParserOptions() {
                             1, "2a\t", "3b\n"
                             "1c\n", 2, 3
                             1, "2a\"", 3
-                            
+
                             "1a\\", "2b\\"", "3"`;
 
     string csvValue2 = string `
@@ -783,7 +783,7 @@ function testEscapeCharactersWithParserOptions() {
                             1, "2a\t", "3b\n"
                             "1c\n", "/2/", 3
                             1, "2a\"", "3"
-                            
+
                             "1a\\", "2b\\"", "3"`;
 
     string csvValue3 = string `
@@ -791,7 +791,7 @@ function testEscapeCharactersWithParserOptions() {
                                 1, "2\t", "3\n"
                                 "1\n", 2, 3
                                 1, "2\"", 3
-                                
+
                                 "1\\", "2\\"", "3"`;
 
     record {}[]|csv:Error cn = csv:parseStringToRecord(csvValue1, {header: 1});
@@ -836,21 +836,22 @@ function testDelimiterWithParserOptions() {
 
 @test:Config
 function testLineTerminatorWithParserOptions() {
-    string csvValue = string `a,b${"\n"} 1,"2\n3"`;
+    string csvValue = string `a,b
+                                 1,"2\n3"`;
 
-    record {}[]|csv:Error cn = csv:parseStringToRecord(csvValue, {header: 0, lineTerminator: csv:LF});
-    test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
-
-    cn = csv:parseStringToRecord(csvValue, {header: 0, lineTerminator: [csv:LF]});
+    record {}[]|csv:Error cn = csv:parseStringToRecord(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
 
     cn = csv:parseStringToRecord(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
 
-    anydata[][]|csv:Error cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: csv:LF});
+    cn = csv:parseStringToRecord(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
+    test:assertEquals(cn, [{a: 1, b: "2\n3"}]);
+
+    anydata[][]|csv:Error cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn2, [[1, "2\n3"]]);
 
-    cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:LF]});
+    cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn2, [[1, "2\n3"]]);
 
     cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});

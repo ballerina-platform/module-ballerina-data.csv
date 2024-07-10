@@ -29,6 +29,12 @@ public class Constants {
         public static final String BALLERINA_NULL = "()";
     }
 
+    public static class LineTerminator {
+        public static final char LF = '\n';
+        public static final char CR = '\r';
+        public static final String CRLF = "\r\n";
+    }
+
     public static final String SKIP_LINE_RANGE_SEP = "-";
     public static final String FIELD = "$field$.";
     public static final String NAME = "Name";

@@ -34,6 +34,7 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 import io.ballerina.stdlib.data.csvdata.utils.DataUtils;
@@ -141,33 +142,32 @@ public class CsvParser {
         }
 
         public void reset() {
+            index = 0;
             currentCsvNode = null;
-            currentEscapeCharacters.clear();
-            headers.clear();
+            line = 1;
+            column = 0;
+            restType = null;
             rootCsvNode = null;
+            columnIndex = 0;
+            rowIndex = 1;
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
             fields.clear();
             fieldNames.clear();
-            charBuff = new char[1024];
-            charBuffIndex = 0;
-            index = 0;
-            line = 1;
-            column = 0;
-            restType = null;
-            expectedArrayElementType = null;
-            columnIndex = 0;
-            rowIndex = 1;
-            lineNumber = 0;
             rootArrayType = null;
             config = null;
+            lineNumber = 0;
+            expectedArrayElementType = null;
+            headers = new ArrayList<>();
+            currentEscapeCharacters = new Stack<>();
+            charBuff = new char[1024];
+            charBuffIndex = 0;
             skipTheRow = false;
-            insideComment = false;
             isCurrentCsvNodeEmpty = true;
             isHeaderConfigExceedLineNumber = false;
+            hexBuilder = new StringBuilder(4);
             isQuoteClosed = false;
             isIntersectionElementType = false;
-            hexBuilder = new StringBuilder(4);
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -345,6 +345,13 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                        continue;
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
+
                     if (sm.lineNumber < headerStartRowNumber) {
                         sm.isHeaderConfigExceedLineNumber = true;
                         if (sm.isNewLineOrEof(ch)) {
@@ -481,6 +488,13 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                        continue;
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
+
                     if (sm.skipTheRow) {
                         if (sm.isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
                             sm.insideComment = false;
@@ -690,6 +704,13 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                        continue;
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
+
                     if (ch == sm.config.textEnclosure) {
                         if (sm.isQuoteClosed) {
                             sm.append(ch);
@@ -742,6 +763,13 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                        continue;
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
+
                     if (ch == sm.config.textEnclosure) {
                         sm.isQuoteClosed = true;
                     } else if (ch == sm.config.delimiter && sm.isQuoteClosed) {
@@ -814,6 +842,13 @@ public class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                        continue;
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
+
                     if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f')) {
                         sm.hexBuilder.append(ch);
                         if (sm.hexBuilder.length() >= 4) {
@@ -871,6 +906,11 @@ public class CsvParser {
                 if (i < count) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (ch == Constants.LineTerminator.CR) {
+                        CsvUtils.setCarriageTokenPresent(true);
+                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        CsvUtils.setCarriageTokenPresent(false);
+                    }
                     switch (ch) {
                         case '"':
                             sm.append(QUOTES);

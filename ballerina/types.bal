@@ -47,7 +47,7 @@ public type ParseOption record {|
   # The character used for escaping.
   string:Char escapeChar = "\\";
   # The line terminator(s) used in the data.
-  LineTerminator|LineTerminator[] lineTerminator = [CR, LF, CRLF];
+  LineTerminator|LineTerminator[] lineTerminator = [LF, CRLF];
   # The value to represent nil.
   NilValue? nilValue = ();
   # The character used to indicate comments in the data.
@@ -90,7 +90,6 @@ public type ListAsRecordOption record {|
 
 # Enum representing possible line terminators.
 public enum LineTerminator {
-  CR = "\r",
   LF = "\n",
   CRLF = "\r\n"
 };

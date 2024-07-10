@@ -23,6 +23,12 @@ import java.util.Optional;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.SKIP_LINE_RANGE_SEP;
 
 public class CsvUtils {
+    public static boolean isCarriageTokenPresent = false;
+
+    public static void setCarriageTokenPresent(boolean isCarriageTokenPresent) {
+        CsvUtils.isCarriageTokenPresent = isCarriageTokenPresent;
+    }
+
     public static void validateExpectedArraySize(int size, int currentSize) {
         if (size != -1 && size > currentSize) {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, currentSize);
@@ -117,17 +123,17 @@ public class CsvUtils {
     public static boolean checkTypeCompatibility(Type constraintType, Object csv, boolean stringConversion) {
         int tag = constraintType.getTag();
         if ((csv instanceof BString && (stringConversion || tag == TypeTags.STRING_TAG
-                        || tag == TypeTags.CHAR_STRING_TAG || isJsonOrAnyDataOrAny(tag)))
+                || tag == TypeTags.CHAR_STRING_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Long && (tag == TypeTags.INT_TAG
-                    || tag == TypeTags.FLOAT_TAG || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BYTE_TAG
-                    || tag == TypeTags.SIGNED8_INT_TAG || tag == TypeTags.SIGNED16_INT_TAG
-                    || tag == TypeTags.SIGNED32_INT_TAG || tag == TypeTags.UNSIGNED8_INT_TAG
-                    || tag == TypeTags.UNSIGNED16_INT_TAG || tag == TypeTags.UNSIGNED32_INT_TAG
-                    || isJsonOrAnyDataOrAny(tag)))
+                || tag == TypeTags.FLOAT_TAG || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BYTE_TAG
+                || tag == TypeTags.SIGNED8_INT_TAG || tag == TypeTags.SIGNED16_INT_TAG
+                || tag == TypeTags.SIGNED32_INT_TAG || tag == TypeTags.UNSIGNED8_INT_TAG
+                || tag == TypeTags.UNSIGNED16_INT_TAG || tag == TypeTags.UNSIGNED32_INT_TAG
+                || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof BDecimal && ((tag == TypeTags.DECIMAL_TAG
-                        || tag == TypeTags.FLOAT_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
+                || tag == TypeTags.FLOAT_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (csv instanceof Double && ((tag == TypeTags.FLOAT_TAG
-                        || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
+                || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)))
                 || (Boolean.class.isInstance(csv) && (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)))
                 || (csv == null && (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)))) {
             return true;
@@ -153,8 +159,8 @@ public class CsvUtils {
     }
 
     public static HashMap<String, String>
-            processNameAnnotationsAndBuildCustomFieldMap(RecordType recordType,
-                                                         Map<String, Field> fieldHierarchy) {
+    processNameAnnotationsAndBuildCustomFieldMap(RecordType recordType,
+                                                 Map<String, Field> fieldHierarchy) {
         BMap<BString, Object> annotations = recordType.getAnnotations();
         HashMap<String, String> updatedRecordFieldNames = new HashMap<>();
         HashSet<String> updatedFields = new HashSet<>();
@@ -267,11 +273,17 @@ public class CsvUtils {
     }
 
     public static boolean isCharContainsInLineTerminatorUserConfig(char c, Object lineTerminatorObj) {
-        String stringValue = Character.toString(c);
         if (lineTerminatorObj instanceof BArray) {
             Object[] lineTerminators = ((BArray) lineTerminatorObj).getValues();
             for (Object lineTerminator: lineTerminators) {
-                if (lineTerminator != null && lineTerminator.toString().equals(stringValue)) {
+                if (lineTerminator != null && c == Constants.LineTerminator.LF) {
+                    String lineTerminatorString = lineTerminator.toString();
+                    if (isCarriageTokenPresent) {
+                        if (lineTerminatorString.equals(Constants.LineTerminator.CRLF)) {
+                            return true;
+                        }
+                        continue;
+                    }
                     return true;
                 }
             }
@@ -279,7 +291,18 @@ public class CsvUtils {
         }
 
         String lineTerminator = StringUtils.getStringValue(StringUtils.fromString(lineTerminatorObj.toString()));
-        return lineTerminator.equals(stringValue);
+        if (c == Constants.LineTerminator.LF) {
+            if (lineTerminator != null) {
+                if (lineTerminator.equals(Constants.LineTerminator.CRLF)) {
+                    if (isCarriageTokenPresent) {
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class SortConfigurations {
