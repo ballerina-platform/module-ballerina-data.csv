@@ -5,8 +5,6 @@ import ballerina/test;
 @test:Config
 function testFromCsvWithTypeFunctionWithTypeCompatibility() {
     var value = {i1, i2, s1, s2, b1, b2, n1, n2, f1, f2, d1, d2, j1: b1, a1: d1, j2: b2, a2: d2};
-    var value2 = {i1, s1, b1, n1, f1, d1, j1: b1, a1: d1, s2, s3, j2: b2, a2: d2};
-    var value3 = {i1, s1, b1, n1, f1, d1, j1: b1, a1: d1, s2, s3};
 
     CustomRecord27Array|csv:Error vcr27a = csv:parseRecordAsRecordType([value, value, value], {}, CustomRecord27Array);
     test:assertEquals(vcr27a , [

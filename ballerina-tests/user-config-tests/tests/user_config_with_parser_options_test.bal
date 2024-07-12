@@ -116,7 +116,7 @@ function testFromCsvStringWithHeaderLessParserOptions() {
     record {}[]|csv:Error csv2op6_2 = csv:parseStringToRecord(csvStringData2, {header: false, skipLines: [5, 7]});
     test:assertEquals(csv2op6_2, [
         {'1: "hello", '2: "hello", '3: (), '4: 12, '5: true, '6: 12.34},
-        {'1: "//comment"},
+        {'1: "// comment"},
         {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
         {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
         {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
@@ -136,7 +136,8 @@ function testHeaderOption() {
     ]);
 
     record {}[]|csv:Error csv2cop2 = csv:parseStringToRecord(csvStringData2, {header: 100});
-    test:assertEquals(csv2cop2, []);
+    test:assertTrue(csv2cop2 is csv:Error);
+    test:assertEquals((<error> csv2cop2).message(), "The provided header row is empty");
 
     record {}[]|csv:Error csv2cop3 = csv:parseStringToRecord(csvStringData2, {header: 11});
     test:assertEquals(csv2cop3, []);

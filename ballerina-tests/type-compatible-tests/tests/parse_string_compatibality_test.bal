@@ -1,6 +1,9 @@
 import ballerina/csv_commons as common;
 import ballerina/data.csv as csv;
+import ballerina/io;
 import ballerina/test;
+
+const string filepath = "tests/csv_content.txt";
 
 @test:Config
 function testFromCsvStringWithTypeCompatibility() {
@@ -180,4 +183,52 @@ function testFromCsvStringWithTypeCompatibility() {
                                                                             1.2, abc, true,1.0`);
     test:assertTrue(m3rra is csv:Error);
     test:assertEquals((<csv:Error>m3rra).message(), common:generateErrorMessageForInvalidCast("1.0", "int"));
+}
+
+@test:Config
+function testSpaceBetweendData() {
+    string csv = string `a b, b  d  e, f
+                         "Hello world", "  Hi I am ", \"  Hi I am \"`;
+
+    record{|string...;|}[]|csv:Error rec = csv:parseStringToRecord(csv);
+    test:assertEquals(rec, [
+        {"a b":"Hello world","b  d  e":"  Hi I am ","f":"\"Hi I am \""}]);
+}
+
+@test:Config
+function testParseBytes() returns error? {
+    byte[] csvBytes = check io:fileReadBytes(filepath);
+
+    record{}[]|csv:Error rec = csv:parseBytesToRecord(csvBytes, {});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
+    string[][]|csv:Error rec2 = csv:parseBytesToList(csvBytes, {});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+}
+
+@test:Config
+function testParseStream() returns error? {
+    stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    record{}[]|csv:Error rec = csv:parseStreamToRecord(csvByteStream, {});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    string[][]|csv:Error rec2 = csv:parseStreamToList(csvByteStream, {});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
 }

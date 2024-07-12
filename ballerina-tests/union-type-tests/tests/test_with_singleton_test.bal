@@ -122,12 +122,10 @@ type SubtypeTuple3 [SubType...];
 function testSubtypeExpectedTypes() returns error? {
     var value1 = [{a: 1, c: 1, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1},
                   {a: 1, c: 1, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1}];
-    var value2 = [{a: 1, c: int:MAX_VALUE, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1},
-                  {a: 1, c: 1, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1}]; 
+    var value2 = [["1", "1", "1", "1", "a", "1", "1", "1"],
+                  ["1", "1", "1", "1", "a", "1", "1", "1"]];
     var value3 = [[1, 1, 1, 1, "a", 1, 1, 1],
                   [1, 1, 1, 1, "a", 1, 1, 1]];
-    var value4 = [["1", "1", "1", "1", "a", "1", "1", "1"],
-                  ["1", "1", "1", "1", "a", "1", "1", "1"]];
 
     SubtypeRecord[]|csv:Error a = csv:parseStringToRecord(string `a, c, d, e, f, g, h, i
                                                        1, 1, 1, 1, a, 1, 1, 1
@@ -182,24 +180,24 @@ function testSubtypeExpectedTypes() returns error? {
                                     ["a", "c", "d", "e", "f", "g", "h", "i"], {});
     test:assertEquals(a12, value3); 
 
-    SubtypeRecord[]|csv:Error a13 = csv:parseListAsRecordType(value4, 
+    SubtypeRecord[]|csv:Error a13 = csv:parseListAsRecordType(value2, 
                                     ["a", "c", "d", "e", "f", "g", "h", "i"], {});
     test:assertEquals(a13, value1);
 
-    SubtypeRecord2[]|csv:Error a14 = csv:parseListAsRecordType(value4, 
+    SubtypeRecord2[]|csv:Error a14 = csv:parseListAsRecordType(value2, 
                                     ["a", "c", "d", "e", "f", "g", "h", "i"], {});
     test:assertEquals(a14, [{a: 1, c: 1}, {a: 1, c: 1}]);
 
-    SubtypeRecord3[]|csv:Error a15 = csv:parseListAsRecordType(value4, 
+    SubtypeRecord3[]|csv:Error a15 = csv:parseListAsRecordType(value2, 
                                     ["a", "c", "d", "e", "f", "g", "h", "i"], {});
     test:assertEquals(a15, value1);
 
-    SubtypeTuple[]|csv:Error a16 = csv:parseListAsListType(value4, {});
+    SubtypeTuple[]|csv:Error a16 = csv:parseListAsListType(value2, {});
     test:assertEquals(a16, value3);
 
-    SubtypeTuple2[]|csv:Error a17 = csv:parseListAsListType(value4, {});
+    SubtypeTuple2[]|csv:Error a17 = csv:parseListAsListType(value2, {});
     test:assertEquals(a17, [[1, 1], [1, 1]]);
 
-    SubtypeTuple3[]|csv:Error a18 = csv:parseListAsListType(value4, {});
+    SubtypeTuple3[]|csv:Error a18 = csv:parseListAsListType(value2, {});
     test:assertEquals(a18, value3);   
 }
