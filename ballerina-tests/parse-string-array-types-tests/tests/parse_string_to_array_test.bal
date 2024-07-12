@@ -309,3 +309,128 @@ function testFromCsvStringWithTypeForStringAndArrayAsExpectedType3() {
     test:assertTrue(cv7daa is csv:Error);
     test:assertEquals((<csv:Error>cv7daa).message(), common:generateErrorMessageForInvalidCast("true", "decimal"));
 }
+
+@test:Config
+function testArrayIndexes() {
+    string csv = string `a, b
+                            1, 2
+                            3, 4
+                            5, 6
+                            7, 8`;
+
+    string csv2 = string `a, b
+                            1, 2, 3
+                            3, 4, 5
+                            5, 6, 7
+                            7, 8, 9`;
+
+    record {}[2]|error rec = csv:parseStringToRecord(csv);
+    test:assertEquals(rec, [
+                {a: 1, b: 2},
+                {a: 3, b: 4}
+            ]);
+
+    map<int>[2]|error rec_2 = csv:parseStringToRecord(csv);
+    test:assertEquals(rec_2, [
+                {a: 1, b: 2},
+                {a: 3, b: 4}
+            ]);
+
+    record {|int a;|}[2]|error rec2 = csv:parseStringToRecord(csv, {skipLines: [2]});
+    test:assertEquals(rec2, [
+                {a: 1},
+                {a: 5}
+            ]);
+
+    record {|int a;|}[5]|error rec2_2 = csv:parseStringToRecord(csv, {skipLines: [2]});
+    test:assertTrue(rec2_2 is csv:Error);
+
+    int[][2]|error rec3 = csv:parseStringToList(csv2);
+    test:assertEquals(rec3, [
+                [1, 2],
+                [3, 4],
+                [5, 6],
+                [7, 8]
+            ]);
+
+    [int, int][2]|error rec3_2 = csv:parseStringToList(csv2);
+    test:assertEquals(rec3_2, [
+                [1, 2],
+                [3, 4]
+            ]);
+
+    [int...][2]|error rec3_3 = csv:parseStringToList(csv2);
+    test:assertEquals(rec3_3, [
+                [1, 2, 3],
+                [3, 4, 5]
+            ]);
+
+    int[1][2]|error rec4 = csv:parseStringToList(csv2, {skipLines: [2]});
+    test:assertEquals(rec4, [
+                [1, 2]
+            ]);
+
+    int[2][]|error rec5 = csv:parseStringToList(csv2);
+    test:assertEquals(rec5, [
+                [1, 2, 3],
+                [3, 4, 5]
+            ]);
+}
+
+@test:Config
+function testArrayIndexes2() {
+    map<int>[] csv = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}, {a: 7, b: 8}];
+    string[][] csv2 = [["1", "2", "3"], ["3", "4", "5"], ["5", "6", "7"], ["7", "8", "9"]];
+
+    record {}[2]|error rec = csv:parseRecordAsRecordType(csv);
+    test:assertEquals(rec, [
+                {a: 1, b: 2},
+                {a: 3, b: 4}
+            ]);
+
+    map<int>[2]|error rec_2 = csv:parseListAsRecordType(csv2, ["a", "b", "c"]);
+    test:assertEquals(rec_2, [
+                {a: 1, b: 2, c: 3},
+                {a: 3, b: 4, c: 5}
+            ]);
+
+    record {|int a;|}[2]|error rec2 = csv:parseRecordAsRecordType(csv, {skipLines: [2]});
+    test:assertEquals(rec2, [
+                {a: 1},
+                {a: 5}
+            ]);
+
+    record {|int a;|}[5]|error rec2_2 = csv:parseRecordAsRecordType(csv, {skipLines: [2]});
+    test:assertTrue(rec2_2 is csv:Error);
+
+    int[][2]|error rec3 = csv:parseRecordAsListType(csv, ["a", "b"]);
+    test:assertEquals(rec3, [
+                [1, 2],
+                [3, 4],
+                [5, 6],
+                [7, 8]
+            ]);
+
+    [int, int][2]|error rec3_2 = csv:parseListAsListType(csv2);
+    test:assertEquals(rec3_2, [
+                [1, 2],
+                [3, 4]
+            ]);
+
+    [int...][2]|error rec3_3 = csv:parseRecordAsListType(csv, ["a", "b"], {skipLines: [1]});
+    test:assertEquals(rec3_3, [
+                [3, 4],
+                [5, 6]
+            ]);
+
+    int[1][2]|error rec4 = csv:parseRecordAsListType(csv, ["a", "b"], {skipLines: [2]});
+    test:assertEquals(rec4, [
+                [1, 2]
+            ]);
+
+    int[2][]|error rec5 = csv:parseListAsListType(csv2);
+    test:assertEquals(rec5, [
+                [1, 2, 3],
+                [3, 4, 5]
+            ]);
+}

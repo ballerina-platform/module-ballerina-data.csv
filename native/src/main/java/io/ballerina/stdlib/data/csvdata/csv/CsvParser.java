@@ -139,6 +139,7 @@ public class CsvParser {
         private StringBuilder hexBuilder = new StringBuilder(4);
         boolean isValueStart = false;
         State prevState;
+        int arraySize = 0;
         StateMachine() {
             reset();
         }
@@ -171,6 +172,7 @@ public class CsvParser {
             isQuoteClosed = false;
             isIntersectionElementType = false;
             prevState = null;
+            arraySize = 0;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -646,9 +648,12 @@ public class CsvParser {
 
         private static void finalizeTheRow(StateMachine sm) {
             int rootArraySize = sm.rootArrayType.getSize();
-            if (rootArraySize == -1 || sm.rowIndex < rootArraySize) {
+            if (rootArraySize == -1) {
                 sm.rootCsvNode.append(sm.currentCsvNode);
+            } else if (sm.arraySize < rootArraySize) {
+                sm.rootCsvNode.add(sm.arraySize, sm.currentCsvNode);
             }
+            sm.arraySize++;
         }
 
         private static void addRowValue(StateMachine sm) throws CsvParserException {
