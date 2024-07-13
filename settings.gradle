@@ -46,12 +46,14 @@ include(':data.csv-native')
 include(':data.csv-ballerina')
 include(':data.csv-compiler-plugin')
 include(':data.csv-compiler-plugin-tests')
+include(':data.csv-ballerina-tests')
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':data.csv-native').projectDir = file('native')
 project(':data.csv-ballerina').projectDir = file('ballerina')
 project(':data.csv-compiler-plugin').projectDir = file('compiler-plugin')
 project(':data.csv-compiler-plugin-tests').projectDir = file('compiler-plugin-test')
+project(':data.csv-ballerina-tests').projectDir = file('ballerina-tests')
 
 gradleEnterprise {
     buildScan {
@@ -59,3 +61,5 @@ gradleEnterprise {
         termsOfServiceAgree = 'yes'
     }
 }
+include 'ballerina-tests'
+
