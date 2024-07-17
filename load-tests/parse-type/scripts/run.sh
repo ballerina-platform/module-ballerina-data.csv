@@ -19,4 +19,4 @@
 set -e
 source base-scenario.sh
 
-jmeter -n -t "$scriptsDir/"http_parse_string.jmx -l "$resultsDir/"summary.csv -Jusers=2 -Jduration=3600 -Jhost=bal.perf.test -Jport=9090 -Jprotocol=http -Jpath=BalPerformance/parse $payload_flags
+jmeter -n -t "$scriptsDir/"http_parse_type.jmx -l "$resultsDir/"summary.csv -Jusers=2 -Jduration=3600 -Jhost=bal.perf.test -Jport=9092 -Jprotocol=http -Jpath=BalPerformance/parse $payload_flags

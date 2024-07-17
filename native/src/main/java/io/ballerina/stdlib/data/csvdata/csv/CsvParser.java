@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.checkAndAddCustomHeaders;
 import static io.ballerina.stdlib.data.csvdata.csv.CsvCreator.getHeaderValueForColumnIndex;
@@ -76,13 +75,15 @@ public class CsvParser {
     private static final char EOF = (char) -1;
     private static final char NEWLINE = 0x000A;
 
-
-    private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
-            = ThreadLocal.withInitial(StateMachine::new);
+    // TODO: Add this implementation after creating the object pool implementation
+//    private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
+//            = ThreadLocal.withInitial(StateMachine::new);
 
     public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
-        StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
+        // TODO: Add this implementation after creating the object pool implementation
+//        StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
+        StateMachine sm = new StateMachine();
         try {
             Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
@@ -111,7 +112,6 @@ public class CsvParser {
         private static final char LINE_BREAK = '\n';
 
         Object currentCsvNode;
-        Stack<String> currentEscapeCharacters = new Stack<>();
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
         Map<String, Field> fieldHierarchy = new HashMap<>();
@@ -135,42 +135,42 @@ public class CsvParser {
         boolean isCurrentCsvNodeEmpty = true;
         boolean isHeaderConfigExceedLineNumber = false;
         boolean isQuoteClosed = false;
-        boolean isIntersectionElementType = false;
         private StringBuilder hexBuilder = new StringBuilder(4);
         boolean isValueStart = false;
         State prevState;
         int arraySize = 0;
+
         StateMachine() {
             reset();
         }
 
         public void reset() {
-            index = 0;
             currentCsvNode = null;
-            line = 1;
-            column = 0;
-            restType = null;
+            headers = new ArrayList<>();
             rootCsvNode = null;
-            columnIndex = 0;
-            rowIndex = 1;
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
             fields.clear();
             fieldNames.clear();
-            rootArrayType = null;
-            config = null;
-            lineNumber = 0;
-            expectedArrayElementType = null;
-            headers = new ArrayList<>();
-            currentEscapeCharacters = new Stack<>();
             charBuff = new char[1024];
             charBuffIndex = 0;
+            index = 0;
+            line = 1;
+            column = 0;
+            restType = null;
+            expectedArrayElementType = null;
+            columnIndex = 0;
+            rowIndex = 1;
+            lineNumber = 0;
+            rootArrayType = null;
+            config = null;
             skipTheRow = false;
+            insideComment = false;
             isCurrentCsvNodeEmpty = true;
             isHeaderConfigExceedLineNumber = false;
-            hexBuilder = new StringBuilder(4);
             isQuoteClosed = false;
-            isIntersectionElementType = false;
+            hexBuilder = new StringBuilder(4);
+            isValueStart = false;
             prevState = null;
             arraySize = 0;
         }
@@ -382,6 +382,7 @@ public class CsvParser {
 
                     if (ch == sm.config.comment) {
                         sm.insideComment = true;
+                        state = this;
                     } else if (!sm.insideComment && ch == separator) {
                         addHeader(sm);
                         sm.columnIndex++;
@@ -417,6 +418,9 @@ public class CsvParser {
                         continue;
                     }
                     break;
+                }
+                if (state == null) {
+                    state = this;
                 }
                 sm.index = i + 1;
                 return state;
@@ -532,7 +536,7 @@ public class CsvParser {
                             sm.skipTheRow = false;
                             sm.clear();
                             if (ch == EOF) {
-                                state = ROW_END_STATE;
+                                return ROW_END_STATE;
                             }
                         } else {
                             sm.append(ch);
@@ -552,11 +556,10 @@ public class CsvParser {
                     if (!sm.insideComment && ch == sm.config.comment) {
                         handleEndOfTheRow(sm);
                         sm.insideComment = true;
-                        if (ch == EOF) {
-                            state = ROW_END_STATE;
-                        }
+                        state = this;
                     } else if (!sm.insideComment && ch == separator) {
                         addRowValue(sm);
+                        state = this;
                     } else if (!sm.insideComment && ch == sm.config.textEnclosure) {
                         sm.prevState = this;
                         state = STRING_QUOTE_CHAR_STATE;
@@ -588,7 +591,11 @@ public class CsvParser {
                             sm.append(ch);
                             sm.isValueStart = true;
                         }
+                        state = this;
                     }
+                }
+                if (state == null) {
+                    state = this;
                 }
                 sm.index = i + 1;
                 return state;
@@ -615,10 +622,10 @@ public class CsvParser {
             }
             if (!sm.isCurrentCsvNodeEmpty) {
                 finalizeTheRow(sm);
+                updateLineAndColumnIndexes(sm);
             } else {
                 updateLineAndColumnIndexesWithoutRowIndexes(sm);
             }
-            updateLineAndColumnIndexes(sm);
         }
 
         private static void updateLineAndColumnIndexes(StateMachine sm) {
@@ -811,6 +818,9 @@ public class CsvParser {
                         state = this;
                     }
                 }
+                if (state == null) {
+                    state = this;
+                }
                 sm.index = i + 1;
                 return state;
             }
@@ -870,6 +880,9 @@ public class CsvParser {
                         continue;
                     }
                     break;
+                }
+                if (state == null) {
+                    state = this;
                 }
                 sm.index = i + 1;
                 return state;
@@ -938,6 +951,9 @@ public class CsvParser {
                     this.reset(sm);
                     StateMachine.throwExpected("hexadecimal value of an unicode character");
                     break;
+                }
+                if (state == null) {
+                    state = this;
                 }
                 sm.index = i + 1;
                 return state;
@@ -1035,6 +1051,9 @@ public class CsvParser {
                         default:
                             StateMachine.throwExpected("escaped characters");
                     }
+                }
+                if (state == null) {
+                    state = this;
                 }
                 sm.index = i + 1;
                 return state;

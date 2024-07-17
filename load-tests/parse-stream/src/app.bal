@@ -18,13 +18,11 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/data.csv as csv;
 
-final string data = check io:fileReadString("resources/input.csv");
+final stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("resources/input.csv");
 
-isolated service http:Service /BalPerformance on new http:Listener(9090) {
-    isolated resource function get parse(http:Caller caller, http:Request req) returns error? {
-        lock {
-            record{}[] result = check csv:parseStringToRecord(data);
-            check caller->respond(result);
-        }
+service http:Service /BalPerformance on new http:Listener(9091) {
+    resource function get parse(http:Caller caller, http:Request req) returns error? {
+        anydata[][] result = check csv:parseStreamToList(csvByteStream);
+        check caller->respond(result);
     }
 }

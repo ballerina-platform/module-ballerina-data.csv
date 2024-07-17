@@ -19,4 +19,5 @@
 set -e
 source base-scenario.sh
 
-jmeter -n -t "$scriptsDir/"http_parse_string.jmx -l "$resultsDir/"summary.csv -Jusers=2 -Jduration=3600 -Jhost=bal.perf.test -Jport=9090 -Jprotocol=http -Jpath=BalPerformance/parse $payload_flags
+jmeter -n -t "$scriptsDir/"http_parse_stream.jmx -l "$resultsDir/"summary.csv -Jusers=2 -Jduration=3600 -Jhost= -Jport=9091 -Jprotocol=http -Jpath=BalPerformance/parse $payload_flags
+jmeter -n -t "$scriptsDir/"http-post-request.jmx -l "$resultsDir/"original.jtl -Jusers="$concurrent_users" -Jduration=1200 -Jhost=csv-parse-strea-svc.default.svc.cluster.local -Jport=9090 -Jprotocol=http -Jpath=csv-parse-strea $payload_flags
