@@ -30,6 +30,6 @@ public class CsvDataCompilerPlugin extends CompilerPlugin {
 
     @Override
     public void init(CompilerPluginContext compilerPluginContext) {
-        
+        compilerPluginContext.addCodeAnalyzer(new CsvDataCodeAnalyzer());
     }
 }

@@ -82,6 +82,8 @@ task updateTomlFiles {
         def stdlibDependentConstraintVersion = stripBallerinaExtensionVersion("${stdlibDependentConstraintNativeVersion}")
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@stdlib.constraintnative.version@", stdlibDependentConstraintNativeVersion)
+        newConfig = newConfig.replace("@constraint.version@", stdlibDependentConstraintVersion)
         ballerinaTomlFile.text = newConfig
 
         def newCompilerPluginToml = compilerPluginTomlFilePlaceHolder.text.replace("@project.version@", project.version)
@@ -135,10 +137,14 @@ build.dependsOn ":${packageName}-native:build"
 build.dependsOn deleteDependencyTomlFiles
 build.dependsOn ":${packageName}-compiler-plugin:build"
 build.dependsOn deleteDependencyTomlFiles
+build.finalizedBy ":${packageName}-ballerina-tests:build"
+
+//build.finalizedBy ":${packageName}-ballerina-tests:ballerinaTest"
 
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-compiler-plugin:build"
+test.finalizedBy ":${packageName}-ballerina-tests:build"
 
 publish.dependsOn build
 publishToMavenLocal.dependsOn build
