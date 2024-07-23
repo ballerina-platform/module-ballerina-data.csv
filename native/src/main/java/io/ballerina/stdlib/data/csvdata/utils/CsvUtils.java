@@ -17,6 +17,7 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -332,6 +333,18 @@ public class CsvUtils {
                 value = new SkipMappedValue();
             }
             return value;
+        }
+    }
+
+    public static Locale createLocaleFromString(String localeString) {
+        // Split the string into language, country, and variant
+        String[] parts = localeString.split(Constants.UNDERSCORE);
+        if (parts.length == 3) {
+            return new Locale(parts[0], parts[1], parts[2]);
+        } else if (parts.length == 2) {
+            return new Locale(parts[0], parts[1]);
+        } else {
+            return new Locale(parts[0]); // Only language
         }
     }
 }

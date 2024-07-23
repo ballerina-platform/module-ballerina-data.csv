@@ -34,6 +34,7 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.stdlib.data.csvdata.FromString;
 import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
@@ -171,6 +172,7 @@ public class CsvParser {
             isValueStart = false;
             prevState = null;
             arraySize = 0;
+            FromString.reset();
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -296,9 +298,7 @@ public class CsvParser {
                     }
                 }
                 return rootCsvNode;
-            } catch (IOException e) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
-            } catch (CsvParserException e) {
+            } catch (IOException | CsvParserException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             }
         }

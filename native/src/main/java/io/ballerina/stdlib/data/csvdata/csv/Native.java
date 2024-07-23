@@ -37,6 +37,7 @@ import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 
 /**
  * Csv conversion.
@@ -59,7 +60,8 @@ public class Native {
     public static Object parseBytesToRecord(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
             byte[] bytes = csv.getBytes();
-            return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
+            return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes),
+                            Charset.forName(options.getStringValue(Constants.ConfigConstants.ENCODING).toString())),
                     type, CsvConfig.createParserToRecordOptions(options));
         } catch (BError e) {
             return e;
@@ -74,7 +76,8 @@ public class Native {
             final BObject iteratorObj = csv.getIteratorObj();
             final Future future = env.markAsync();
             DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
-                    CsvConfig.createParserToRecordOptions(options));
+                    CsvConfig.createParserToRecordOptions(options),
+                    options.getStringValue(Constants.ConfigConstants.ENCODING));
             DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
             return null;
         } catch (BError e) {
@@ -98,7 +101,8 @@ public class Native {
     public static Object parseBytesToList(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
             byte[] bytes = csv.getBytes();
-            return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes)),
+            return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes),
+                            Charset.forName(options.getStringValue(Constants.ConfigConstants.ENCODING).toString())),
                     type, CsvConfig.createParseOptions(options));
         } catch (BError e) {
             return e;
@@ -113,7 +117,8 @@ public class Native {
             final BObject iteratorObj = csv.getIteratorObj();
             final Future future = env.markAsync();
             DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
-                    CsvConfig.createParseOptions(options));
+                    CsvConfig.createParseOptions(options),
+                    options.getStringValue(Constants.ConfigConstants.ENCODING));
             DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
             return null;
         } catch (BError e) {

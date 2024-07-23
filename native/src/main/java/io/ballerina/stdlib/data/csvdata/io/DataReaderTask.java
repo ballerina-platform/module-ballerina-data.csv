@@ -23,12 +23,14 @@ import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.data.csvdata.csv.CsvParser;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
 import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
 
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.function.Consumer;
 
 /**
@@ -46,13 +48,16 @@ public class DataReaderTask implements Runnable {
     private final Future future;
     private final BTypedesc typed;
     private final CsvConfig config;
+    private final BString encoding;
 
-    public DataReaderTask(Environment env, BObject iteratorObj, Future future, BTypedesc typed, CsvConfig config) {
+    public DataReaderTask(Environment env, BObject iteratorObj, Future future, BTypedesc typed,
+                          CsvConfig config, BString encoding) {
         this.env = env;
         this.iteratorObj = iteratorObj;
         this.future = future;
         this.typed = typed;
         this.config = config;
+        this.encoding = encoding;
     }
 
     static MethodType resolveNextMethod(BObject iterator) {
@@ -84,8 +89,9 @@ public class DataReaderTask implements Runnable {
         ResultConsumer<Object> resultConsumer = new ResultConsumer<>(future);
         try (var byteBlockSteam = new BallerinaByteBlockInputStream(env, iteratorObj, resolveNextMethod(iteratorObj),
                 resolveCloseMethod(iteratorObj), resultConsumer)) {
-            Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam),
-                        typed, this.config);
+            Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam,
+                            Charset.forName(this.encoding.toString())),
+                    typed, this.config);
             future.complete(result);
         } catch (Exception e) {
             future.complete(DiagnosticLog.getCsvError("Error occurred while reading the stream: " + e.getMessage()));
