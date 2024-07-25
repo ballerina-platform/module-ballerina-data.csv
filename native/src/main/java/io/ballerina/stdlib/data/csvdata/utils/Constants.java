@@ -39,4 +39,5 @@ public class Constants {
     public static final String FIELD = "$field$.";
     public static final String NAME = "Name";
     public static final BString VALUE = StringUtils.fromString("value");
+    public static final String UNDERSCORE = "_";
 }

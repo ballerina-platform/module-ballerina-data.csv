@@ -11,7 +11,6 @@ import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.C
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.CUSTOM_HEADERS;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.DELIMITER;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION;
-import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ENCODING;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.ESCAPE_CHAR;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.HEADER;
 import static io.ballerina.stdlib.data.csvdata.utils.Constants.ConfigConstants.LINE_TERMINATOR;
@@ -32,7 +31,6 @@ public class CsvConfig {
     public Object nilValue = null;
     public char comment = '#';
     public String locale = "EN/US";
-    public String encoding = "UTF-8";
     public boolean nilAsOptionalField = false;
     public boolean absentAsNilableType = false;
     public boolean allowDataProjection = true;
@@ -51,7 +49,6 @@ public class CsvConfig {
         this.nilValue = config.nilValue;
         this.comment = config.comment;
         this.locale = config.locale;
-        this.encoding = config.encoding;
     }
 
     private CsvConfig(Object skipLines, boolean nilAsOptionalField,
@@ -127,7 +124,7 @@ public class CsvConfig {
 
     private CsvConfig(char delimiter, char textEnclosure, Object header,
                       char escapeChar, Object lineTerminator, Object skipLines,
-                      Object nilValue, char comment, String locale, String encoding,
+                      Object nilValue, char comment, String locale,
                       boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection) {
         this.delimiter = delimiter;
         this.textEnclosure = textEnclosure;
@@ -137,7 +134,6 @@ public class CsvConfig {
         this.nilValue = nilValue == null ? null : nilValue;
         this.comment = comment;
         this.locale = locale;
-        this.encoding = encoding;
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -145,7 +141,7 @@ public class CsvConfig {
     }
 
     private CsvConfig(char delimiter, char textEnclosure, Object header, char escapeChar, Object lineTerminator,
-                      Object skipLines, Object nilValue, char comment, String locale, String encoding,
+                      Object skipLines, Object nilValue, char comment, String locale,
                       boolean nilAsOptionalField, boolean absentAsNilableType,
                       boolean allowDataProjection, Object customHeaders, boolean enableConstraintValidation) {
         this.delimiter = delimiter;
@@ -156,7 +152,6 @@ public class CsvConfig {
         this.nilValue = nilValue == null ? null : nilValue;
         this.comment = comment;
         this.locale = locale;
-        this.encoding = encoding;
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -188,7 +183,6 @@ public class CsvConfig {
                 options.get(NIL_VALUE),
                 StringUtils.getStringValue(options.getStringValue(COMMENT_CHAR)).charAt(0),
                 StringUtils.getStringValue(options.getStringValue(LOCALE)),
-                StringUtils.getStringValue(options.getStringValue(ENCODING)),
                 options.getBooleanValue(NIL_AS_OPTIONAL),
                 options.getBooleanValue(ABSENT_AS_NILABLE),
                 options.getBooleanValue(ALLOW_DATA_PROJECTION)
@@ -207,7 +201,6 @@ public class CsvConfig {
                 options.getStringValue(NIL_VALUE),
                 StringUtils.getStringValue(options.getStringValue(COMMENT_CHAR)).charAt(0),
                 StringUtils.getStringValue(options.getStringValue(LOCALE)),
-                StringUtils.getStringValue(options.getStringValue(ENCODING)),
                 options.getBooleanValue(NIL_AS_OPTIONAL),
                 options.getBooleanValue(ABSENT_AS_NILABLE),
                 options.getBooleanValue(ALLOW_DATA_PROJECTION),

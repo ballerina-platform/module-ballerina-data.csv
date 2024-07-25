@@ -35,12 +35,16 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.data.csvdata.utils.Constants;
 import io.ballerina.stdlib.data.csvdata.utils.CsvConfig;
-import io.ballerina.stdlib.data.csvdata.utils.DiagnosticErrorCode;
-import io.ballerina.stdlib.data.csvdata.utils.DiagnosticLog;
+import io.ballerina.stdlib.data.csvdata.utils.CsvUtils;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isNullValue;
 
@@ -50,6 +54,29 @@ import static io.ballerina.stdlib.data.csvdata.utils.CsvUtils.isNullValue;
  * @since 0.1.0
  */
 public class FromString {
+    private static Locale locale = null;
+    private static String intRegex = "^[-+]?[0-9]+$";
+    private static String doubleRegex = "^[-+]?[0-9]+(\\.[0-9]*)?(e[+-]?[0-9]+)?$";
+
+    public static void reset() {
+        FromString.locale = null;
+    }
+
+    private static Locale getLocale(CsvConfig config) {
+        if (locale == null) {
+            locale = CsvUtils.createLocaleFromString(config.locale);
+            DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
+            char decimalSeparator = dfs.getDecimalSeparator();
+            char minusSign = dfs.getMinusSign();
+            char zeroDigit = dfs.getZeroDigit();
+            String exponentSeparator = dfs.getExponentSeparator();
+            intRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+$";
+            doubleRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+(" +
+                    (decimalSeparator == '.' ? "\\." : decimalSeparator)
+                    + "[" + zeroDigit + "-9]*)?(" + exponentSeparator + "[+-]?[" + zeroDigit + "-9]+)?$";
+        }
+        return locale;
+    }
 
     private static final List<Integer> TYPE_PRIORITY_ORDER = List.of(
             TypeTags.INT_TAG,
@@ -85,50 +112,32 @@ public class FromString {
     public static Object fromStringWithType(BString string, Type expType, CsvConfig config) {
         String value = string.getValue();
         try {
-            switch (expType.getTag()) {
-                case TypeTags.INT_TAG:
-                    return stringToInt(value);
-                case TypeTags.BYTE_TAG:
-                    return stringToByte(value);
-                case TypeTags.SIGNED8_INT_TAG:
-                    return stringToSigned8Int(value);
-                case TypeTags.SIGNED16_INT_TAG:
-                    return stringToSigned16Int(value);
-                case TypeTags.SIGNED32_INT_TAG:
-                    return stringToSigned32Int(value);
-                case TypeTags.UNSIGNED8_INT_TAG:
-                    return stringToUnsigned8Int(value);
-                case TypeTags.UNSIGNED16_INT_TAG:
-                    return stringToUnsigned16Int(value);
-                case TypeTags.UNSIGNED32_INT_TAG:
-                    return stringToUnsigned32Int(value);
-                case TypeTags.FLOAT_TAG:
-                    return stringToFloat(value);
-                case TypeTags.DECIMAL_TAG:
-                    return stringToDecimal(value);
-                case TypeTags.CHAR_STRING_TAG:
-                    return stringToChar(value);
-                case TypeTags.STRING_TAG:
-                    return string;
-                case TypeTags.BOOLEAN_TAG:
-                    return stringToBoolean(value);
-                case TypeTags.NULL_TAG:
-                    return stringToNull(value, config);
-                case TypeTags.FINITE_TYPE_TAG:
-                    return stringToFiniteType(value, (FiniteType) expType, config);
-                case TypeTags.UNION_TAG:
-                    return stringToUnion(string, (UnionType) expType, config);
-                case TypeTags.JSON_TAG:
-                case TypeTags.ANYDATA_TAG:
-                    return stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config);
-                case TypeTags.TYPE_REFERENCED_TYPE_TAG:
-                    return fromStringWithType(string, ((ReferenceType) expType).getReferredType(), config);
-                case TypeTags.INTERSECTION_TAG:
-                    return fromStringWithType(string, ((IntersectionType) expType).getEffectiveType(), config);
-                default:
-                    return returnError(value, expType.toString());
-            }
-        } catch (NumberFormatException e) {
+            return switch (expType.getTag()) {
+                case TypeTags.INT_TAG -> stringToInt(value, config);
+                case TypeTags.BYTE_TAG -> stringToByte(value, config);
+                case TypeTags.SIGNED8_INT_TAG -> stringToSigned8Int(value, config);
+                case TypeTags.SIGNED16_INT_TAG -> stringToSigned16Int(value, config);
+                case TypeTags.SIGNED32_INT_TAG -> stringToSigned32Int(value, config);
+                case TypeTags.UNSIGNED8_INT_TAG -> stringToUnsigned8Int(value, config);
+                case TypeTags.UNSIGNED16_INT_TAG -> stringToUnsigned16Int(value, config);
+                case TypeTags.UNSIGNED32_INT_TAG -> stringToUnsigned32Int(value, config);
+                case TypeTags.FLOAT_TAG -> stringToFloat(value, config);
+                case TypeTags.DECIMAL_TAG -> stringToDecimal(value, config);
+                case TypeTags.CHAR_STRING_TAG -> stringToChar(value);
+                case TypeTags.STRING_TAG -> string;
+                case TypeTags.BOOLEAN_TAG -> stringToBoolean(value);
+                case TypeTags.NULL_TAG -> stringToNull(value, config);
+                case TypeTags.FINITE_TYPE_TAG -> stringToFiniteType(value, (FiniteType) expType, config);
+                case TypeTags.UNION_TAG -> stringToUnion(string, (UnionType) expType, config);
+                case TypeTags.JSON_TAG, TypeTags.ANYDATA_TAG ->
+                        stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config);
+                case TypeTags.TYPE_REFERENCED_TYPE_TAG ->
+                        fromStringWithType(string, ((ReferenceType) expType).getReferredType(), config);
+                case TypeTags.INTERSECTION_TAG ->
+                        fromStringWithType(string, ((IntersectionType) expType).getEffectiveType(), config);
+                default -> returnError(value, expType.toString());
+            };
+        } catch (NumberFormatException | ParseException e) {
             return returnError(value, expType.toString());
         }
     }
@@ -149,86 +158,121 @@ public class FromString {
         }
     }
 
-    private static Long stringToInt(String value) throws NumberFormatException {
-        return Long.parseLong(value);
+    private static Long stringToInt(String value, CsvConfig config) throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            return number.longValue();
+        }
+        throw new NumberFormatException();
     }
 
-    private static int stringToByte(String value) throws NumberFormatException {
-        int intValue = Integer.parseInt(value);
-        if (!isByteLiteral(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_BYTE, value);
+    private static int stringToByte(String value, CsvConfig config) throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            int intValue = parseNumberValue(value, config).intValue();
+            if (isByteLiteral(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToSigned8Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isSigned8LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_8, value);
+    private static long stringToSigned8Int(String value, CsvConfig config) throws NumberFormatException,
+            ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isSigned8LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToSigned16Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isSigned16LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_16, value);
+    private static long stringToSigned16Int(String value, CsvConfig config) throws NumberFormatException,
+            ParseException {
+
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isSigned16LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToSigned32Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isSigned32LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, PredefinedTypes.TYPE_INT_SIGNED_32, value);
+    private static long stringToSigned32Int(String value, CsvConfig config) throws NumberFormatException,
+            ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isSigned32LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToUnsigned8Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isUnsigned8LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE,
-                    PredefinedTypes.TYPE_INT_UNSIGNED_8, value);
+    private static long stringToUnsigned8Int(String value, CsvConfig config)
+            throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isUnsigned8LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToUnsigned16Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isUnsigned16LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
-                    PredefinedTypes.TYPE_INT_UNSIGNED_16, value);
+    private static long stringToUnsigned16Int(String value, CsvConfig config)
+            throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isUnsigned16LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
-    private static long stringToUnsigned32Int(String value) throws NumberFormatException {
-        long intValue = Long.parseLong(value);
-        if (!isUnsigned32LiteralValue(intValue)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
-                    PredefinedTypes.TYPE_INT_UNSIGNED_32, value);
+    private static long stringToUnsigned32Int(String value, CsvConfig config)
+            throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isIntegerValue(value, number)) {
+            long intValue = parseNumberValue(value, config).longValue();
+            if (isUnsigned32LiteralValue(intValue)) {
+                return intValue;
+            }
         }
-        return intValue;
+        throw new NumberFormatException();
     }
 
     private static BString stringToChar(String value) throws NumberFormatException {
-        if (!isCharLiteralValue(value)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST,
-                    PredefinedTypes.TYPE_STRING_CHAR, value);
+        if (isCharLiteralValue(value)) {
+            return StringUtils.fromString(value);
         }
-        return StringUtils.fromString(value);
+        throw new NumberFormatException();
     }
 
-    private static Double stringToFloat(String value) throws NumberFormatException {
-        if (hasFloatOrDecimalLiteralSuffix(value)) {
-            throw new NumberFormatException();
+    private static Double stringToFloat(String value, CsvConfig config) throws NumberFormatException, ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isDoubleValue(value, number)) {
+            return number.doubleValue();
         }
-        return Double.parseDouble(value);
+        throw new NumberFormatException();
     }
 
-    private static BDecimal stringToDecimal(String value) throws NumberFormatException {
-        return ValueCreator.createDecimalValue(value);
+    private static BDecimal stringToDecimal(String value, CsvConfig config) throws NumberFormatException,
+            ParseException {
+        Number number = parseNumberValue(value, config);
+        if (isDoubleValue(value, number)) {
+            BigDecimal decimalValue = BigDecimal.valueOf(number.doubleValue());
+            return ValueCreator.createDecimalValue(decimalValue);
+        }
+        throw new NumberFormatException();
     }
 
     private static Object stringToBoolean(String value) throws NumberFormatException {
@@ -271,23 +315,6 @@ public class FromString {
         return returnError(string.getValue(), expType.toString());
     }
 
-    private static boolean hasFloatOrDecimalLiteralSuffix(String value) {
-        int length = value.length();
-        if (length == 0) {
-            return false;
-        }
-
-        switch (value.charAt(length - 1)) {
-            case 'F':
-            case 'f':
-            case 'D':
-            case 'd':
-                return true;
-            default:
-                return false;
-        }
-    }
-
     private static boolean isByteLiteral(long longValue) {
         return (longValue >= BBYTE_MIN_VALUE && longValue <= BBYTE_MAX_VALUE);
     }
@@ -320,7 +347,21 @@ public class FromString {
         return value.codePoints().count() == 1;
     }
 
-    private static BError returnError(String string, String expType) {
-        return ErrorCreator.createError(StringUtils.fromString("Cannot convert to the exptype"));
+    private static boolean isIntegerValue(String value, Number number) {
+        return number instanceof Long && value.matches(intRegex);
+    }
+
+    private static boolean isDoubleValue(String value, Number number) {
+        return (number instanceof Double || number instanceof Long) && value.matches(doubleRegex);
+    }
+
+    private static BError returnError(String value, String expType) {
+        return ErrorCreator.createError(StringUtils
+                .fromString("Cannot convert " + value + " to the expected type: " + expType));
+    }
+
+    private static Number parseNumberValue(String numberString, CsvConfig config) throws ParseException {
+        NumberFormat numberFormat = NumberFormat.getInstance(getLocale(config));
+        return numberFormat.parse(numberString);
     }
 }

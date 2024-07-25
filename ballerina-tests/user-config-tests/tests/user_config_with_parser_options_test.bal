@@ -802,7 +802,7 @@ function testEscapeCharactersWithParserOptions() {
     test:assertEquals(cn2, [{"a\"": 1, "\tb\t\n": "2a\t", "c": "3b\n"}, {"a\"": "1c\n", "\tb\t\n": "/2/", "c": 3}, {"a\"": 1, "\tb\t\n": "2a\"", "c": 3}, {"a\"": "1a\\", "\tb\t\n": "2b\\\"", "c": 3}]);
 
     record {}[]|csv:Error cn3 = csv:parseStringToRecord(csvValue3, {header: 1});
-    test:assertEquals(cn3, [{"a": 1, "b": 2.0, "c": 3.0}, {"a": 1.0, "b": 2, "c": 3}, {"a": 1, "b": "2\"", "c": 3}, {"a": "1\\", "b": "2\\\"", "c": 3}]);
+    test:assertEquals(cn3, [{"a": 1, "b": "2\t", "c": "3\n"}, {"a": "1\n", "b": 2, "c": 3}, {"a": 1, "b": "2\"", "c": 3}, {"a": "1\\", "b": "2\\\"", "c": 3}]);
 
     anydata[][]|csv:Error cn_2 = csv:parseStringToList(csvValue1, {header: 1});
     test:assertEquals(cn_2, [[1, "2a\t", "3b\n"], ["1c\n", 2, 3], [1, "2a\"", 3], ["1a\\", "2b\\\"", 3]]);
@@ -811,7 +811,7 @@ function testEscapeCharactersWithParserOptions() {
     test:assertEquals(cn2_2, [[1, "2a\t", "3b\n"], ["1c\n", "/2/", 3], [1, "2a\"", 3], ["1a\\", "2b\\\"", 3]]);
 
     anydata[][]|csv:Error cn3_2 = csv:parseStringToList(csvValue3, {header: 1});
-    test:assertEquals(cn3_2, [[1, 2.0, 3.0], [1.0, 2, 3], [1, "2\"", 3], ["1\\", "2\\\"", 3]]);
+    test:assertEquals(cn3_2, [[1, "2\t", "3\n"], ["1\n", 2, 3], [1, "2\"", 3], ["1\\", "2\\\"", 3]]);
 }
 
 @test:Config
@@ -857,4 +857,34 @@ function testLineTerminatorWithParserOptions() {
 
     cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn2, [[1, "2\n3"]]);
+}
+
+@test:Config
+function testCSVLocale() {
+  record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
+
+  rec = csv:parseStringToRecord(string `
+                                         name, completed tasks, city
+                                         Alice, "1234", New York
+                                         Bob, "1,234", London
+                                         €123, "12,34", Berlin`, {header: 1, locale: "fr_FR"});
+  test:assertEquals(rec, [
+      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+  ]);
+}
+
+@test:Config
+function testCSVEncoding() returns error? {
+  record {}[]|csv:Error rec;
+
+    string csvStr = string `value
+                            Alice
+                            2πr
+                            €123`;
+    byte[] csvBytes = string:toBytes(csvStr);
+
+    rec = csv:parseBytesToRecord(csvBytes, {locale: "fr_FR", encoding: "ISO-8859-1"});
+    test:assertEquals((check rec)[0], {value: "Alice"});
 }
