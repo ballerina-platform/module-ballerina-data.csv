@@ -11,3 +11,6 @@ version = "@toml.version@"
 
 [platform.java17]
 graalvmCompatible = true
+
+[build-options]
+graalvmBuildOptions = "-H:IncludeLocales=en_US,fr_FR"
