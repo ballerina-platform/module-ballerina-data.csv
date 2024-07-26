@@ -129,7 +129,6 @@ task deleteDependencyTomlFiles {
     }
 }
 
-
 updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn "generatePomFileForMavenPublication"
@@ -138,8 +137,6 @@ build.dependsOn deleteDependencyTomlFiles
 build.dependsOn ":${packageName}-compiler-plugin:build"
 build.dependsOn deleteDependencyTomlFiles
 build.finalizedBy ":${packageName}-ballerina-tests:build"
-
-//build.finalizedBy ":${packageName}-ballerina-tests:ballerinaTest"
 
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-native:build"
