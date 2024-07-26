@@ -11,6 +11,3 @@ version = "0.1.0"
 
 [platform.java17]
 graalvmCompatible = true
-
-[build-options]
-graalvmBuildOptions = "-H:IncludeLocales=en_US,fr_FR"
