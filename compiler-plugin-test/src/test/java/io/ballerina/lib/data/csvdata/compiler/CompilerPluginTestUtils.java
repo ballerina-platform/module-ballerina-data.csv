@@ -29,6 +29,8 @@ import java.nio.file.Paths;
 
 /**
  * Utility functions related to compiler plugins tests.
+ *
+ * @since 0.1.0
  */
 public class CompilerPluginTestUtils {
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources")

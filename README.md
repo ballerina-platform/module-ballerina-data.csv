@@ -19,7 +19,7 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 
 ### Converting CSV string to a record array
 
-To convert an CSV document value to a record value, you can utilize the `parseStringToRecord` function provided by the library. The example below showcases the transformation of a CSV document into a record array.
+To convert a CSV string into a record value, you can use the `parseStringToRecord` function from the library. The following example demonstrates how to transform a CSV document into an array of records.
 
 ```ballerina
 import ballerina/data.csv;
