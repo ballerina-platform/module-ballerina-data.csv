@@ -30,6 +30,19 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "io"
+version = "1.6.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"}
+]
+modules = [
+	{org = "ballerina", packageName = "io", moduleName = "io"}
+]
+
+[[package]]
+org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
 scope = "testOnly"
@@ -71,6 +84,15 @@ scope = "testOnly"
 
 [[package]]
 org = "ballerina"
+name = "lang.value"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
 name = "test"
 version = "0.0.0"
 scope = "testOnly"
@@ -90,6 +112,7 @@ version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "csv_commons"},
 	{org = "ballerina", name = "data.csv"},
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "test"}
 ]
 modules = [

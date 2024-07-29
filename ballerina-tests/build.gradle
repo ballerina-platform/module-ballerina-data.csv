@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ plugins {
     id 'jacoco'
 }
 
-//apply plugin: 'java'
-
 import org.apache.tools.ant.taskdefs.condition.Os
 
 description = 'Ballerina - HTTP/WS Ballerina Tests'
@@ -32,7 +30,7 @@ def testCommonTomlFilePlaceHolder = new File("${project.rootDir}/build-config/re
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
 def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.data.*:ballerina.*"
-def testPackages = ["user-config-tests", "parse-string-array-types-tests", "type-compatible-tests", "unicode-tests", "constraint-validation-tests",
+def testPackages = ["user-config-tests", "type-compatible-tests", "parse-string-array-types-tests", "unicode-tests", "constraint-validation-tests",
                     "parse-list-types-tests", "parse-record-types-tests", "parse-string-record-types-tests", "union-type-tests"]
 def testCommonPackage = "csv-commons"
 
