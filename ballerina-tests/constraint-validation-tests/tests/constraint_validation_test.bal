@@ -37,6 +37,11 @@ function testConstraintWithRecords() returns error? {
                 3, cde`);
     test:assertEquals(cRec1, [{a: 4, b: "abc"}, {a: 3, b: "cde"}]);
 
+    ConstrainedRec[]|csv:Error cRec1_2 = csv:parseStringToRecord(string `a,b
+                4,abc
+                3, cde`, {enableConstraintValidation: false});
+    test:assertEquals(cRec1_2, [{a: 4, b: "abc"}, {a: 3, b: "cde"}]);
+
     cRec1 = csv:parseStringToRecord(string `a,b
                 4,abc
                 11, cde`);

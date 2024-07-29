@@ -16,7 +16,7 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.data {
+module io.ballerina.lib.data {
     requires io.ballerina.runtime;
     requires io.ballerina.lang.value;
     requires junit;
