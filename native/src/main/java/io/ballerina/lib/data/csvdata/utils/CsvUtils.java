@@ -281,14 +281,18 @@ public class CsvUtils {
             value = StringUtils.getStringValue(bString);
         }
         if (value instanceof String v) {
-            if ((nullValue == null) && (Constants.Values.NULL.equalsIgnoreCase(v)
-                    || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(v))) {
-                return true;
-            }
-            if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
-                return true;
-            }
-            return false;
+            return handleStringNullValue(nullValue, v, value);
+        }
+        return false;
+    }
+
+    private static boolean handleStringNullValue(Object nullValue, String v, Object value) {
+        if ((nullValue == null) && (Constants.Values.NULL.equalsIgnoreCase(v)
+                || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(v))) {
+            return true;
+        }
+        if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
+            return true;
         }
         return false;
     }
@@ -297,16 +301,11 @@ public class CsvUtils {
         if (lineTerminatorObj instanceof BArray array) {
             Object[] lineTerminators = array.getValues();
             for (Object lineTerminator: lineTerminators) {
-                if (lineTerminator != null && c == Constants.LineTerminator.LF) {
-                    String lineTerminatorString = lineTerminator.toString();
-                    if (isCarriageTokenPresent) {
-                        if (lineTerminatorString.equals(Constants.LineTerminator.CRLF)) {
-                            return true;
-                        }
-                        continue;
-                    }
-                    return true;
+                Optional<Boolean> value = handleLineTerminator(lineTerminator, c);
+                if (value.isEmpty()) {
+                    continue;
                 }
+                return value.get();
             }
             return false;
         }
@@ -324,6 +323,20 @@ public class CsvUtils {
             }
         }
         return false;
+    }
+
+    private static Optional<Boolean> handleLineTerminator(Object lineTerminator, char c) {
+        if (lineTerminator != null && c == Constants.LineTerminator.LF) {
+            String lineTerminatorString = lineTerminator.toString();
+            if (isCarriageTokenPresent) {
+                if (lineTerminatorString.equals(Constants.LineTerminator.CRLF)) {
+                    return Optional.of(true);
+                }
+                return Optional.empty();
+            }
+            return Optional.of(true);
+        }
+        return Optional.empty();
     }
 
     public static class SortConfigurations {

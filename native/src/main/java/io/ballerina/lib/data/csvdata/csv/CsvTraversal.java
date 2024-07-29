@@ -110,7 +110,7 @@ public final class CsvTraversal {
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
             headerFieldHierarchy.clear();
-            fields.clear();;
+            fields.clear();
             restType = null;
             fieldNames.clear();
             rootCsvNode = null;
@@ -128,7 +128,7 @@ public final class CsvTraversal {
             fieldHierarchy.clear();
             updatedRecordFieldNames.clear();
             headerFieldHierarchy.clear();
-            fields.clear();;
+            fields.clear();
             restType = null;
             fieldNames.clear();
             rootCsvNode = null;
@@ -155,15 +155,9 @@ public final class CsvTraversal {
             }
 
             if (referredType.getTag() != TypeTags.UNION_TAG) {
-                if (referredType.getTag() == TypeTags.ARRAY_TAG) {
-                    Type arrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
-                    if (arrayElementType.getTag() == TypeTags.INTERSECTION_TAG) {
-                        Optional<Type> mutableType = CsvUtils.getMutableType((IntersectionType) arrayElementType);
-                        if (mutableType.isPresent()) {
-                            return CsvCreator.constructReadOnlyValue(traverseCsv(csv,
-                                    config, TypeCreator.createArrayType(mutableType.get())));
-                        }
-                    }
+                Optional<Object> intersectionValue = handleNonUnionIntersection(referredType, csv, config);
+                if (intersectionValue.isPresent()) {
+                    return intersectionValue.get();
                 }
                 int expectedArraySize = ((ArrayType) referredType).getSize();
                 setRootCsvNodeForNonUnionArrays(referredType, type);
@@ -173,6 +167,20 @@ public final class CsvTraversal {
                 traverseCsvWithUnionExpectedType(referredType, type, sourceArraySize, csv);
             }
             return rootCsvNode;
+        }
+
+        private Optional<Object> handleNonUnionIntersection(Type referredType, BArray csv, CsvConfig config) {
+            if (referredType.getTag() == TypeTags.ARRAY_TAG) {
+                Type arrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
+                if (arrayElementType.getTag() == TypeTags.INTERSECTION_TAG) {
+                    Optional<Type> mutableType = CsvUtils.getMutableType((IntersectionType) arrayElementType);
+                    if (mutableType.isPresent()) {
+                        return Optional.of(CsvCreator.constructReadOnlyValue(traverseCsv(csv,
+                                config, TypeCreator.createArrayType(mutableType.get()))));
+                    }
+                }
+            }
+            return Optional.empty();
         }
 
         private void traverseCsvWithUnionExpectedType(Type referredType, Type type, int sourceArraySize,
@@ -324,7 +332,7 @@ public final class CsvTraversal {
                         isCompatible = true;
                         break;
                     } catch (Exception e) {
-                        int a = 1;
+                        // ignore
                     }
                 }
                 if (!isCompatible) {
@@ -405,8 +413,7 @@ public final class CsvTraversal {
                 }
                 Type memberType = getArrayOrTupleMemberType(type, index);
                 if (memberType != null) {
-                    addValuesToArrayType(csvElement.get(i), memberType, index,
-                            currentCsvNode, config);
+                    addValuesToArrayType(csvElement.get(i), memberType, index, currentCsvNode);
                 }
                 index++;
             }
@@ -447,8 +454,7 @@ public final class CsvTraversal {
                 }
                 Type memberType = getArrayOrTupleMemberType(type, index);
                 if (memberType != null) {
-                    addValuesToArrayType(v, memberType, index,
-                            currentCsvNode, config);
+                    addValuesToArrayType(v, memberType, index, currentCsvNode);
                 }
                 index++;
             }
@@ -526,7 +532,8 @@ public final class CsvTraversal {
                     Field field = this.headerFieldHierarchy.remove(header);
 
                     if (field != null) {
-                        if (!config.stringConversion && type.getTag() != field.getFieldType().getTag()) {
+                        if (!config.stringConversion && type != null
+                                && type.getTag() != field.getFieldType().getTag()) {
                             return false;
                         }
                         continue;
@@ -590,7 +597,7 @@ public final class CsvTraversal {
                     fieldType = TypeUtils.getReferredType(currentField.getFieldType());
                 } else {
                     addFieldInMapType(key);
-                    fieldType = ((MapType) expectedType).getConstrainedType();;
+                    fieldType = ((MapType) expectedType).getConstrainedType();
                 }
                 addCurrentFieldValue(fieldType, csvElement.get(i - 1), key, mappingType);
             }
@@ -736,8 +743,7 @@ public final class CsvTraversal {
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE_FOR_FIELD, recValue, key);
         }
 
-        public void addValuesToArrayType(Object arrayValue, Type type, int index,
-                                                 Object currentCsvNode, CsvConfig config) {
+        public void addValuesToArrayType(Object arrayValue, Type type, int index, Object currentCsvNode) {
             Object value = getFieldValue(type, arrayValue, false);
             boolean isArrayType = type instanceof ArrayType;
             if (!(value instanceof CsvUtils.UnMappedValue)) {
@@ -765,11 +771,8 @@ public final class CsvTraversal {
         }
 
         private Type getSourceElementTypeForTupleAndArrays(BArray csv) {
-            List<Type> memberTypes = new ArrayList<>();
             if (csv.getType() instanceof TupleType tupleType) {
-                for (Type memberType: tupleType.getTupleTypes()) {
-                    memberTypes.add(memberType);
-                }
+                List<Type> memberTypes = new ArrayList<>(tupleType.getTupleTypes());
                 return TypeCreator.createUnionType(memberTypes);
             }
             return csv.getElementType();

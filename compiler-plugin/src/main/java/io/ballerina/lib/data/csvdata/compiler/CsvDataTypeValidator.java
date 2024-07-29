@@ -285,8 +285,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         Location pos = location.orElseGet(() -> currentLocation);
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(diagnosticsCodes.getCode(),
                 diagnosticsCodes.getMessage(), diagnosticsCodes.getSeverity());
-        DiagnosticInfo posDiagnosticInfo = allDiagnosticInfo.get(pos);
-        if (posDiagnosticInfo != null && posDiagnosticInfo.equals(diagnosticInfo)) {
+        if (pos == null || (allDiagnosticInfo.containsKey(pos) && allDiagnosticInfo.get(pos).equals(diagnosticInfo))) {
             return;
         }
         allDiagnosticInfo.put(pos, diagnosticInfo);
@@ -296,6 +295,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     private void processModuleVariableDeclarationNode(ModuleVariableDeclarationNode moduleVariableDeclarationNode,
                                                       SyntaxNodeAnalysisContext ctx) {
         Optional<ExpressionNode> initializer = moduleVariableDeclarationNode.initializer();
+        currentLocation = moduleVariableDeclarationNode.typedBindingPattern().typeDescriptor().location();
         if (initializer.isEmpty() || !isParseFunctionOfStringSource(initializer.get())) {
             return;
         }
@@ -306,6 +306,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private void processTypeDefinitionNode(TypeDefinitionNode typeDefinitionNode, SyntaxNodeAnalysisContext ctx) {
         Node typeDescriptor = typeDefinitionNode.typeDescriptor();
+        currentLocation = typeDefinitionNode.typeDescriptor().location();
         if (typeDescriptor.kind() != SyntaxKind.RECORD_TYPE_DESC) {
             return;
         }

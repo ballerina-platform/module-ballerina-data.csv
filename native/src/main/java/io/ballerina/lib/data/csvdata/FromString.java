@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.WeakHashMap;
 
 /**
  * Native implementation of data:fromStringWithType(string).
@@ -52,25 +53,7 @@ import java.util.Locale;
  * @since 0.1.0
  */
 public final class FromString {
-    private static String intRegex = "^[-+]?[0-9]+$";
-    private static String doubleRegex = "^[-+]?[0-9]+(\\.[0-9]*)?(e[+-]?[0-9]+)?$";
-
-    private FromString() {
-    }
-
-    private static Locale getLocale(CsvConfig config) {
-        Locale locale = CsvUtils.createLocaleFromString(config.locale);
-        DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
-        char decimalSeparator = dfs.getDecimalSeparator();
-        char minusSign = dfs.getMinusSign();
-        char zeroDigit = dfs.getZeroDigit();
-        String exponentSeparator = dfs.getExponentSeparator();
-        intRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+$";
-        doubleRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+(" +
-                (decimalSeparator == '.' ? "\\." : decimalSeparator)
-                + "[" + zeroDigit + "-9]*)?(" + exponentSeparator + "[+-]?[" + zeroDigit + "-9]+)?$";
-        return locale;
-    }
+    private static WeakHashMap<String, LocaleInfo> localeAttributes = new WeakHashMap<>();
 
     private static final List<Integer> TYPE_PRIORITY_ORDER = List.of(
             TypeTags.INT_TAG,
@@ -102,6 +85,9 @@ public final class FromString {
     public static final Long UNSIGNED32_MAX_VALUE = 4294967295L;
     public static final Integer UNSIGNED16_MAX_VALUE = 65535;
     public static final Integer UNSIGNED8_MAX_VALUE = 255;
+
+    private FromString() {
+    }
 
     public static Object fromStringWithType(BString string, Type expType, CsvConfig config) {
         String value = string.getValue();
@@ -155,7 +141,7 @@ public final class FromString {
 
     private static Long stringToInt(String value, CsvConfig config) throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             return number.longValue();
         }
         throw new NumberFormatException();
@@ -163,7 +149,7 @@ public final class FromString {
 
     private static int stringToByte(String value, CsvConfig config) throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             int intValue = parseNumberValue(value, config).intValue();
             if (isByteLiteral(intValue)) {
                 return intValue;
@@ -175,7 +161,7 @@ public final class FromString {
     private static long stringToSigned8Int(String value, CsvConfig config) throws NumberFormatException,
             ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isSigned8LiteralValue(intValue)) {
                 return intValue;
@@ -188,7 +174,7 @@ public final class FromString {
             ParseException {
 
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isSigned16LiteralValue(intValue)) {
                 return intValue;
@@ -200,7 +186,7 @@ public final class FromString {
     private static long stringToSigned32Int(String value, CsvConfig config) throws NumberFormatException,
             ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isSigned32LiteralValue(intValue)) {
                 return intValue;
@@ -212,7 +198,7 @@ public final class FromString {
     private static long stringToUnsigned8Int(String value, CsvConfig config)
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isUnsigned8LiteralValue(intValue)) {
                 return intValue;
@@ -224,7 +210,7 @@ public final class FromString {
     private static long stringToUnsigned16Int(String value, CsvConfig config)
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isUnsigned16LiteralValue(intValue)) {
                 return intValue;
@@ -236,7 +222,7 @@ public final class FromString {
     private static long stringToUnsigned32Int(String value, CsvConfig config)
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isIntegerValue(value, number)) {
+        if (isIntegerValue(value, number, config.locale)) {
             long intValue = parseNumberValue(value, config).longValue();
             if (isUnsigned32LiteralValue(intValue)) {
                 return intValue;
@@ -254,7 +240,7 @@ public final class FromString {
 
     private static Double stringToFloat(String value, CsvConfig config) throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
-        if (isDoubleValue(value, number)) {
+        if (isDoubleValue(value, number, config.locale)) {
             return number.doubleValue();
         }
         throw new NumberFormatException();
@@ -263,7 +249,7 @@ public final class FromString {
     private static BDecimal stringToDecimal(String value, CsvConfig config) throws NumberFormatException,
             ParseException {
         Number number = parseNumberValue(value, config);
-        if (isDoubleValue(value, number)) {
+        if (isDoubleValue(value, number, config.locale)) {
             BigDecimal decimalValue = BigDecimal.valueOf(number.doubleValue());
             return ValueCreator.createDecimalValue(decimalValue);
         }
@@ -342,12 +328,13 @@ public final class FromString {
         return value.codePoints().count() == 1;
     }
 
-    private static boolean isIntegerValue(String value, Number number) {
-        return number instanceof Long && value.matches(intRegex);
+    private static boolean isIntegerValue(String value, Number number, String localeStr) {
+        return number instanceof Long && value.matches(getLocale(localeStr).intRegex());
     }
 
-    private static boolean isDoubleValue(String value, Number number) {
-        return (number instanceof Double || number instanceof Long) && value.matches(doubleRegex);
+    private static boolean isDoubleValue(String value, Number number, String localeStr) {
+        return (number instanceof Double || number instanceof Long)
+                && value.matches(getLocale(localeStr).doubleRegex());
     }
 
     private static BError returnError(String value, String expType) {
@@ -356,7 +343,31 @@ public final class FromString {
     }
 
     private static Number parseNumberValue(String numberString, CsvConfig config) throws ParseException {
-        NumberFormat numberFormat = NumberFormat.getInstance(getLocale(config));
+        NumberFormat numberFormat = NumberFormat.getInstance(getLocale(config.locale).locale());
         return numberFormat.parse(numberString);
+    }
+
+    private static LocaleInfo getLocale(String localeStr) {
+        if (!localeAttributes.containsKey(localeStr)) {
+            localeAttributes.put(localeStr, computeLocaleIfAbsent(localeStr));
+        }
+        return localeAttributes.get(localeStr);
+    }
+
+    private static LocaleInfo computeLocaleIfAbsent(String localeStr) {
+        Locale locale = CsvUtils.createLocaleFromString(localeStr);
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
+        char decimalSeparator = dfs.getDecimalSeparator();
+        char minusSign = dfs.getMinusSign();
+        char zeroDigit = dfs.getZeroDigit();
+        String exponentSeparator = dfs.getExponentSeparator();
+        String intRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+$";
+        String doubleRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+(" +
+                (decimalSeparator == '.' ? "\\." : decimalSeparator)
+                + "[" + zeroDigit + "-9]*)?(" + exponentSeparator + "[+-]?[" + zeroDigit + "-9]+)?$";
+        return new LocaleInfo(locale, intRegex, doubleRegex);
+    }
+
+    private record LocaleInfo(Locale locale, String intRegex, String doubleRegex) {
     }
 }

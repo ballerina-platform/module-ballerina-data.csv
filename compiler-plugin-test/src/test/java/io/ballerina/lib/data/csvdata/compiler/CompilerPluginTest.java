@@ -67,4 +67,44 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 1);
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
     }
+
+    @Test
+    public void testInvalidProgram() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_3").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 1);
+    }
+
+    @Test
+    public void testModuleLevelInvalidExpectedUnionType() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_4").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 10);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+    }
+
+    @Test
+    public void testEmptyProject() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_5").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 0);
+    }
 }

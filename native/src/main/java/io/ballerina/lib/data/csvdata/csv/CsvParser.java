@@ -311,9 +311,7 @@ public final class CsvParser {
         }
 
         private void  addFieldNamesForNonHeaderState() {
-            for (Map.Entry<String, Field> entry: this.fieldHierarchy.entrySet()) {
-                this.fieldNames.put(entry.getKey(), entry.getValue());
-            }
+            this.fieldNames.putAll(this.fieldHierarchy);
         }
 
         private void append(char ch) {
@@ -427,9 +425,6 @@ public final class CsvParser {
                     }
                     break;
                 }
-                if (state == null) {
-                    state = this;
-                }
                 sm.index = i + 1;
                 return state;
             }
@@ -454,7 +449,7 @@ public final class CsvParser {
         }
 
         private static void finalizeHeaders(StateMachine sm) throws CsvParserException {
-            if (sm.headers.size() == 0) {
+            if (sm.headers.isEmpty()) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.HEADER_CANNOT_BE_EMPTY);
             }
             Type expType = sm.expectedArrayElementType;
