@@ -1,6 +1,6 @@
 [plugin]
 id = "constraint-compiler-plugin"
-class = "compiler.io.ballerina.lib.data.csvdata.CsvDataCompilerPlugin"
+class = "io.ballerina.lib.data.csvdata.compiler.CsvDataCompilerPlugin"
 
 [[dependency]]
 path = "../compiler-plugin/build/libs/data.csv-compiler-plugin-0.1.0-SNAPSHOT.jar"
