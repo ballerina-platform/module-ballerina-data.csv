@@ -76,13 +76,15 @@ public class CsvParser {
     private static final char EOF = (char) -1;
     private static final char NEWLINE = 0x000A;
 
-
-    private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
-            = ThreadLocal.withInitial(StateMachine::new);
+    // TODO: Add this implementation after creating the object pool implementation
+//    private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
+//            = ThreadLocal.withInitial(StateMachine::new);
 
     public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
-        StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
+        // TODO: Add this implementation after creating the object pool implementation
+//        StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
+        StateMachine sm = new StateMachine();
         try {
             Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
