@@ -1,11 +1,10 @@
-import ballerina/io;
 import ballerina/data.csv;
 
-public function main() {
-    test();
-}
-
 type A [[int, string], [int, string]];
+
+public function main() returns error? {
+    check test();
+}
 
 public function test() returns error? {
     stream<byte[], error?> s = (<byte[][]> [[1, 2, 3, 4, 5]]).toStream();
