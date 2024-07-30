@@ -19,6 +19,36 @@ import ballerina/data.csv;
 import ballerina/test;
 
 @test:Config
+function testCSVLocale() {
+  record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
+
+  rec = csv:parseStringToRecord(string `
+                                         name, completed tasks, city
+                                         Alice, "1234", New York
+                                         Bob, "1,234", London
+                                         €123, "12,34", Berlin`, {header: 1, locale: "fr_FR"});
+  test:assertEquals(rec, [
+      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+  ]);
+}
+
+@test:Config
+function testCSVEncoding() returns error? {
+  record {}[]|csv:Error rec;
+
+    string csvStr = string `value
+                            Alice
+                            2πr
+                            €123`;
+    byte[] csvBytes = string:toBytes(csvStr);
+
+    rec = csv:parseBytesToRecord(csvBytes, {locale: "fr_FR", encoding: "ISO-8859-1"});
+    test:assertEquals((check rec)[0], {value: "Alice"});
+}
+
+@test:Config {dependsOn: [testCSVLocale]}
 function testFromCsvStringWithParserOptions() {
     [int, string, boolean, decimal, float, string][]|csv:Error csv1op3 = csv:parseStringToList(csvStringData1, option3);
     test:assertEquals(csv1op3, [
@@ -79,7 +109,7 @@ function testFromCsvStringWithParserOptions() {
     ]);
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testFromCsvStringWithHeaderLessParserOptions() {
     [int, string, boolean, decimal, float, ()][]|csv:Error csv1op6 = csv:parseStringToList(csvStringData1, option6);
     test:assertTrue(csv1op6 is csv:Error);
@@ -140,7 +170,7 @@ function testFromCsvStringWithHeaderLessParserOptions() {
     ]);
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testHeaderOption() {
     record {}[]|csv:Error csv2cop1 = csv:parseStringToRecord(csvStringData2, {header: 4});
     test:assertEquals(csv2cop1, [
@@ -166,7 +196,7 @@ function testHeaderOption() {
     test:assertEquals((<error>csv1cop5).message(), "The provided header row is empty");
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testNullConfigOption() {
     string csvValue1 = string `a
                                 ()`;
@@ -235,7 +265,7 @@ function testNullConfigOption() {
     test:assertEquals((<error>cn).message(), common:generateErrorMessageForInvalidCast("()", "()"));
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testCommentConfigOption() {
     string csvValue1 = string `a
                                 1`;
@@ -297,7 +327,7 @@ function testCommentConfigOption() {
     test:assertEquals(cn, [{a: 1}]);
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testCommentConfigOption2() {
     string csvValue1 = string `a
                                 1`;
@@ -377,7 +407,7 @@ function testCommentConfigOption2() {
     test:assertEquals((<error>cn2).message(), common:generateErrorMessageForMissingRequiredField("c"));
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testSkipLineParserOption() {
     [int, string, boolean, decimal, float, ()][]|csv:Error csv1cp = csv:parseStringToList(csvStringData1, {skipLines: [], header: 1});
     test:assertEquals(csv1cp, [
@@ -478,7 +508,7 @@ function testSkipLineParserOption() {
     ]);
 }
 
-@test:Config
+@test:Config {dependsOn: [testCSVLocale]}
 function testCustomHeaderOption() {
     anydata[][]|csv:Error bm1ba = csv:parseRecordAsListType([bm1, bm1], ["b1", "b2"], {});
     test:assertEquals(bm1ba, [
@@ -873,34 +903,4 @@ function testLineTerminatorWithParserOptions() {
 
     cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
     test:assertEquals(cn2, [[1, "2\n3"]]);
-}
-
-@test:Config
-function testCSVLocale() {
-  record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
-
-  rec = csv:parseStringToRecord(string `
-                                         name, completed tasks, city
-                                         Alice, "1234", New York
-                                         Bob, "1,234", London
-                                         €123, "12,34", Berlin`, {header: 1, locale: "fr_FR"});
-  test:assertEquals(rec, [
-      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
-      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
-      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
-  ]);
-}
-
-@test:Config
-function testCSVEncoding() returns error? {
-  record {}[]|csv:Error rec;
-
-    string csvStr = string `value
-                            Alice
-                            2πr
-                            €123`;
-    byte[] csvBytes = string:toBytes(csvStr);
-
-    rec = csv:parseBytesToRecord(csvBytes, {locale: "fr_FR", encoding: "ISO-8859-1"});
-    test:assertEquals((check rec)[0], {value: "Alice"});
 }
