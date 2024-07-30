@@ -16,7 +16,7 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.csvdata.compiler {
+module io.ballerina.lib.csvdata.compiler {
     requires io.ballerina.lang;
     requires io.ballerina.tools.api;
     requires io.ballerina.parser;
