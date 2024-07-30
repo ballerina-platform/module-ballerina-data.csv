@@ -152,7 +152,7 @@ public class CsvUtils {
                 return true;
             }
         }
-        if (Boolean.class.isInstance(csv)) {
+        if (csv instanceof Boolean) {
             if (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
@@ -170,8 +170,7 @@ public class CsvUtils {
     }
 
     public static int getTheActualExpectedType(Type type) {
-        if (type instanceof TupleType) {
-            TupleType tupleType = (TupleType) type;
+        if (type instanceof TupleType tupleType) {
             if (tupleType.getRestType() != null) {
                 return -1;
             }
