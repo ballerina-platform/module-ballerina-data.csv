@@ -115,7 +115,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         for (ImportDeclarationNode importDeclarationNode : rootNode.imports()) {
             Optional<Symbol> symbol = semanticModel.symbol(importDeclarationNode);
             symbol.filter(moduleSymbol -> moduleSymbol.kind() == SymbolKind.MODULE)
-                    .filter(moduleSymbol -> isCsvdataImport((ModuleSymbol) moduleSymbol))
+                    .filter(moduleSymbol -> isCsvDataImport((ModuleSymbol) moduleSymbol))
                     .ifPresent(moduleSymbol -> {
                         modulePrefix = ((ModuleSymbol) moduleSymbol).id().modulePrefix();
                     });
@@ -246,22 +246,6 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
     }
 
-    private boolean isSupportedExpectedType(TypeSymbol typeSymbol) {
-        TypeDescKind kind = typeSymbol.typeKind();
-        if (kind == TypeDescKind.TYPE_REFERENCE) {
-            kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();
-        }
-
-        switch (kind) {
-            case ARRAY, UNION, INTERSECTION -> {
-                return true;
-            }
-            default -> {
-                return false;
-            }
-        }
-    }
-
     public static TypeSymbol getRawType(TypeSymbol typeDescriptor) {
         if (typeDescriptor.typeKind() == TypeDescKind.INTERSECTION) {
             return getRawType(((IntersectionTypeSymbol) typeDescriptor).effectiveTypeDescriptor());
@@ -364,7 +348,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         return moduleName.orElse("");
     }
 
-    private boolean isCsvdataImport(ModuleSymbol moduleSymbol) {
+    private boolean isCsvDataImport(ModuleSymbol moduleSymbol) {
         ModuleID moduleId = moduleSymbol.id();
         return Constants.BALLERINA.equals(moduleId.orgName())
                 && Constants.DATA_CSVDATA.equals(moduleId.moduleName());

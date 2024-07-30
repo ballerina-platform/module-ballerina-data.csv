@@ -1,0 +1,5 @@
+[package]
+org = "admin"
+name = "sample_package_6"
+version = "0.1.0"
+distribution = "2201.9.0"
