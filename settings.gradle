@@ -61,5 +61,3 @@ gradleEnterprise {
         termsOfServiceAgree = 'yes'
     }
 }
-include 'ballerina-tests'
-

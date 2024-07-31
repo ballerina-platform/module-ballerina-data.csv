@@ -19,6 +19,20 @@ import ballerina/data.csv;
 import ballerina/test;
 
 @test:Config
+function testCSVEncoding() returns error? {
+  record {}[]|csv:Error rec;
+
+    string csvStr = string `value
+                            Alice
+                            2πr
+                            €123`;
+    byte[] csvBytes = string:toBytes(csvStr);
+
+    rec = csv:parseBytesToRecord(csvBytes, {locale: "fr_FR", encoding: "ISO-8859-1"});
+    test:assertEquals((check rec)[0], {value: "Alice"});
+}
+
+@test:Config
 function testCSVLocale() {
   record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
 
@@ -32,20 +46,28 @@ function testCSVLocale() {
       {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
       {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
   ]);
-}
 
-@test:Config
-function testCSVEncoding() returns error? {
-  record {}[]|csv:Error rec;
+  rec = csv:parseStringToRecord(string `
+                                           name, completed tasks, city
+                                           Alice, "1234", New York
+                                           Bob, "1.234", London
+                                           €123, "12.34", Berlin`, {header: 1, locale: "en"});
+    test:assertEquals(rec, [
+        {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+        {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+        {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+    ]);
 
-    string csvStr = string `value
-                            Alice
-                            2πr
-                            €123`;
-    byte[] csvBytes = string:toBytes(csvStr);
-
-    rec = csv:parseBytesToRecord(csvBytes, {locale: "fr_FR", encoding: "ISO-8859-1"});
-    test:assertEquals((check rec)[0], {value: "Alice"});
+  rec = csv:parseStringToRecord(string `
+                                           name, completed tasks, city
+                                           Alice, "1234", New York
+                                           Bob, "1.234", London
+                                           €123, "12.34", Berlin`, {header: 1, locale: "en_US_WIN"});
+  test:assertEquals(rec, [
+      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+  ]);
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
@@ -902,5 +924,8 @@ function testLineTerminatorWithParserOptions() {
     test:assertEquals(cn2, [[1, "2\n3"]]);
 
     cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: [csv:CRLF, csv:LF]});
+    test:assertEquals(cn2, [[1, "2\n3"]]);
+
+    cn2 = csv:parseStringToList(csvValue, {header: 0, lineTerminator: csv:LF});
     test:assertEquals(cn2, [[1, "2\n3"]]);
 }

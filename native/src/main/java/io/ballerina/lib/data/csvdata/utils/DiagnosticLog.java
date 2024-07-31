@@ -31,11 +31,14 @@ import java.util.ResourceBundle;
  *
  * @since 0.1.0
  */
-public class DiagnosticLog {
+public final class DiagnosticLog {
     private static final String ERROR_PREFIX = "error";
     private static final String CSV_CONVERSION_ERROR = "Error";
     private static final String UNSUPPORTED_OPERATION_ERROR = "Error";
     private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("error", Locale.getDefault());
+
+    private DiagnosticLog() {
+    }
 
     public static BError error(DiagnosticErrorCode code, Object... args) {
         String msg = formatMessage(code, args);
