@@ -4,7 +4,10 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 
-public class DataUtils {
+public final class DataUtils {
+    private DataUtils() {
+    }
+
     public static Object validateConstraints(Object convertedValue, BTypedesc typed, boolean requireValidation) {
         if (!requireValidation) {
             return convertedValue;

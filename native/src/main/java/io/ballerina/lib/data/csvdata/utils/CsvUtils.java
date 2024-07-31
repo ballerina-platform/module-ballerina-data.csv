@@ -338,16 +338,6 @@ public class CsvUtils {
         return Optional.empty();
     }
 
-    public static class SortConfigurations {
-        protected Object columnName;
-        protected Object sortOrder;
-
-        public SortConfigurations(Object columnName, Object sortOrder) {
-            this.columnName = columnName;
-            this.sortOrder = sortOrder;
-        }
-    }
-
     public static class UnMappedValue {
         private static UnMappedValue value = null;
         public static UnMappedValue createUnMappedValue() {

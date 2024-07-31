@@ -3,8 +3,8 @@ package io.ballerina.lib.data.csvdata.utils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
-public class Constants {
-    public static class ConfigConstants {
+public final class Constants {
+    public final class ConfigConstants {
         public static final BString DELIMITER = StringUtils.fromString("delimiter");
         public static final BString TEXT_ENCLOSURE = StringUtils.fromString("textEnclosure");
         public static final BString HEADER = StringUtils.fromString("header");
@@ -22,20 +22,29 @@ public class Constants {
         public static final BString STRING_CONVERSION = StringUtils.fromString("stringConversion");
         public static final BString ENABLE_CONSTRAINT_VALIDATION = StringUtils.
                 fromString("enableConstraintValidation");
+
+        private ConfigConstants() {
+        }
     }
 
-    public static class Values {
+    public final class Values {
         public static final String NULL = "null";
         public static final String BALLERINA_NULL = "()";
+
+        private Values() {
+        }
     }
 
-    public static class LineTerminator {
+    public final class LineTerminator {
         public static final char LF = '\n';
         public static final char CR = '\r';
         public static final String CRLF = "\r\n";
+
+        private LineTerminator() {
+        }
     }
 
-    public static class EscapeChar {
+    public final class EscapeChar {
         public static final char DOUBLE_QUOTES_CHAR = '"';
         public static final char BACKSLASH_CHAR = '\\';
         public static final char SLASH_CHAR = '/';
@@ -45,6 +54,9 @@ public class Constants {
         public static final char CARRIAGE_RETURN_CHAR = 'r';
         public static final char TAB_CHAR = 't';
         public static final char UNICODE_START_CHAR = 'u';
+
+        private EscapeChar() {
+        }
     }
 
     public static final String SKIP_LINE_RANGE_SEP = "-";
@@ -52,4 +64,7 @@ public class Constants {
     public static final String NAME = "Name";
     public static final BString VALUE = StringUtils.fromString("value");
     public static final String UNDERSCORE = "_";
+
+    private Constants() {
+    }
 }

@@ -29,7 +29,6 @@ import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Field;
-import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MapType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
@@ -42,7 +41,6 @@ import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.langlib.value.CloneReadOnly;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static io.ballerina.lib.data.csvdata.utils.CsvUtils.getUpdatedHeaders;
 
@@ -57,12 +55,6 @@ public final class CsvCreator {
 
     static Object initRowValue(Type expectedType) {
         expectedType = TypeUtils.getReferredType(expectedType);
-        if (expectedType.getTag() == TypeTags.INTERSECTION_TAG) {
-            Optional<Type> mutableType = CsvUtils.getMutableType((IntersectionType) expectedType);
-            if (!mutableType.isEmpty()) {
-                expectedType = mutableType.get();
-            }
-        }
 
         switch (expectedType.getTag()) {
             case TypeTags.RECORD_TYPE_TAG:
@@ -138,10 +130,6 @@ public final class CsvCreator {
     }
 
     public static void addCustomHeadersIfNotNull(CsvParser.StateMachine sm, Object customHeader) {
-        if (customHeader == null) {
-            return;
-        }
-
         BArray customHeaders = (BArray) customHeader;
         for (int i = 0; i < customHeaders.size(); i++) {
             String header = StringUtils.getStringValue(customHeaders.get(i));

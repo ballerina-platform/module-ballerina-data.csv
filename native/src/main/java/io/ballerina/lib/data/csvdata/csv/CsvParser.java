@@ -677,7 +677,7 @@ public final class CsvParser {
         }
 
         private static void addRowValue(StateMachine sm, boolean trim) throws CsvParserException {
-            Type type;
+            Type type = null;
             Field currentField = null;
             sm.isValueStart = false;
             Type exptype = sm.expectedArrayElementType;
@@ -695,8 +695,6 @@ public final class CsvParser {
                 type = getExpectedRowTypeOfArray(sm, arrayType);
             } else if (exptype instanceof TupleType tupleType) {
                 type = getExpectedRowTypeOfTuple(sm, tupleType);
-            } else {
-                throw new CsvParserException("Unexpected expected type");
             }
 
             if (type != null) {
@@ -898,9 +896,6 @@ public final class CsvParser {
                         continue;
                     }
                     break;
-                }
-                if (state == null) {
-                    state = this;
                 }
                 sm.index = i + 1;
                 return state;

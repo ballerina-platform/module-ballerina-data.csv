@@ -229,16 +229,6 @@ public final class CsvTraversal {
                     traverseCsvArrayMembersWithUnionAsCsvElementType(sourceArraySize, csv,
                             (UnionType) expectedArrayElementType, type);
                     break;
-                case TypeTags.INTERSECTION_TAG:
-                    for (Type constituentType : ((IntersectionType) expectedArrayElementType).getConstituentTypes()) {
-                        if (constituentType.getTag() == TypeTags.READONLY_TAG) {
-                            continue;
-                        }
-                        config.stringConversion = true;
-                        CsvCreator.constructReadOnlyValue(this.traverseCsv(
-                                csv, config, TypeCreator.createArrayType(constituentType)));
-                    }
-                    break;
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
             }
@@ -433,17 +423,8 @@ public final class CsvTraversal {
                 }
             } else if (config.customHeader == null) {
                 keys = map.getKeys();
-            } else {
-                if (this.headers == null) {
-                    this.headers = CsvUtils.createHeaders(new String[size], config);
-                }
-                if (this.headers.length != size) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
-                }
-                for (int i = 0; i < size; i++) {
-                    keys[i] = StringUtils.fromString(this.headers[i]);
-                }
             }
+
             for (BString key: keys) {
                 if (!map.containsKey(key)) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER, key);

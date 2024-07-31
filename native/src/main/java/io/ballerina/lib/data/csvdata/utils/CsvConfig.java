@@ -35,14 +35,6 @@ public class CsvConfig {
         this.locale = config.locale;
     }
 
-    private CsvConfig(Object skipLines, boolean nilAsOptionalField,
-                      boolean absentAsNilableType, boolean allowDataProjection) {
-        this.skipLines = skipLines;
-        this.nilAsOptionalField = nilAsOptionalField;
-        this.absentAsNilableType = absentAsNilableType;
-        this.allowDataProjection = allowDataProjection;
-    }
-
     private CsvConfig(boolean enableConstraintValidation, Object skipLines, boolean nilAsOptionalField,
                       boolean absentAsNilableType, boolean allowDataProjection) {
         this.skipLines = skipLines;
