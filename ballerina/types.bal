@@ -19,8 +19,6 @@ public type Options record {
    # Allows data projection with specific settings.
    #
    # This field can be either a record or a boolean. If it's a record, it contains the following fields:
-   # - `nilAsOptionalField`: If `true`, nil values will be considered as optional fields in the projection.
-   # - `absentAsNilableType`: If `true`, absent fields will be considered as nilable types in the projection.
    # If it's set to `false`, data projection is not allowed.
    record {
        # If `true`, nil values will be considered as optional fields in the projection.
