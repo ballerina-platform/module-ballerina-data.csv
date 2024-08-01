@@ -1,6 +1,6 @@
 {
   "bundles":[{
-    "name":"error",
+    "name":"csv_error",
     "locales":[""]
   }]
 }
