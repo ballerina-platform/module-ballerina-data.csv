@@ -24,11 +24,11 @@ csv:ParseOption option4 = {nilValue: "", header: 4, skipLines: "1-5"};
 csv:ParseOption option5 = {nilValue: "", header: 4, skipLines: "1-1"};
 csv:ParseOption option6 = {nilValue: "()", header: false, skipLines: [1, 2]};
 
-csv:parseToRecordOption ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
-csv:parseToRecordOption ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
-csv:parseToRecordOption ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
-csv:parseToRecordOption ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
-csv:parseToRecordOption ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
+csv:ParseToRecordOption ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
+csv:ParseToRecordOption ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
+csv:ParseToRecordOption ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
+csv:ParseToRecordOption ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
+csv:ParseToRecordOption ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
 
 // Invalid parser options
 csv:ParseOption invalidParserOptions1 = {header: 4};
