@@ -258,7 +258,7 @@ public class CsvUtils {
     public static long[] getSkipDataRows(Object skipLines) {
         long[] skipDataRows;
         if (skipLines == null) {
-            return new long[]{};
+            return EMPTY_LONG_ARRAY;
         }
         if (skipLines instanceof BArray skipLinesArray) {
             if (skipLinesArray.getLength() == 0) {
