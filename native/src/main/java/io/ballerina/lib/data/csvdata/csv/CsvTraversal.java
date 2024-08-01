@@ -396,13 +396,14 @@ public final class CsvTraversal {
         }
 
         private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
-            for (int index = 0; index < csvElement.getLength(); index++) {
+            int index = 0;
+            for (int i = 0; i < csvElement.getLength(); i++) {
                 if (config.allowDataProjection && index >= expectedSize) {
                     break;
                 }
                 Type memberType = getArrayOrTupleMemberType(type, index);
                 if (memberType != null) {
-                    addValuesToArrayType(csvElement.get(index), memberType, index, currentCsvNode);
+                    addValuesToArrayType(csvElement.get(i), memberType, index, currentCsvNode);
                 }
                 index++;
             }
