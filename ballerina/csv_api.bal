@@ -22,7 +22,7 @@ import ballerina/jballerina.java;
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseStringToRecord(string s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+public isolated function parseStringToRecord(string s, ParseToRecordOption options = {}, typedesc<record{}[]> t = <>)
       returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
 # Converts byte[] to subtype of record array.
@@ -31,7 +31,7 @@ public isolated function parseStringToRecord(string s, parseToRecordOption optio
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseBytesToRecord(byte[] s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+public isolated function parseBytesToRecord(byte[] s, ParseToRecordOption options = {}, typedesc<record{}[]> t = <>)
       returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
 # Converts CSV byte-block-stream to subtype of record array.
@@ -41,7 +41,7 @@ public isolated function parseBytesToRecord(byte[] s, parseToRecordOption option
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
 public isolated function parseStreamToRecord(stream<byte[], error?> s,
-            parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
+            ParseToRecordOption options = {}, typedesc<record{}[]> t = <>)
       returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
 # Converts CSV string to subtype of anydata[][].

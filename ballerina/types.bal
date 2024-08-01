@@ -55,7 +55,7 @@ public type ParseOption record {|
 |};
 
 # Represents options for parsing data into records.
-public type parseToRecordOption record {|
+public type ParseToRecordOption record {|
   *ParseOption;
   # Custom headers for the data, if any.
   string[]? customHeaders = ();
