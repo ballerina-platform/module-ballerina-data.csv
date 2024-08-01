@@ -66,6 +66,7 @@ import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.UNICODE_S
  * @since 0.1.0
  */
 public final class CsvParser {
+
     private static final char CR = 0x000D;
     private static final char HZ_TAB = 0x0009;
     private static final char SPACE = 0x0020;
@@ -102,6 +103,7 @@ public final class CsvParser {
      */
 
     static class StateMachine {
+
         private static final State HEADER_START_STATE = new HeaderStartState();
         private static final State HEADER_END_STATE = new HeaderEndState();
         private static final State ROW_START_STATE = new RowStartState();
@@ -112,9 +114,6 @@ public final class CsvParser {
         private static final State HEADER_ESCAPE_CHAR_STATE = new HeaderEscapedCharacterProcessingState();
         private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
-
-
-
         private static final char LINE_BREAK = '\n';
 
         Object currentCsvNode;
@@ -298,7 +297,7 @@ public final class CsvParser {
                         currentState = currentState.transition(this, buff, this.index, count);
                     }
                 }
-                currentState = currentState.transition(this, new char[] { EOF }, 0, 1);
+                currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
                 if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
                     if (!this.isHeaderConfigExceedLineNumber) {
                         throw new CsvParserException("Invalid token found");
@@ -310,7 +309,7 @@ public final class CsvParser {
             }
         }
 
-        private void  addFieldNamesForNonHeaderState() {
+        private void addFieldNamesForNonHeaderState() {
             this.fieldNames.putAll(this.fieldHierarchy);
         }
 
@@ -339,6 +338,7 @@ public final class CsvParser {
          * A specific state in the CSV parsing state machine.
          */
         interface State {
+
             State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException;
         }
 
@@ -346,6 +346,7 @@ public final class CsvParser {
          * Represents the CSV header start state.
          */
         private static class HeaderStartState implements State {
+
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
                 char ch;
@@ -511,6 +512,7 @@ public final class CsvParser {
          * Represents the CSV header end state.
          */
         private static class HeaderEndState implements State {
+
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count) {
                 return ROW_START_STATE;
@@ -521,6 +523,7 @@ public final class CsvParser {
          * Represents the CSV row start state.
          */
         private static class RowStartState implements State {
+
             char ch;
             State state = ROW_START_STATE;
 
@@ -650,7 +653,7 @@ public final class CsvParser {
         }
 
         private static boolean ignoreRow(long[] skipLines, int lineNumber) {
-            for (long skipLine: skipLines) {
+            for (long skipLine : skipLines) {
                 if (skipLine == lineNumber) {
                     return true;
                 }
@@ -765,6 +768,7 @@ public final class CsvParser {
          * Represents the CSV row end state.
          */
         private static class RowEndState implements State {
+
             @Override
             public State transition(StateMachine sm, char[] buff, int i, int count) {
                 return ROW_END_STATE;
@@ -838,7 +842,7 @@ public final class CsvParser {
                 return state;
             }
         }
-        
+
         /**
          * Represents the CSV header value with quote state.
          */
@@ -903,8 +907,7 @@ public final class CsvParser {
         }
 
         /**
-         * Represents the state where an escaped unicode character in hex format is processed
-         * from a row value.
+         * Represents the state where an escaped unicode character in hex format is processed from a row value.
          */
         private static class StringValueUnicodeHexProcessingState extends UnicodeHexProcessingState {
 
@@ -916,8 +919,7 @@ public final class CsvParser {
         }
 
         /**
-         * Represents the state where an escaped unicode character in hex format is processed
-         * from a header name.
+         * Represents the state where an escaped unicode character in hex format is processed from a header name.
          */
         private static class HeaderUnicodeHexProcessingState extends UnicodeHexProcessingState {
 
@@ -1012,6 +1014,7 @@ public final class CsvParser {
          * Represents the state where an escaped character is processed in a header or row value.
          */
         private abstract static class EscapedCharacterProcessingState implements State {
+
             static final Map<Character, Character> ESCAPE_CHAR_MAP = Map.of(DOUBLE_QUOTES_CHAR, QUOTES,
                     BACKSLASH_CHAR, REV_SOL, SLASH_CHAR, SOL, BACKSPACE_CHAR, BACKSPACE, FORM_FEED_CHAR,
                     FORMFEED, NEWLINE_CHAR, NEWLINE, CARRIAGE_RETURN_CHAR, CR, TAB_CHAR, HZ_TAB);
@@ -1077,6 +1080,7 @@ public final class CsvParser {
         }
 
         public static class CsvParserException extends Exception {
+
             public CsvParserException(String msg) {
                 super(msg);
             }

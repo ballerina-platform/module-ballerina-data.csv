@@ -1,3 +1,10 @@
+fixes:
+  - "ballerina/data.csv/**/::../ballerina/"
+
+ignore:
+  - "ballerina-tests"
+  - "test-utils"
+
 coverage:
   precision: 2
   round: down
