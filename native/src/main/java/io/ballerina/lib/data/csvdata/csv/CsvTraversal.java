@@ -396,14 +396,13 @@ public final class CsvTraversal {
         }
 
         private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
-            int index = 0;
-            for (int i = 0; i < csvElement.getLength(); i++) {
+            for (int index = 0; index < csvElement.getLength(); index++) {
                 if (config.allowDataProjection && index >= expectedSize) {
                     break;
                 }
                 Type memberType = getArrayOrTupleMemberType(type, index);
                 if (memberType != null) {
-                    addValuesToArrayType(csvElement.get(i), memberType, index, currentCsvNode);
+                    addValuesToArrayType(csvElement.get(index), memberType, index, currentCsvNode);
                 }
                 index++;
             }
@@ -412,7 +411,6 @@ public final class CsvTraversal {
         private void constructArrayValuesFromMap(BMap<BString, Object> map, Type type, int expectedSize) {
             int size = map.size();
             BString[] keys = new BString[size];
-            int index = 0;
             if (config.headersOrder != null) {
                 String[] headerOrder = config.headersOrder.getStringArray();
                 if (headerOrder.length != size) {
@@ -423,8 +421,19 @@ public final class CsvTraversal {
                 }
             } else if (config.customHeader == null) {
                 keys = map.getKeys();
+            } else {
+                if (this.headers == null) {
+                    this.headers = CsvUtils.createHeaders(new String[size], config);
+                }
+                if (this.headers.length != size) {
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
+                }
+                for (int i = 0; i < size; i++) {
+                    keys[i] = StringUtils.fromString(this.headers[i]);
+                }
             }
 
+            int index = 0;
             for (BString key: keys) {
                 if (!map.containsKey(key)) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER, key);
