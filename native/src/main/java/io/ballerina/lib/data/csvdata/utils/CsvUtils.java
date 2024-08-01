@@ -23,6 +23,11 @@ import java.util.Optional;
 
 import static io.ballerina.lib.data.csvdata.utils.Constants.SKIP_LINE_RANGE_SEP;
 
+/*
+ * Utility functions used in the CSV data module.
+ * 
+ * @since 0.1.0
+ */
 public class CsvUtils {
     private static final long[] EMPTY_LONG_ARRAY =  new long[]{};
     public static boolean isCarriageTokenPresent = false;

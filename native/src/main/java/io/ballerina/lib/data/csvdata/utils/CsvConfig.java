@@ -5,6 +5,11 @@ import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
+/*
+ * Configuration for CSV operations.
+ *
+ * @since 0.1.0
+ */
 public class CsvConfig {
     public char delimiter = ',';
     public char textEnclosure = '\\';

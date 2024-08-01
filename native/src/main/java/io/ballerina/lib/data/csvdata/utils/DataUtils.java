@@ -4,6 +4,11 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 
+/*
+ * Utility functions used in the CSV data module.
+ *
+ * @since 0.1.0
+ */
 public final class DataUtils {
     private DataUtils() {
     }

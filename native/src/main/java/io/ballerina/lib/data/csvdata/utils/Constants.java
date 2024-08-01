@@ -3,6 +3,11 @@ package io.ballerina.lib.data.csvdata.utils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
+/*
+ * Constants used in the CSV data module.
+ *
+ * @since 0.1.0
+ */
 public final class Constants {
     public final class ConfigConstants {
         public static final BString DELIMITER = StringUtils.fromString("delimiter");

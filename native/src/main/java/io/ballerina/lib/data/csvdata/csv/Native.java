@@ -44,7 +44,9 @@ import java.nio.charset.Charset;
  *
  * @since 0.1.0
  */
-public class Native {
+public final class Native {
+    private Native() {
+    }
 
     public static Object parseStringToRecord(BString csv, BMap<BString, Object> options, BTypedesc type) {
         try {
