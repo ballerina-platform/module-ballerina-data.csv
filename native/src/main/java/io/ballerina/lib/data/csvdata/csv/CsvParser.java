@@ -659,13 +659,20 @@ public final class CsvParser {
         }
 
         private static void addHeadersAsTheFirstElementForArraysIfApplicable(StateMachine sm) {
-            if (!sm.addHeadersForOutput && sm.config.outputWithHeaders) {
-                for (int i = 0; i < sm.headers.size(); i++) {
-                    addHeaderAsRowValue(sm, sm.headers.get(i));
+            if (!sm.addHeadersForOutput && CsvCreator
+                    .isExpectedTypeIsArray(sm.expectedArrayElementType) && sm.config.outputWithHeaders) {
+                ArrayList<String> headers = sm.headers;
+                if (!headers.isEmpty()) {
+                    for (String header : headers) {
+                        addHeaderAsRowValue(sm, header);
+                    }
+                    if (!sm.isCurrentCsvNodeEmpty) {
+                        finalizeTheRow(sm);
+                        initiateNewRowType(sm);
+                    }
                 }
-                finalizeTheRow(sm);
-                initiateNewRowType(sm);
                 sm.addHeadersForOutput = true;
+                sm.columnIndex = 0;
             }
         }
 

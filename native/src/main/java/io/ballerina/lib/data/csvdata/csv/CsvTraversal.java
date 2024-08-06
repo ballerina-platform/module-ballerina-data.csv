@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.ballerina.lib.data.csvdata.csv.CsvCreator.isExpectedTypeIsArray;
+
 /**
  * Convert Csv value to a ballerina record.
  *
@@ -265,6 +267,7 @@ public final class CsvTraversal {
         public void traverseCsvArrayMembersWithArrayAsCsvElementType(long length, BArray csv, Type expectedArrayType,
                                                                      boolean isIntersection) {
             Object rowValue;
+            expectedArrayType = TypeUtils.getReferredType(expectedArrayType);
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
             for (int i = 0; i < length; i++) {
                 if (ignoreRow(i + 1, config.skipLines)) {
@@ -275,7 +278,17 @@ public final class CsvTraversal {
                     break;
                 }
 
-                rowValue = traverseCsvElementWithArray(csv.get(i), expectedArrayType);
+                Object o = csv.get(i);
+                if (!addHeadersForOutput && config.outputWithHeaders
+                        && (config.customHeaders != null || i == config.headerRows - 1)) {
+                    // Headers will add to the list only in the first iteration
+                    addHeadersForTheListIfApplicable(o, expectedArrayType);
+                }
+                if (i < config.headerRows) {
+                    continue;
+                }
+
+                rowValue = traverseCsvElementWithArray(o, expectedArrayType);
                 if (isIntersection) {
                     rowValue = CsvCreator.constructReadOnlyValue(rowValue);
                 }
@@ -316,6 +329,9 @@ public final class CsvTraversal {
                             rowValue = traverseCsvElementWithMapOrRecord(csvData, memberType);
                         } else if (memberType.getTag() == TypeTags.TUPLE_TAG
                                 || memberType.getTag() == TypeTags.ARRAY_TAG) {
+                            if (i < config.headerRows) {
+                                continue;
+                            }
                             rowValue = traverseCsvElementWithArray(csvData, memberType);
                         } else {
                             continue;
@@ -401,18 +417,35 @@ public final class CsvTraversal {
             }
         }
 
-        private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
-            int index = 0;
-            if (this.headers == null) {
-                this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
-            }
-            if (!addHeadersForOutput && config.outputWithHeaders) {
+        private void addHeadersForTheListIfApplicable(Object obj, Type type) {
+            if (config.outputWithHeaders
+                    && obj instanceof BArray array && isExpectedTypeIsArray(type)) {
+                if (this.headers == null) {
+                    String[] headers = new String[array.size()];
+                    this.headers = CsvUtils.createHeadersForParseLists(array, headers, config);
+                }
+
+                BArray headersArray;
+                if (type instanceof ArrayType arrayType) {
+                    headersArray = ValueCreator.createArrayValue(arrayType);
+                } else {
+                    headersArray = ValueCreator.createTupleValue((TupleType) type);
+                }
+
                 for (int i = 0; i < this.headers.length; i++) {
                     Type memberType = getArrayOrTupleMemberType(type, i);
-                    addValuesToArrayType(StringUtils.getStringValue(headers[i]), memberType, i, currentCsvNode);
+                    if (memberType != null) {
+                        addValuesToArrayType(StringUtils.fromString(headers[i]), memberType, i, headersArray);
+                    }
                 }
+                rootCsvNode.add(this.arraySize, headersArray);
+                this.arraySize++;
                 addHeadersForOutput = true;
             }
+        }
+
+        private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
+            int index = 0;
             for (int i = 0; i < csvElement.getLength(); i++) {
                 if (config.allowDataProjection && index >= expectedSize) {
                     break;
@@ -447,7 +480,9 @@ public final class CsvTraversal {
             if (!addHeadersForOutput && config.outputWithHeaders) {
                 for (int i = 0; i < keys.length; i++) {
                     Type memberType = getArrayOrTupleMemberType(type, i);
-                    addValuesToArrayType(StringUtils.getStringValue(keys[i]), memberType, i, currentCsvNode);
+                    if (memberType != null) {
+                        addValuesToArrayType(keys[i], memberType, i, currentCsvNode);
+                    }
                 }
                 addHeadersForOutput = true;
             }
@@ -475,8 +510,9 @@ public final class CsvTraversal {
                 if (tupleTypes.size() >= index + 1) {
                     return tupleTypes.get(index);
                 }
-                if (restType != null) {
-                    return restType;
+                Type res = tupleType.getRestType();
+                if (res != null) {
+                    return res;
                 } else {
                     if (config.allowDataProjection) {
                         return null;
@@ -582,7 +618,7 @@ public final class CsvTraversal {
         private void traverseArrayValueWithMapAsExpectedType(BArray csvElement,
                                                              boolean mappingType, Type expectedType) {
             int arraySize = csvElement.size();
-            String[] headers = new String[arraySize];
+            String[] headers = new String[csvElement.size()];
             if (this.headers == null) {
                 this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
             }

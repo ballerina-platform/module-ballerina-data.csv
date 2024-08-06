@@ -72,11 +72,12 @@ public class CsvUtils {
         Object customHeaders = config.customHeaders;
         long headerRows = config.headerRows;
 
+        int length = headers.length;
         if (customHeaders instanceof BArray array) {
-            if (array.size() != headers.length) {
+            if (array.size() != length) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
             }
-            for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < length; i++) {
                 headers[i] = array.get(i).toString();
             }
             return headers;
@@ -91,7 +92,7 @@ public class CsvUtils {
         }
 
         // when headerRows = 0 and customHeaders = null
-        for (int i = 0; i < headers.length; i++) {
+        for (int i = 0; i < length; i++) {
             headers[i] = String.valueOf(i + 1);
         }
         return headers;

@@ -13,4 +13,4 @@ version = "0.1.0"
 graalvmCompatible = true
 
 [build-options]
-graalvmBuildOptions = "-H:IncludeLocales=en_US,fr_FR"
+graalvmBuildOptions = "-H:+IncludeAllLocales"

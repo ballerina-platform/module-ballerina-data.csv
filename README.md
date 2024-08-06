@@ -19,7 +19,7 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 
 ### Converting CSV string to a record array
 
-To convert a CSV string into a record value, you can use the `parseStringToRecord` function from the library. The following example demonstrates how to transform a CSV document into an array of records.
+To convert a CSV string into a record value, you can use the `parseString` function from the library. The following example demonstrates how to transform a CSV document into an array of records.
 
 ```ballerina
 import ballerina/data.csv;
@@ -36,7 +36,7 @@ public function main() returns error? {
                                Clean Code,Robert C. Martin,2008
                                The Pragmatic Programmer,Andrew Hunt and David Thomas,1999`;
 
-    Book[] books = check csv:parseStringToRecord(csvString);
+    Book[] books = check csv:parseString(csvString);
     foreach var book in books {
         io:println(book);
     }
@@ -45,7 +45,7 @@ public function main() returns error? {
 
 ### Converting external CSV document to a record value
 
-For transforming CSV content from an external source into a record value, the `parseStringToRecord`, `parseBytesToRecord`, `parseStreamToRecord`, `parseStringToList`, `parseBytesToList`and `parseStreamToList` functions can be used. This external source can be in the form of a string or a byte array/byte-block-stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
+For transforming CSV content from an external source into a record value, the `parseString`, `parseBytes`, `parseStream`, `parseString`, `parseBytes`and `parseStream` functions can be used. This external source can be in the form of a string or a byte array/byte-block-stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
 
 ```ballerina
 import ballerina/data.csv;
@@ -60,12 +60,12 @@ type Book record {
 public function main() returns error? {
     // Read the CSV content as a string
     string csvContent = check io:fileReadString("path/to/file.csv");
-    Book[] book = check csv:parseStringToRecord(csvContent);
+    Book[] book = check csv:parseString(csvContent);
     io:println(book);
 
     // Read the CSV content as a stream
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("path/to/file.csv");
-    Book[] book2 = check csv:parseStreamToRecord(csvStream);
+    Book[] book2 = check csv:parseStream(csvStream);
     io:println(book2);
 }
 ```
@@ -89,7 +89,7 @@ type Book record {
 public function main() returns error? {
     string[][] bookArray = [["Clean Code","2008"],["Clean Architecture","2017"]];
 
-    Book[] author = check csv:parseListAsRecordType(bookArray, customHeaders = ["name", "year"]);
+    Book[] author = check csv:parseLists(bookArray, customHeaders = ["name", "year"]);
     io:println(author);
 }
 ```
@@ -122,7 +122,7 @@ public function main() returns error? {
 
     // The CSV data above contains publisher and year fields which are not 
     // required to be converted into a record field.
-    Book[] book = check csv:parseRecordAsRecordType(csvContent);
+    Book[] book = check csv:transform(csvContent);
     io:println(book);
 }
 ```

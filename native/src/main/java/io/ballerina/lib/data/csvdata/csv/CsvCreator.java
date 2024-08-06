@@ -66,6 +66,15 @@ public final class CsvCreator {
         };
     }
 
+    static boolean isExpectedTypeIsArray(Type expectedType) {
+        expectedType = TypeUtils.getReferredType(expectedType);
+
+        return switch (expectedType.getTag()) {
+            case TypeTags.TUPLE_TAG, TypeTags.ARRAY_TAG -> true;
+            default -> false;
+        };
+    }
+
     static void convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
                                                 String value, Type type, CsvConfig config, Type exptype,
                                                 Field currentField) {

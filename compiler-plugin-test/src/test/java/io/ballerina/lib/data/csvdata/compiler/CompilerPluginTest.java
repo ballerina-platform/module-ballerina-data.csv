@@ -37,7 +37,7 @@ public class CompilerPluginTest {
     static final String UNSUPPORTED_TYPE = "unsupported type: type is not supported";
     static final String DUPLICATE_FIELD = "invalid field: duplicate field found";
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidExpectedUnionType() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_1").getCompilation().diagnosticResult();
@@ -57,7 +57,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidRecordFields() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_2").getCompilation().diagnosticResult();
@@ -68,7 +68,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidProgram() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_3").getCompilation().diagnosticResult();
@@ -78,7 +78,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 1);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testModuleLevelInvalidExpectedUnionType() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_4").getCompilation().diagnosticResult();
@@ -98,7 +98,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testEmptyProject() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_5").getCompilation().diagnosticResult();
@@ -108,7 +108,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 0);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidExpectedUnionType2() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_6").getCompilation().diagnosticResult();

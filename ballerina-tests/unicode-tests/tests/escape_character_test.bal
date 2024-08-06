@@ -28,7 +28,7 @@ function testEscapedCharactres() returns error? {
                             slash\/slash, 9
                             quoted string \\'abc\\', 10`;
     
-    record{string a; int b;}[]|csv:Error rec = csv:parseStringToRecord(csvString);
+    record{string a; int b;}[]|csv:Error rec = csv:parseString(csvString);
     test:assertEquals(rec, [
         {a: string `quote""quoted"quote`, b: 1},
         {a: string `backslash${"\\"}backslash`, b: 2},
@@ -45,7 +45,7 @@ function testEscapedCharactres2() returns error? {
     string csvString = string `a, b
                             backspace\bbackspace, 7`;
     
-    record{string a; int b;}[]|csv:Error rec = csv:parseStringToRecord(csvString);
+    record{string a; int b;}[]|csv:Error rec = csv:parseString(csvString);
     test:assertTrue(rec is record{string a; int b;}[]);
 }
 
@@ -54,7 +54,7 @@ function testEscapedCharactres3() returns error? {
     string csvString = string ` a c, b
                             carriage return\r carriage return, 4`;
     
-    record{}[]|csv:Error rec = csv:parseStringToRecord(csvString);
+    record{}[]|csv:Error rec = csv:parseString(csvString);
     test:assertEquals(rec, [
         {"a c": string `carriage return${"\r"} carriage return`, b: 4}
     ]);
@@ -65,7 +65,7 @@ function testEscapedCharactres4() returns error? {
     string csvString = string `a, b
                             form feed\f form feed, 8`;
     
-    record{string a; int b;}[]|csv:Error rec = csv:parseStringToRecord(csvString);
+    record{string a; int b;}[]|csv:Error rec = csv:parseString(csvString);
     test:assertTrue(rec is record {string a; int b;}[]);
     // TODO: Add tests after supports \f by Ballerina
 }

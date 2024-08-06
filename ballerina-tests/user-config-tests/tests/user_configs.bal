@@ -17,29 +17,29 @@
 import ballerina/data.csv;
 
 // Valid parser options
-csv:ParseOption option1 = {delimiter: "@", nilValue: "null", lineTerminator: [csv:LF]};
-csv:ParseOption option2 = {nilValue: "N/A", lineTerminator: [csv:CRLF, csv:LF], comment: "/"};
-csv:ParseOption option3 = {nilValue: "()", header: 1, skipLines: [1, 2]};
-csv:ParseOption option4 = {nilValue: "", header: 4, skipLines: "1-5"};
-csv:ParseOption option5 = {nilValue: "", header: 4, skipLines: "1-1"};
-csv:ParseOption option6 = {nilValue: "()", header: false, skipLines: [1, 2]};
+csv:ParseOptions option1 = {delimiter: "@", nilValue: "null", lineTerminator: [csv:LF]};
+csv:ParseOptions option2 = {nilValue: "N/A", lineTerminator: [csv:CRLF, csv:LF], comment: "/"};
+csv:ParseOptions option3 = {nilValue: "()", header: 1, skipLines: [1, 2]};
+csv:ParseOptions option4 = {nilValue: "", header: 4, skipLines: "1-5"};
+csv:ParseOptions option5 = {nilValue: "", header: 4, skipLines: "1-1"};
+csv:ParseOptions option6 = {nilValue: "()", header: false, skipLines: [1, 2]};
 
-csv:ParseToRecordOption ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
-csv:ParseToRecordOption ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
-csv:ParseToRecordOption ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
-csv:ParseToRecordOption ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
-csv:ParseToRecordOption ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
+csv:TransformOptions ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
+csv:TransformOptions ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
+csv:TransformOptions ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
+csv:TransformOptions ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
+csv:TransformOptions ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
 
 // Invalid parser options
-csv:ParseOption invalidParserOptions1 = {header: 4};
-csv:ParseOption invalidParserOptions2 = {comment: "$"};
-csv:ParseOption invalidParserOptions3 = {lineTerminator: csv:CRLF};
-csv:ParseOption invalidParserOptions4 = {skipLines: [1000, 1001]};
-csv:ParseOption invalidParserOptions5 = {skipLines: "a-b"};
-csv:ParseOption invalidParserOptions6 = {skipLines: "3-1"};
-csv:ParseOption invalidParserOptions7 = {skipLines: "a-5"};
-csv:ParseOption invalidParserOptions8 = {skipLines: "6-a"};
-csv:ParseOption invalidParserOptions9 = {skipLines: "a-5"};
-csv:ParseOption invalidParserOptions10 = {skipLines: "-1-6"};
-csv:ParseOption invalidParserOptions11 = {nilValue: "", header: 4, skipLines: "0-10"};
-csv:ParseOption invalidParserOptions12 = {skipLines: [1, 3, 4, -1]};
+csv:ParseOptions invalidParserOptions1 = {header: 4};
+csv:ParseOptions invalidParserOptions2 = {comment: "$"};
+csv:ParseOptions invalidParserOptions3 = {lineTerminator: csv:CRLF};
+csv:ParseOptions invalidParserOptions4 = {skipLines: [1000, 1001]};
+csv:ParseOptions invalidParserOptions5 = {skipLines: "a-b"};
+csv:ParseOptions invalidParserOptions6 = {skipLines: "3-1"};
+csv:ParseOptions invalidParserOptions7 = {skipLines: "a-5"};
+csv:ParseOptions invalidParserOptions8 = {skipLines: "6-a"};
+csv:ParseOptions invalidParserOptions9 = {skipLines: "a-5"};
+csv:ParseOptions invalidParserOptions10 = {skipLines: "-1-6"};
+csv:ParseOptions invalidParserOptions11 = {nilValue: "", header: 4, skipLines: "0-10"};
+csv:ParseOptions invalidParserOptions12 = {skipLines: [1, 3, 4, -1]};
