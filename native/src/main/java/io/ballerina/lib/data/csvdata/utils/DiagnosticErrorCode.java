@@ -44,13 +44,14 @@ public enum DiagnosticErrorCode {
     INVALID_FORMAT_FOR_SKIPLINES("BDE_0017", "invalid.format.for.skiplines"),
     INVALID_RANGE_FOR_SKIPLINES("BDE_0018", "invalid.range.for.skiplines"),
     INVALID_VALUE_FOR_SKIPLINES("BDE_0019", "invalid.value.for.skiplines"),
-    INVALID_CUSTOM_HEADER("BDE_0020", "invalid.custom.header"),
+    INCONSISTENT_HEADER("BDE_0020", "ç.header"),
     INVALID_CUSTOM_HEADER_LENGTH("BDE_0021", "invalid.custom.header.length"),
     INVALID_HEADER_NAMES_LENGTH("BDE_0022", "invalid.header.names.length"),
     HEADER_CANNOT_BE_EMPTY("BDE_0023", "header.cannot.be.empty"),
     NO_FIELD_FOR_HEADER("BDE_0024", "no.field.for.header"),
     DUPLICATE_FIELD("BDE_0025", "duplicate.field"),
-    SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE("BDE_0026", "cannot.convert.into.exptype");
+    SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE("BDE_0026", "cannot.convert.into.exptype"),
+    NO_CUSTOM_HEADER_PROVIDED("BDE_0027", "no.custom.header.provided");
 
     String diagnosticId;
     String messageKey;

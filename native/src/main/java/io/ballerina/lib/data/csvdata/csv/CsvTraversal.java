@@ -103,6 +103,8 @@ public final class CsvTraversal {
         CsvConfig config;
         String[] headers = null;
         int arraySize = 0;
+        BString[] headersForArrayConversion = null;
+        boolean addHeadersForOutput = false;
 
         void reset() {
             currentCsvNode = null;
@@ -119,6 +121,8 @@ public final class CsvTraversal {
             config = null;
             headers = null;
             arraySize = 0;
+            headersForArrayConversion = null;
+            addHeadersForOutput = false;
         }
 
 
@@ -135,6 +139,8 @@ public final class CsvTraversal {
             expectedArrayElementType = null;
             headers = null;
             arraySize = 0;
+            headersForArrayConversion = null;
+            addHeadersForOutput = false;
         }
 
         CsvTree() {
@@ -397,6 +403,16 @@ public final class CsvTraversal {
 
         private void constructArrayValuesFromArray(BArray csvElement, Type type, int expectedSize) {
             int index = 0;
+            if (this.headers == null) {
+                this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
+            }
+            if (!addHeadersForOutput && config.outputWithHeaders) {
+                for (int i = 0; i < this.headers.length; i++) {
+                    Type memberType = getArrayOrTupleMemberType(type, i);
+                    addValuesToArrayType(StringUtils.getStringValue(headers[i]), memberType, i, currentCsvNode);
+                }
+                addHeadersForOutput = true;
+            }
             for (int i = 0; i < csvElement.getLength(); i++) {
                 if (config.allowDataProjection && index >= expectedSize) {
                     break;
@@ -412,32 +428,34 @@ public final class CsvTraversal {
         private void constructArrayValuesFromMap(BMap<BString, Object> map, Type type, int expectedSize) {
             int size = map.size();
             BString[] keys = new BString[size];
-            if (config.headersOrder != null) {
-                String[] headerOrder = config.headersOrder.getStringArray();
+            Object headersOrder = config.headersOrder;
+            if (headersOrder != null) {
+                String[] headerOrder = ((BArray) headersOrder).getStringArray();
                 if (headerOrder.length != size) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_HEADER_NAMES_LENGTH);
                 }
                 for (int i = 0; i < size; i++) {
                     keys[i] = StringUtils.fromString(headerOrder[i]);
                 }
-            } else if (config.customHeader == null) {
-                keys = map.getKeys();
             } else {
-                if (this.headers == null) {
-                    this.headers = CsvUtils.createHeaders(new String[size], config);
+                if (headersForArrayConversion == null) {
+                    headersForArrayConversion = map.getKeys();
                 }
-                if (this.headers.length != size) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
+                keys = headersForArrayConversion;
+            }
+
+            if (!addHeadersForOutput && config.outputWithHeaders) {
+                for (int i = 0; i < keys.length; i++) {
+                    Type memberType = getArrayOrTupleMemberType(type, i);
+                    addValuesToArrayType(StringUtils.getStringValue(keys[i]), memberType, i, currentCsvNode);
                 }
-                for (int i = 0; i < size; i++) {
-                    keys[i] = StringUtils.fromString(this.headers[i]);
-                }
+                addHeadersForOutput = true;
             }
 
             int index = 0;
             for (BString key: keys) {
                 if (!map.containsKey(key)) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER, key);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.INCONSISTENT_HEADER, key);
                 }
                 Object v = map.get(key);
                 if (config.allowDataProjection && index >= expectedSize) {
@@ -566,7 +584,7 @@ public final class CsvTraversal {
             int arraySize = csvElement.size();
             String[] headers = new String[arraySize];
             if (this.headers == null) {
-                this.headers = CsvUtils.createHeaders(headers, config);
+                this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
             }
             boolean headersMatchWithExpType = checkExpectedTypeMatchWithHeaders(expectedType, csvElement, arraySize);
             if (!headersMatchWithExpType) {

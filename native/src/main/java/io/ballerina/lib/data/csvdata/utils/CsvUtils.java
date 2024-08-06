@@ -68,25 +68,32 @@ public class CsvUtils {
         }
     }
 
-    public static String[] createHeaders(String[] headers, CsvConfig config) {
-        Object customHeaders = config.customHeader;
+    public static String[] createHeadersForParseLists(BArray csvElement, String[] headers, CsvConfig config) {
+        Object customHeaders = config.customHeaders;
+        long headerRows = config.headerRows;
 
-        if (customHeaders == null) {
-            for (int i = 0; i < headers.length; i++) {
-                headers[i] = String.valueOf(i + 1);
-            }
-        }
-
-        if (customHeaders instanceof BArray) {
-            BArray array = (BArray) customHeaders;
+        if (customHeaders instanceof BArray array) {
             if (array.size() != headers.length) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CUSTOM_HEADER_LENGTH);
             }
             for (int i = 0; i < headers.length; i++) {
                 headers[i] = array.get(i).toString();
             }
+            return headers;
         }
 
+        if (headerRows == 1) {
+            return csvElement.getStringArray();
+        }
+
+        if (headerRows > 1) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.NO_CUSTOM_HEADER_PROVIDED);
+        }
+
+        // when headerRows = 0 and customHeaders = null
+        for (int i = 0; i < headers.length; i++) {
+            headers[i] = String.valueOf(i + 1);
+        }
         return headers;
     }
 

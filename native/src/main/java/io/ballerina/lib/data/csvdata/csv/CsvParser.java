@@ -144,6 +144,7 @@ public final class CsvParser {
         boolean isValueStart = false;
         State prevState;
         int arraySize = 0;
+        boolean addHeadersForOutput = false;
 
         StateMachine() {
             reset();
@@ -178,6 +179,7 @@ public final class CsvParser {
             isValueStart = false;
             prevState = null;
             arraySize = 0;
+            addHeadersForOutput = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -282,8 +284,9 @@ public final class CsvParser {
             if (config.header != Boolean.FALSE) {
                 currentState = HEADER_START_STATE;
             } else {
-                if (config.customHeader != null) {
-                    CsvCreator.addCustomHeadersIfNotNull(this, config.customHeader);
+                Object customHeadersIfHeaderAbsent = config.customHeadersIfHeaderAbsent;
+                if (customHeadersIfHeaderAbsent != null) {
+                    CsvCreator.addCustomHeadersIfNotNull(this, customHeadersIfHeaderAbsent);
                 }
                 currentState = ROW_START_STATE;
                 addFieldNamesForNonHeaderState();
@@ -352,7 +355,6 @@ public final class CsvParser {
                 char ch;
                 State state = HEADER_START_STATE;
                 char separator = sm.config.delimiter;
-                Object customHeader = sm.config.customHeader;
                 int headerStartRowNumber = getHeaderStartRowWhenHeaderIsPresent(sm.config.header);
                 for (; i < count; i++) {
                     ch = buff[i];
@@ -376,16 +378,6 @@ public final class CsvParser {
                         continue;
                     }
                     sm.isHeaderConfigExceedLineNumber = false;
-                    if (customHeader != null) {
-                        if (sm.isNewLineOrEof(ch)) {
-                            CsvCreator.addCustomHeadersIfNotNull(sm, customHeader);
-                            sm.lineNumber++;
-                            state = HEADER_END_STATE;
-                            break;
-                        }
-                        state = this;
-                        continue;
-                    }
 
                     if (ch == sm.config.comment) {
                         sm.insideComment = true;
@@ -543,7 +535,7 @@ public final class CsvParser {
                     }
 
                     if (sm.skipTheRow) {
-                        if (sm.isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
+                        if (isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
                             sm.insideComment = false;
                             sm.skipTheRow = false;
                             sm.clear();
@@ -564,6 +556,7 @@ public final class CsvParser {
                             continue;
                         }
                         initiateNewRowType(sm);
+                        addHeadersAsTheFirstElementForArraysIfApplicable(sm);
                     }
                     if (!sm.insideComment && ch == sm.config.comment) {
                         handleEndOfTheRow(sm);
@@ -665,6 +658,17 @@ public final class CsvParser {
             sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
         }
 
+        private static void addHeadersAsTheFirstElementForArraysIfApplicable(StateMachine sm) {
+            if (!sm.addHeadersForOutput && sm.config.outputWithHeaders) {
+                for (int i = 0; i < sm.headers.size(); i++) {
+                    addHeaderAsRowValue(sm, sm.headers.get(i));
+                }
+                finalizeTheRow(sm);
+                initiateNewRowType(sm);
+                sm.addHeadersForOutput = true;
+            }
+        }
+
         private static void finalizeTheRow(StateMachine sm) {
             int rootArraySize = sm.rootArrayType.getSize();
             if (rootArraySize == -1) {
@@ -680,7 +684,6 @@ public final class CsvParser {
         }
 
         private static void addRowValue(StateMachine sm, boolean trim) throws CsvParserException {
-            Type type = null;
             Field currentField = null;
             sm.isValueStart = false;
             Type exptype = sm.expectedArrayElementType;
@@ -689,15 +692,10 @@ public final class CsvParser {
                 value = value.trim();
             }
 
+            Type type = getExpectedRowType(sm, exptype);
+
             if (exptype instanceof RecordType) {
-                type = getExpectedRowTypeOfRecord(sm);
                 currentField = getCurrentField(sm);
-            } else if (exptype instanceof MapType mapType) {
-                type = (mapType.getConstrainedType());
-            } else if (exptype instanceof ArrayType arrayType) {
-                type = getExpectedRowTypeOfArray(sm, arrayType);
-            } else if (exptype instanceof TupleType tupleType) {
-                type = getExpectedRowTypeOfTuple(sm, tupleType);
             }
 
             if (type != null) {
@@ -705,6 +703,35 @@ public final class CsvParser {
                         value, type, sm.config, exptype, currentField);
             }
             sm.columnIndex++;
+        }
+
+        private static void addHeaderAsRowValue(StateMachine sm, String value) {
+            Type exptype = sm.expectedArrayElementType;
+            Field currentField = null;
+            Type type = getExpectedRowType(sm, exptype);
+
+            if (exptype instanceof RecordType) {
+                currentField = getCurrentField(sm);
+            }
+
+            if (type != null) {
+                CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                        value, type, sm.config, exptype, currentField);
+            }
+            sm.columnIndex++;
+        }
+
+        private static Type getExpectedRowType(StateMachine sm, Type exptype) {
+            if (exptype instanceof RecordType) {
+                return getExpectedRowTypeOfRecord(sm);
+            } else if (exptype instanceof MapType mapType) {
+                return (mapType.getConstrainedType());
+            } else if (exptype instanceof ArrayType arrayType) {
+                return getExpectedRowTypeOfArray(sm, arrayType);
+            } else if (exptype instanceof TupleType tupleType) {
+                return getExpectedRowTypeOfTuple(sm, tupleType);
+            }
+            return null;
         }
 
         private static Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {
