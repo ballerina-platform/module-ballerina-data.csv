@@ -270,10 +270,19 @@ public final class CsvParser {
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
                             expectedArrayElementType);
                 case TypeTags.UNION_TAG:
+                    boolean outputHeaders = config.outputWithHeaders;
+                    Object customHeaders = config.customHeadersIfHeaderAbsent;
                     Object mapValue = execute(reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                     ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                     config.stringConversion = true;
+                    config.outputWithHeaders = outputHeaders;
+                    if (config.outputWithHeaders && customHeaders == null) {
+                        config.customHeadersIfHeaderAbsent = this.headers;
+                    }
+                    if (customHeaders != null) {
+                        config.customHeadersIfHeaderAbsent = customHeaders;
+                    }
                     return CsvTraversal.traverse((BArray) mapValue, config, bTypedesc);
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,

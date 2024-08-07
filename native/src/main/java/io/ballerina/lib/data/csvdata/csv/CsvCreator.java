@@ -75,6 +75,15 @@ public final class CsvCreator {
         };
     }
 
+    static boolean isExpectedTypeIsMap(Type expectedType) {
+        expectedType = TypeUtils.getReferredType(expectedType);
+
+        return switch (expectedType.getTag()) {
+            case TypeTags.MAP_TAG, TypeTags.RECORD_TYPE_TAG -> true;
+            default -> false;
+        };
+    }
+
     static void convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
                                                 String value, Type type, CsvConfig config, Type exptype,
                                                 Field currentField) {

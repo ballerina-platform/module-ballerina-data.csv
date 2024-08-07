@@ -145,6 +145,20 @@ public final class CsvTraversal {
             arraySize = 0;
             headersForArrayConversion = null;
             addHeadersForOutput = false;
+            isFirstRowIsHeader = false;
+        }
+
+        void resetForUnionMemberTypes() {
+            currentCsvNode = null;
+            currentField = null;
+            fieldHierarchy.clear();
+            updatedRecordFieldNames.clear();
+            headerFieldHierarchy.clear();
+            fields.clear();
+            restType = null;
+            fieldNames.clear();
+            headers = null;
+            headersForArrayConversion = null;
         }
 
         CsvTree() {
@@ -325,6 +339,8 @@ public final class CsvTraversal {
             Object rowValue;
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
             int rowNumber = 0;
+
+            outerLoop:
             for (int i = 0; i < length; i++) {
                 boolean isCompatible = false;
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
@@ -333,21 +349,10 @@ public final class CsvTraversal {
                 }
 
                 Object o = csv.get(i);
-                if (!addHeadersForOutput && config.outputWithHeaders
-                        && (config.customHeaders != null || i == config.headerRows - 1)) {
-                    // Headers will add to the list only in the first iteration
-                    addHeadersForTheListIfApplicable(o, expectedArrayType);
-                }
-                if (i < config.headerRows) {
-                    continue;
-                }
-                if (ignoreRow(rowNumber + 1, config.skipLines)) {
-                    rowNumber++;
-                    continue;
-                }
 
                 for (Type memberType: expectedArrayType.getMemberTypes()) {
                     boolean isIntersection = false;
+                    resetForUnionMemberTypes();
                     try {
                         memberType = TypeUtils.getReferredType(memberType);
                         if (memberType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -358,18 +363,36 @@ public final class CsvTraversal {
                             }
                         }
 
-                        if (memberType.getTag() == TypeTags.MAP_TAG
-                                || memberType.getTag() == TypeTags.RECORD_TYPE_TAG) {
+                        if (CsvCreator.isExpectedTypeIsMap(memberType)) {
+                            if (i < config.headerRows && i != config.headerRows - 1) {
+                                continue outerLoop;
+                            }
+
+                            if (i >= config.headerRows && ignoreRow(rowNumber + 1, config.skipLines)) {
+                                rowNumber++;
+                                continue outerLoop;
+                            }
                             rowValue = traverseCsvElementWithMapOrRecord(o, memberType);
-                        } else if (memberType.getTag() == TypeTags.TUPLE_TAG
-                                || memberType.getTag() == TypeTags.ARRAY_TAG) {
+                        } else if (CsvCreator.isExpectedTypeIsArray(memberType)) {
+                            if (!addHeadersForOutput && config.outputWithHeaders
+                                    && (o instanceof BMap || (config.customHeaders != null
+                                    || i == config.headerRows - 1))) {
+                                // Headers will add to the list only in the first iteration
+                                addHeadersForTheListIfApplicable(o, memberType);
+                            }
                             if (i < config.headerRows) {
-                                continue;
+                                continue outerLoop;
+                            }
+
+                            if (ignoreRow(rowNumber + 1, config.skipLines)) {
+                                rowNumber++;
+                                continue outerLoop;
                             }
                             rowValue = traverseCsvElementWithArray(o, memberType);
                         } else {
                             continue;
                         }
+
                         if (isIntersection) {
                             rowValue = CsvCreator.constructReadOnlyValue(rowValue);
                         }
