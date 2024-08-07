@@ -69,15 +69,15 @@ function testConstraintWithRecords() returns error? {
     test:assertTrue((<error>cRec1).message().startsWith("Validation failed")
                     && (<error>cRec1).message().includes("minLength"));
 
-    cRec1 = csv:parseLists([["4", "abc"], ["3", "cde"]], ["a", "b"]);
+    cRec1 = csv:parseLists([["4", "abc"], ["3", "cde"]], {customHeaders: ["a", "b"]});
     test:assertEquals(cRec1, [{a: 4, b: "abc"}, {a: 3, b: "cde"}]);
 
-    cRec1 = csv:parseLists([["4", "abc"], ["11", "cde"]], ["a", "b"]);
+    cRec1 = csv:parseLists([["4", "abc"], ["11", "cde"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cRec1 is csv:Error);
     test:assertTrue((<error>cRec1).message().startsWith("Validation failed")
                     && (<error>cRec1).message().includes("maxValue"));
 
-    cRec1 = csv:parseLists([["4", "abc"], ["5", "b"]], ["a", "b"]);
+    cRec1 = csv:parseLists([["4", "abc"], ["5", "b"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cRec1 is csv:Error);
     test:assertTrue((<error>cRec1).message().startsWith("Validation failed")
                     && (<error>cRec1).message().includes("minLength"));

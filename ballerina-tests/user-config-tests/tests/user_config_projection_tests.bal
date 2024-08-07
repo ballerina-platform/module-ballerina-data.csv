@@ -184,80 +184,80 @@ function testCustomNameAnnotation() returns error? {
 
 @test:Config
 function testCustomNameAnnotation2() returns error? {
-    RecordWithCustomAnnotation[]|csv:Error cntr1 = csv:parseLists([["1", "3"]], ["b", "c"], {});
+    RecordWithCustomAnnotation[]|csv:Error cntr1 = csv:parseLists([["1", "3"]], {customHeaders: ["b", "c"]});
     test:assertEquals(cntr1, [{b: 1, a: 3}]);
 
-    RecordWithCustomAnnotation[]|csv:Error cntr2 = csv:parseLists([["3", "1"]], ["c", "b"], {});
+    RecordWithCustomAnnotation[]|csv:Error cntr2 = csv:parseLists([["3", "1"]], {customHeaders: ["c", "b"]});
     test:assertEquals(cntr2, [{b: 1, a: 3}]);
 
     RecordWithCustomAnnotation[]|csv:Error cntr3 = csv:parseLists(
-                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["f", "c", "b", "e"], {});
+                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], {customHeaders: ["f", "c", "b", "e"]});
     test:assertEquals(cntr3, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
 
-    RecordWithCustomAnnotation2[]|csv:Error cntr4 = csv:parseLists([["1", "3"]], ["d", "c"], {});
+    RecordWithCustomAnnotation2[]|csv:Error cntr4 = csv:parseLists([["1", "3"]], {customHeaders: ["d", "c"]});
     test:assertEquals(cntr4, [{b: 1, a: 3}]);
 
-    RecordWithCustomAnnotation2[]|csv:Error cntr5 = csv:parseLists([["3","1"]], ["c", "d"], {});
+    RecordWithCustomAnnotation2[]|csv:Error cntr5 = csv:parseLists([["3","1"]], {customHeaders: ["c", "d"]});
     test:assertEquals(cntr5, [{b: 1, a: 3}]);
 
     RecordWithCustomAnnotation2[]|csv:Error cntr6 = csv:parseLists(
-                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+                                    [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], {customHeaders: ["c", "f", "d", "e"]});
     test:assertEquals(cntr6, [{b: 1, a: 3, f: 3, e: "cde"}, {b: 1, a: 3, f: 3, e: "cde"}]);
 
-    RecordWithCustomAnnotation2[]|csv:Error cntr7 = csv:parseLists([["3", "1"]], ["a", "b"], {});
+    RecordWithCustomAnnotation2[]|csv:Error cntr7 = csv:parseLists([["3", "1"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cntr7 is csv:Error);
     test:assertEquals((<error>cntr7).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation2[]|csv:Error cntr8 = csv:parseLists([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    RecordWithCustomAnnotation2[]|csv:Error cntr8 = csv:parseLists([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr8 is csv:Error);
     test:assertEquals((<error>cntr8).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation3[]|csv:Error cntr9 = csv:parseLists([["1", "3"]], ["d", "c"], {});
+    RecordWithCustomAnnotation3[]|csv:Error cntr9 = csv:parseLists([["1", "3"]], {customHeaders: ["d", "c"]});
     test:assertEquals(cntr9, [{b: 1, a: 3}]);
 
-    RecordWithCustomAnnotation3[]|csv:Error cntr10 = csv:parseLists([["3", "1"]], ["c", "d"], {});
+    RecordWithCustomAnnotation3[]|csv:Error cntr10 = csv:parseLists([["3", "1"]], {customHeaders: ["c", "d"]});
     test:assertEquals(cntr10, [{b: 1, a: 3}]);
 
     RecordWithCustomAnnotation3[]|csv:Error cntr11 = csv:parseLists(
-                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], {customHeaders: ["c", "f", "d", "e"]});
     test:assertEquals(cntr11, [{b: 1, a: 3}, {b: 1, a: 3}]);
 
-    RecordWithCustomAnnotation3[]|csv:Error cntr12 = csv:parseLists([["3", "1"]], ["a", "b"], {});
+    RecordWithCustomAnnotation3[]|csv:Error cntr12 = csv:parseLists([["3", "1"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cntr12 is csv:Error);
     test:assertEquals((<error>cntr12).message(), common:generateErrorMessageForInvalidHeaders(string `["3","1"]`, "user_config_tests:RecordWithCustomAnnotation3"));
 
-    RecordWithCustomAnnotation3[]|csv:Error cntr13 = csv:parseLists([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    RecordWithCustomAnnotation3[]|csv:Error cntr13 = csv:parseLists([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr13 is csv:Error);
     test:assertEquals((<error>cntr13).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation4[]|csv:Error cntr14 = csv:parseLists([["1", "3", "true"]], ["d", "c", "z"], {});
+    RecordWithCustomAnnotation4[]|csv:Error cntr14 = csv:parseLists([["1", "3", "true"]], {customHeaders: ["d", "c", "z"]});
     test:assertEquals(cntr14, [{b: 1, a: 3, z: true}]);
 
-    RecordWithCustomAnnotation4[]|csv:Error cntr15 = csv:parseLists([["3", "1"]], ["c", "d"], {});
+    RecordWithCustomAnnotation4[]|csv:Error cntr15 = csv:parseLists([["3", "1"]], {customHeaders: ["c", "d"]});
     test:assertEquals(cntr15, [{b: 1, a: 3}]);
 
     RecordWithCustomAnnotation4[]|csv:Error cntr16 = csv:parseLists(
-                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], ["c", "f", "d", "e"], {});
+                                                [["3", "3", "1", "cde"], ["3", "3", "1", "cde"]], {customHeaders: ["c", "f", "d", "e"]});
     test:assertEquals(cntr16, [{b: 1, a: 3}, {b: 1, a: 3}]);
 
-    RecordWithCustomAnnotation4[]|csv:Error cntr17 = csv:parseLists([["3", "1"]], ["a", "b"], {});
+    RecordWithCustomAnnotation4[]|csv:Error cntr17 = csv:parseLists([["3", "1"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cntr17 is csv:Error);
     test:assertEquals((<error>cntr17).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation4[]|csv:Error cntr18 = csv:parseLists([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    RecordWithCustomAnnotation4[]|csv:Error cntr18 = csv:parseLists([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr18 is csv:Error);
     test:assertEquals((<error>cntr18).message(), "Duplicate field found in record fields: 'a'");
 
-    RecordWithCustomAnnotation5[]|csv:Error cntr19 = csv:parseLists([["3", "1", "4", "5"]], ["c", "d", "a", "b"], {});
+    RecordWithCustomAnnotation5[]|csv:Error cntr19 = csv:parseLists([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr19 is csv:Error);
     test:assertEquals((<error>cntr19).message(), "Duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation5[]|csv:Error cntr20 = csv:parseLists(
-                                                [["3", "1", "4"], ["3", "1", "4"]], ["c", "d", "e"], {});
+                                                [["3", "1", "4"], ["3", "1", "4"]], {customHeaders: ["c", "d", "e"]});
     test:assertEquals(cntr20, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
 
     RecordWithCustomAnnotation6[]|csv:Error cntr21 = csv:parseLists(
-                                                [["3", "1", "4"], ["3", "1", "4"]], ["c", "d", "a"], {});
+                                                [["3", "1", "4"], ["3", "1", "4"]], {customHeaders: ["c", "d", "a"]});
     test:assertEquals(cntr21, [{a: 3, b: 1, c: 4}, {a: 3, b: 1, c: 4}]);
 }
 
@@ -359,22 +359,22 @@ function testAbsentAsNilableConfig2() returns error? {
     test:assertTrue(cn4 is csv:Error);
     test:assertEquals((<error>cn4).message(), common:generateErrorMessageForMissingRequiredField("g"));
 
-    record {|string a; int? g; int? h;|}[]|csv:Error cn5 = csv:parseLists([["a"], ["a"], ["a"]], ["a"], {
+    record {|string a; int? g; int? h;|}[]|csv:Error cn5 = csv:parseLists([["a"], ["a"], ["a"]], {customHeaders: ["a"],
         allowDataProjection: {absentAsNilableType: true}, skipLines: [3]
     });
     test:assertEquals(cn5, [{a: "a", g: (), h: ()}, {a: "a", g: (), h: ()}]);
 
-    record {|string a; int? g?;|}[]|csv:Error cn6 = csv:parseLists([["a"], ["a"], ["a"]], ["a"], {
+    record {|string a; int? g?;|}[]|csv:Error cn6 = csv:parseLists([["a"], ["a"], ["a"]], {customHeaders: ["a"],
         allowDataProjection: {absentAsNilableType: true}, skipLines: [3]
     });
     test:assertEquals(cn6, [{a: "a"}, {a: "a"}]);
 
-    record {|string a; int g?;|}[]|csv:Error cn7 = csv:parseLists([["a"], ["a"], ["b"]], ["a"], {
+    record {|string a; int g?;|}[]|csv:Error cn7 = csv:parseLists([["a"], ["a"], ["b"]], {customHeaders: ["a"],
         allowDataProjection: {absentAsNilableType: true}, skipLines: [2]
     });
     test:assertEquals(cn7, [{a: "a"}, {a: "b"}]);
 
-    record {|string a; int g;|}[]|csv:Error cn8 = csv:parseLists([["a"], ["a"], ["a"]], ["a"], {
+    record {|string a; int g;|}[]|csv:Error cn8 = csv:parseLists([["a"], ["a"], ["a"]], {customHeaders: ["a"],
         allowDataProjection: {absentAsNilableType: true}, skipLines: [3]
     });
     test:assertTrue(cn8 is csv:Error);
@@ -617,57 +617,57 @@ function testDataProjectionConfig() returns error? {
     test:assertTrue(cn19 is csv:Error);
     test:assertEquals((<error>cn19).message(), "No mapping field in the expected type for header 'b'");
 
-    anydata[][]|csv:Error c20 = csv:transform(csvValue2, ["a", "b"] ,{
+    anydata[][]|csv:Error c20 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(c20, [["a", 2], ["b", 4]]);
 
-    [string, int][]|csv:Error cn20_2 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string, int][]|csv:Error cn20_2 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(cn20_2, [["a", 2], ["b", 4]]);
 
-    [string][]|csv:Error cn21 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string][]|csv:Error cn21 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn21 is csv:Error);
     test:assertEquals((<error>cn21).message(), "invalid array size for expected tuple type, cannot be greater than '1'");
 
-    [string][]|csv:Error cn21_2 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string][]|csv:Error cn21_2 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: {}
     });
     test:assertEquals(cn21_2, [["a"], ["b"]]);
 
-    [int][]|csv:Error cn21_3 = csv:transform(csvValue2, ["a", "b"] ,{
+    [int][]|csv:Error cn21_3 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: {}
     });
     test:assertTrue(cn21_3 is csv:Error);
     test:assertEquals((<error>cn21_3).message(), common:generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
 
-    [string, int...][]|csv:Error cn22 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string, int...][]|csv:Error cn22 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(cn22, [["a", 2], ["b", 4]]);
 
-    [string...][]|csv:Error cn23 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string...][]|csv:Error cn23 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false 
     });
     test:assertTrue(cn23 is csv:Error);
     test:assertEquals((<error> cn23).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
 
-    [string, ()][]|csv:Error cn24 = csv:transform(csvValue2, ["a", "b"] ,{
+    [string, ()][]|csv:Error cn24 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn24 is csv:Error);
     test:assertEquals((<error>cn24).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "()"));
 
-    string[][]|csv:Error cn25 = csv:transform(csvValue2, ["a", "b"] ,{
+    string[][]|csv:Error cn25 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn25 is csv:Error);
     test:assertEquals((<error> cn25).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
 
-    string[][1]|csv:Error cn26 = csv:transform(csvValue2, ["a", "b"] ,{
+    string[][1]|csv:Error cn26 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn26 is csv:Error);

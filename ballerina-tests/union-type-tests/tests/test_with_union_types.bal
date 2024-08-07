@@ -252,7 +252,7 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         ["5", "string5", "true", "3", "3.0", "()"]
     ];
 
-    (RecA|RecC)[]|csv:Error csv1op1 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {});
+    (RecA|RecC)[]|csv:Error csv1op1 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op1, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
@@ -261,7 +261,7 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    (RecA|RecC)[]|csv:Error csv1op2 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (RecA|RecC)[]|csv:Error csv1op2 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op2 is (RecA|RecC)[]);
     test:assertEquals(csv1op2, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -269,49 +269,49 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    (RecC|RecA)[]|csv:Error csv1op3 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (RecC|RecA)[]|csv:Error csv1op3 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op3, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    (RecB|RecA)[]|csv:Error csv1op4 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (RecB|RecA)[]|csv:Error csv1op4 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op4, [
         {a: "1", b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: "3", b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    (RecA|RecB)[]|csv:Error csv1op5 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (RecA|RecB)[]|csv:Error csv1op5 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    (record{|int a;|}|record{|string b;|})[]|csv:Error csv1op6 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (record{|int a;|}|record{|string b;|})[]|csv:Error csv1op6 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op6, [
         {a: 1},
         {a: 3},
         {a: 5}
     ]);
 
-    (record{|string b;|}|record{|int a;|})[]|csv:Error csv1op7 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (record{|string b;|}|record{|int a;|})[]|csv:Error csv1op7 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op7, [
         {b: "string1"},
         {b: "string3"},
         {b: "string5"}
     ]);
 
-    (record{|string...;|}|record{|int...;|})[]|csv:Error csv1op8 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [4, 2]});
+    (record{|string...;|}|record{|int...;|})[]|csv:Error csv1op8 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [4, 2]});
     test:assertEquals(csv1op8, [
         {a: "1", b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: "3", b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: true});
+    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: true});
     test:assertEquals(csv1op9, [
         {a: 1},
         {a: 2, d: 0, e: 0},
@@ -320,7 +320,7 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: 5, d: 3}
     ]);
 
-    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9_2 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: false});
+    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9_2 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
     test:assertEquals(csv1op9_2, [
         {},
         {},
@@ -329,14 +329,14 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {}
     ]);
 
-    (record{|int a; string...;|}|record{|string a; int...;|})[]|csv:Error csv1op10 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, -1, 4]});
+    (record{|int a; string...;|}|record{|string a; int...;|})[]|csv:Error csv1op10 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, -1, 4]});
     test:assertEquals(csv1op10, [
         {a: 1, b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: 3, b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: 5, b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    (record{|string a; int...;|}|record{|int a; string...;|})[]|csv:Error csv1op11 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {});
+    (record{|string a; int...;|}|record{|int a; string...;|})[]|csv:Error csv1op11 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op11, [
         {a: "1"},
         {a: "2", d: 0, e: 0},
@@ -345,11 +345,11 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: "5", d: 3}
     ]);
 
-    (record{|int a; int...;|}|record{|int a; string...;|})[]|csv:Error csv1op12 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: false});
+    (record{|int a; int...;|}|record{|int a; string...;|})[]|csv:Error csv1op12 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
     test:assertTrue(csv1op12 is csv:Error);
     test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '(union_type_tests:record {| int a; int...; |}|union_type_tests:record {| int a; string...; |})[]'");
 
-    (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op13 = csv:parseLists([["1", "2"], ["a", "b"]], ["a", "b"], {});
+    (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op13 = csv:parseLists([["1", "2"], ["a", "b"]], {customHeaders: ["a", "b"]});
     test:assertEquals(csv1op13, [
         {a: 1, b: 2},
         {a: "a", b: "b"}
@@ -367,7 +367,7 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ];
 
-    (TupA|TupC)[]|csv:Error csv1op1 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    (TupA|TupC)[]|csv:Error csv1op1 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op1, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [2, "string2", false, <decimal>0, <float>0, ()],
@@ -376,7 +376,7 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    (TupA|TupC)[]|csv:Error csv1op2 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (TupA|TupC)[]|csv:Error csv1op2 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op2 is (TupA|TupC)[]);
     test:assertEquals(csv1op2, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
@@ -384,66 +384,66 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    (TupC|TupA)[]|csv:Error csv1op3 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (TupC|TupA)[]|csv:Error csv1op3 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op3, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    (TupB|TupA)[]|csv:Error csv1op4 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (TupB|TupA)[]|csv:Error csv1op4 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op4, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    (TupB|[boolean])[]|csv:Error csv1op4_2 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (TupB|[boolean])[]|csv:Error csv1op4_2 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is csv:Error);
     test:assertEquals((<csv:Error>csv1op4_2).message(), "The source value cannot convert in to the '(union_type_tests:TupB|[boolean])[]'");
 
-    (TupA|TupB)[]|csv:Error csv1op5 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    (TupA|TupB)[]|csv:Error csv1op5 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    ([int]|[string])[]|csv:Error csv1op6 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    ([int]|[string])[]|csv:Error csv1op6 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op6, [
         [1],
         [3],
         [5]
     ]);
 
-    ([string]|[int])[]|csv:Error csv1op7 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    ([string]|[int])[]|csv:Error csv1op7 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op7, [
         [1],
         [3],
         [5]
     ]);
 
-    ([string...]|[int...])[]|csv:Error csv1op8 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    ([string...]|[int...])[]|csv:Error csv1op8 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op8 is csv:Error);
     test:assertEquals((<csv:Error>csv1op8).message(), "The source value cannot convert in to the '([string...]|[int...])[]'");
 
-    ([int...]|[string...])[]|csv:Error csv1op9 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    ([int...]|[string...])[]|csv:Error csv1op9 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op9 is csv:Error);
     test:assertEquals((<csv:Error>csv1op9).message(), "The source value cannot convert in to the '([int...]|[string...])[]'");
 
-    ([int, string...]|[string, int...])[]|csv:Error csv1op10 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    ([int, string...]|[string, int...])[]|csv:Error csv1op10 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op10 is csv:Error);
     test:assertEquals((<csv:Error>csv1op10).message(), "The source value cannot convert in to the '([int,string...]|[string,int...])[]'");
 
-    ([string, int...]|[int, string...])[]|csv:Error csv1op11 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    ([string, int...]|[int, string...])[]|csv:Error csv1op11 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op11 is csv:Error);
     test:assertEquals((<csv:Error>csv1op11).message(), "The source value cannot convert in to the '([string,int...]|[int,string...])[]'");
 
-    ([string, int...]|[string, string...])[]|csv:Error csv1op12 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    ([string, int...]|[string, string...])[]|csv:Error csv1op12 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op12 is csv:Error);
     test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '([string,int...]|[string,string...])[]'");
 
-    ([int, int...]|[string, string...])[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], ["a", "b"], {});
+    ([int, int...]|[string, string...])[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
     test:assertEquals(csv1op13, [
         [1, 2],
         ["a", "b"]
@@ -767,7 +767,7 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         ["5", "string5", "true", "3", "3.0", "()"]
     ];
 
-    RecA[]|RecC[]|csv:Error csv1op1 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {});
+    RecA[]|RecC[]|csv:Error csv1op1 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op1, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
@@ -776,7 +776,7 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    RecA[]|RecC[]|csv:Error csv1op2 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    RecA[]|RecC[]|csv:Error csv1op2 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op2 is RecA[]|RecC[]);
     test:assertEquals(csv1op2, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -784,49 +784,49 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    RecC[]|RecA[]|csv:Error csv1op3 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    RecC[]|RecA[]|csv:Error csv1op3 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op3, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    RecB[]|RecA[]|csv:Error csv1op4 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    RecB[]|RecA[]|csv:Error csv1op4 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op4, [
         {a: "1", b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: "3", b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    RecA[]|RecB[]|csv:Error csv1op5 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    RecA[]|RecB[]|csv:Error csv1op5 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
         {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ]);
 
-    record{|int a;|}[]|record{|string b;|}[]|csv:Error csv1op6 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    record{|int a;|}[]|record{|string b;|}[]|csv:Error csv1op6 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op6, [
         {a: 1},
         {a: 3},
         {a: 5}
     ]);
 
-    record{|string b;|}[]|record{|int a;|}[]|csv:Error csv1op7 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    record{|string b;|}[]|record{|int a;|}[]|csv:Error csv1op7 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op7, [
         {b: "string1"},
         {b: "string3"},
         {b: "string5"}
     ]);
 
-    record{|string...;|}[]|record{|int...;|}[]|csv:Error csv1op8 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [4, 2]});
+    record{|string...;|}[]|record{|int...;|}[]|csv:Error csv1op8 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [4, 2]});
     test:assertEquals(csv1op8, [
         {a: "1", b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: "3", b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: true});
+    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: true});
     test:assertEquals(csv1op9, [
         {a: 1},
         {a: 2, d: 0, e: 0},
@@ -835,7 +835,7 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: 5, d: 3}
     ]);
 
-    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9_2 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: false});
+    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9_2 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
     test:assertEquals(csv1op9_2, [
         {},
         {},
@@ -844,14 +844,14 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {}
     ]);
 
-    record{|int a; string...;|}[]|record{|string a; int...;|}[]|csv:Error csv1op10 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, -1, 4]});
+    record{|int a; string...;|}[]|record{|string a; int...;|}[]|csv:Error csv1op10 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, -1, 4]});
     test:assertEquals(csv1op10, [
         {a: 1, b: "string1", c: "true", d: "2.234", e: "2.234", f: "()"},
         {a: 3, b: "string3", c: "false", d: "1.23", e: "1.23", f: "()"},
         {a: 5, b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    record{|string a; int...;|}[]|record{|int a; string...;|}[]|csv:Error csv1op11 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {});
+    record{|string a; int...;|}[]|record{|int a; string...;|}[]|csv:Error csv1op11 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op11, [
         {a: "1"},
         {a: "2", d: 0, e: 0},
@@ -860,11 +860,11 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: "5", d: 3}
     ]);
 
-    record{|int a; int...;|}[]|record{|int a; string...;|}[]|csv:Error csv1op12 = csv:parseLists(value, ["a", "b", "c", "d", "e", "f"], {stringConversion: false});
+    record{|int a; int...;|}[]|record{|int a; string...;|}[]|csv:Error csv1op12 = csv:parseLists(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
     test:assertTrue(csv1op12 is csv:Error);
     test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '(union_type_tests:record {| int a; int...; |}[]|union_type_tests:record {| int a; string...; |}[])'");
 
-    record{|int a; int...;|}[]|record{|string a; string...;|}[]|csv:Error csv1op13 = csv:parseLists([["1", "2"], ["a", "b"]], ["a", "b"], {});
+    record{|int a; int...;|}[]|record{|string a; string...;|}[]|csv:Error csv1op13 = csv:parseLists([["1", "2"], ["a", "b"]], {customHeaders: ["a", "b"]});
     test:assertEquals(csv1op13, [
         {a: "1", b: "2"},
         {a: "a", b: "b"}
@@ -882,7 +882,7 @@ function testParseToStringWithUnionExpectedTypes9() returns error? {
         {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
     ];
 
-    TupA[]|TupC[]|csv:Error csv1op1 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    TupA[]|TupC[]|csv:Error csv1op1 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op1, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [2, "string2", false, <decimal>0, <float>0, ()],
@@ -891,7 +891,7 @@ function testParseToStringWithUnionExpectedTypes9() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    TupA[]|TupC[]|csv:Error csv1op2 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    TupA[]|TupC[]|csv:Error csv1op2 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op2 is TupA[]|TupC[]);
     test:assertEquals(csv1op2, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
@@ -899,62 +899,62 @@ function testParseToStringWithUnionExpectedTypes9() returns error? {
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    TupC[]|TupA[]|csv:Error csv1op3 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    TupC[]|TupA[]|csv:Error csv1op3 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op3, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    TupB[]|TupA[]|csv:Error csv1op4 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    TupB[]|TupA[]|csv:Error csv1op4 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op4, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    TupB[]|[boolean][]|csv:Error csv1op4_2 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    TupB[]|[boolean][]|csv:Error csv1op4_2 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is csv:Error);
     test:assertEquals((<csv:Error>csv1op4_2).message(), "The source value cannot convert in to the '(union_type_tests:TupB[]|[boolean][])'");
 
-    TupA[]|TupB[]|csv:Error csv1op5 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    TupA[]|TupB[]|csv:Error csv1op5 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
         [1, "string1", true, <decimal>2.234, <float>2.234, ()],
         [3, "string3", false, <decimal>1.23, <float>1.23, ()],
         [5, "string5", true, <decimal>3, <float>3.0, ()]
     ]);
 
-    [int][]|[string][]|csv:Error csv1op6 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    [int][]|[string][]|csv:Error csv1op6 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op6, [
         [1],
         [3],
         [5]
     ]);
 
-    [string][]|[int][]|csv:Error csv1op7 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {skipLines: [2, 4]});
+    [string][]|[int][]|csv:Error csv1op7 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op7, [
         [1],
         [3],
         [5]
     ]);
 
-    [string...][]|[int...][]|csv:Error csv1op8 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    [string...][]|[int...][]|csv:Error csv1op8 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op8 is csv:Error);
     test:assertEquals((<csv:Error>csv1op8).message(), "The source value cannot convert in to the '([string...][]|[int...][])'");
 
-    [int...][]|[string...][]|csv:Error csv1op9 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    [int...][]|[string...][]|csv:Error csv1op9 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op9 is csv:Error);
     test:assertEquals((<csv:Error>csv1op9).message(), "The source value cannot convert in to the '([int...][]|[string...][])'");
 
-    [int, string...][]|[string, int...][]|csv:Error csv1op10 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    [int, string...][]|[string, int...][]|csv:Error csv1op10 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op10 is csv:Error);
     test:assertEquals((<csv:Error>csv1op10).message(), "The source value cannot convert in to the '([int,string...][]|[string,int...][])'");
 
-    [string, int...][]|[int, string...][]|csv:Error csv1op11 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    [string, int...][]|[int, string...][]|csv:Error csv1op11 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op11 is csv:Error);
     test:assertEquals((<csv:Error>csv1op11).message(), "The source value cannot convert in to the '([string,int...][]|[int,string...][])'");
 
-    [string, int...][]|[string, string...][]|csv:Error csv1op12 = csv:transform(value, ["a", "b", "c", "d", "e", "f"], {});
+    [string, int...][]|[string, string...][]|csv:Error csv1op12 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op12 is csv:Error);
     test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '([string,int...][]|[string,string...][])'");
 }

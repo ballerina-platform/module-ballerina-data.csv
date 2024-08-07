@@ -24,11 +24,11 @@ csv:ParseOptions option4 = {nilValue: "", header: 4, skipLines: "1-5"};
 csv:ParseOptions option5 = {nilValue: "", header: 4, skipLines: "1-1"};
 csv:ParseOptions option6 = {nilValue: "()", header: false, skipLines: [1, 2]};
 
-csv:TransformOptions ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
-csv:TransformOptions ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
-csv:TransformOptions ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
-csv:TransformOptions ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
-csv:TransformOptions ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
+csv:ParseOptions ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
+csv:ParseOptions ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
+csv:ParseOptions ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
+csv:ParseOptions ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
+csv:ParseOptions ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
 
 // Invalid parser options
 csv:ParseOptions invalidParserOptions1 = {header: 4};

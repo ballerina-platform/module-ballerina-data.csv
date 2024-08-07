@@ -223,9 +223,37 @@ function testParseBytes() returns error? {
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
     );
 
+    rec = csv:parseBytes(csvBytes, {outputWithHeaders: true});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
     string[][]|csv:Error rec2 = csv:parseBytes(csvBytes, {});
     test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    rec2 = csv:parseBytes(csvBytes, {outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["a", "b", "c d", "e"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    rec2 = csv:parseBytes(csvBytes, {outputWithHeaders: true, header: 1});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    rec2 = csv:parseBytes(csvBytes, { header: 1});
+    test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);
@@ -250,9 +278,41 @@ function testParseStream() returns error? {
     );
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec = csv:parseStream(csvByteStream, {outputWithHeaders: true});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
     string[][]|csv:Error rec2 = csv:parseStream(csvByteStream, {});
     test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec2 = csv:parseStream(csvByteStream, {header: 1, outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec2 = csv:parseStream(csvByteStream, {outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["a", "b", "c d", "e"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec2 = csv:parseStream(csvByteStream, {header: 1});
+    test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);

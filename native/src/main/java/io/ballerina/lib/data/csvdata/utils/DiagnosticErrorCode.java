@@ -51,7 +51,9 @@ public enum DiagnosticErrorCode {
     NO_FIELD_FOR_HEADER("BDE_0024", "no.field.for.header"),
     DUPLICATE_FIELD("BDE_0025", "duplicate.field"),
     SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE("BDE_0026", "cannot.convert.into.exptype"),
-    NO_CUSTOM_HEADER_PROVIDED("BDE_0027", "no.custom.header.provided");
+    NO_CUSTOM_HEADER_PROVIDED("BDE_0027", "no.custom.header.provided"),
+    HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED("BDE_0027",
+            "headers.with.varying.length.not.supported");
 
     String diagnosticId;
     String messageKey;

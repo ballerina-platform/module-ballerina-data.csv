@@ -249,10 +249,8 @@ public final class CsvTraversal {
                                                          boolean isIntersection) {
             Object rowValue;
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
+            int rowNumber = 0;
             for (int i = 0; i < length; i++) {
-                if (ignoreRow(i + 1, config.skipLines)) {
-                    continue;
-                }
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < this.arraySize) {
                     break;
@@ -260,6 +258,11 @@ public final class CsvTraversal {
                 Object o = csv.get(i);
 
                 if (i < config.headerRows && i != config.headerRows - 1) {
+                    continue;
+                }
+
+                if (i >= config.headerRows && ignoreRow(rowNumber + 1, config.skipLines)) {
+                    rowNumber++;
                     continue;
                 }
 
@@ -272,6 +275,9 @@ public final class CsvTraversal {
                     rootCsvNode.add(this.arraySize, rowValue);
                     this.arraySize++;
                 }
+                if (i >= config.headerRows) {
+                    rowNumber++;
+                }
             }
         }
 
@@ -280,10 +286,8 @@ public final class CsvTraversal {
             Object rowValue;
             expectedArrayType = TypeUtils.getReferredType(expectedArrayType);
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
+            int rowNumber = 0;
             for (int i = 0; i < length; i++) {
-                if (ignoreRow(i + 1, config.skipLines)) {
-                    continue;
-                }
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < this.arraySize) {
                     break;
@@ -299,6 +303,11 @@ public final class CsvTraversal {
                     continue;
                 }
 
+                if (ignoreRow(rowNumber + 1, config.skipLines)) {
+                    rowNumber++;
+                    continue;
+                }
+
                 rowValue = traverseCsvElementWithArray(o, expectedArrayType);
                 if (isIntersection) {
                     rowValue = CsvCreator.constructReadOnlyValue(rowValue);
@@ -307,6 +316,7 @@ public final class CsvTraversal {
                     rootCsvNode.add(this.arraySize, rowValue);
                     this.arraySize++;
                 }
+                rowNumber++;
             }
         }
 
@@ -314,11 +324,9 @@ public final class CsvTraversal {
                                                      UnionType expectedArrayType, Type type) {
             Object rowValue;
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
+            int rowNumber = 0;
             for (int i = 0; i < length; i++) {
                 boolean isCompatible = false;
-                if (ignoreRow(i + 1, config.skipLines)) {
-                    continue;
-                }
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < this.arraySize) {
                     break;
@@ -331,6 +339,10 @@ public final class CsvTraversal {
                     addHeadersForTheListIfApplicable(o, expectedArrayType);
                 }
                 if (i < config.headerRows) {
+                    continue;
+                }
+                if (ignoreRow(rowNumber + 1, config.skipLines)) {
+                    rowNumber++;
                     continue;
                 }
 
@@ -375,6 +387,7 @@ public final class CsvTraversal {
                 if (!isCompatible) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
                 }
+                rowNumber++;
             }
         }
 
@@ -447,7 +460,7 @@ public final class CsvTraversal {
             BString[] keys = createHeadersForBMap(map, config.headersOrder, map.size());
             for (BString key: keys) {
                 if (!map.containsKey(key)) {
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INCONSISTENT_HEADER, key);
+                    throw DiagnosticLog.error(DiagnosticErrorCode.HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED, key);
                 }
                 Object v = map.get(key);
                 if (config.allowDataProjection && index >= expectedSize) {
@@ -532,11 +545,14 @@ public final class CsvTraversal {
                     String[] headers = new String[array.size()];
                     this.headers = CsvUtils.createHeadersForParseLists(array, headers, config);
                 }
-                if (obj instanceof BMap<?, ?>) {
-                    if (config.headersOrder == null) {
-                        return;
+                if (this.headers == null && obj instanceof BMap<?, ?>) {
+                    BMap<BString, Object> map = (BMap<BString, Object>) obj;
+                    int size = map.size();
+                    BString[] headerArray = createHeadersForBMap(map, config.headersOrder, size);
+                    this.headers = new String[size];
+                    for (int i = 0; i < headerArray.length; i++) {
+                        this.headers[i] = StringUtils.getStringValue(headerArray[i]);
                     }
-                    this.headers = ((BArray) config.headersOrder).getStringArray();
                 }
 
                 BArray headersArray;
@@ -608,7 +624,7 @@ public final class CsvTraversal {
 
         private boolean checkExpectedTypeMatchWithHeaders(Type expectedType, BArray csvElement, int arraySize) {
             if (arraySize < this.headers.length) {
-                return false;
+                throw DiagnosticLog.error(DiagnosticErrorCode.HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED);
             }
             if (expectedType instanceof MapType) {
                 return true;
@@ -684,6 +700,10 @@ public final class CsvTraversal {
         private void addValuesToMapType(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
             Type fieldType;
             BString key;
+            if (arraySize != this.headers.length) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED);
+            }
+
             for (int i = 1; i <= arraySize; i++) {
                 key = StringUtils.fromString(this.headers[i - 1]);
                 if (!mappingType) {

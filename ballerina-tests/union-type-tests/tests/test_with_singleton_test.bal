@@ -184,28 +184,22 @@ function testSubtypeExpectedTypes() returns error? {
     SubtypeRecord3[]|csv:Error a9 = csv:transform(value1, {});
     test:assertEquals(a9, value1); 
 
-    SubtypeTuple[]|csv:Error a10 = csv:transform(value1, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeTuple[]|csv:Error a10 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a10, value3);
 
-    SubtypeTuple2[]|csv:Error a11 = csv:transform(value1, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeTuple2[]|csv:Error a11 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a11, [[1, 1], [1, 1]]);
 
-    SubtypeTuple3[]|csv:Error a12 = csv:transform(value1, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeTuple3[]|csv:Error a12 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a12, value3); 
 
-    SubtypeRecord[]|csv:Error a13 = csv:parseLists(value2, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeRecord[]|csv:Error a13 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a13, value1);
 
-    SubtypeRecord2[]|csv:Error a14 = csv:parseLists(value2, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeRecord2[]|csv:Error a14 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a14, [{a: 1, c: 1}, {a: 1, c: 1}]);
 
-    SubtypeRecord3[]|csv:Error a15 = csv:parseLists(value2, 
-                                    ["a", "c", "d", "e", "f", "g", "h", "i"], {});
+    SubtypeRecord3[]|csv:Error a15 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a15, value1);
 
     SubtypeTuple[]|csv:Error a16 = csv:parseLists(value2, {});
