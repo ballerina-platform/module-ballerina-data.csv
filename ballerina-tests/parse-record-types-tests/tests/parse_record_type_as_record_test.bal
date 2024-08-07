@@ -58,7 +58,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType() {
         {b1: true, b2: false, b3: (), b4: false}
     ]);
 
-    BooleanRecord2Array|csv:Error bm4br2 = csv:transform([bm4, bm4], {}, BooleanRecord2Array);
+    BooleanRecord2Array|csv:Error bm4br2 = csv:transform([bm4, bm4], {outputWithHeaders: false}, BooleanRecord2Array);
     test:assertTrue(bm4br2 is csv:Error);
     test:assertEquals((<csv:Error>bm4br2).message(), common:generateErrorMessageForMissingRequiredField("b2"));
 
@@ -146,7 +146,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
         {b1: true, b2: false, b3: (), b4: true, defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord6Array|csv:Error bm1br6 = csv:transform([bm1, bm1], {}, BooleanRecord6Array);
+    BooleanRecord6Array|csv:Error bm1br6 = csv:transform([bm1, bm1], {outputWithHeaders: false}, BooleanRecord6Array);
     test:assertTrue(bm1br6 is csv:Error);
     test:assertEquals((<csv:Error>bm1br6).message(), common:generateErrorMessageForMissingRequiredField("b3"));
 
@@ -156,7 +156,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType2() {
         {b1: true, b3: (), defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord6Array|csv:Error bm3br6 = csv:transform([bm3, bm3], {}, BooleanRecord6Array);
+    BooleanRecord6Array|csv:Error bm3br6 = csv:transform([bm3, bm3], {outputWithHeaders: false}, BooleanRecord6Array);
     test:assertEquals(bm3br6, [
         {b1: true, b3: (), defaultableField: "", nillableField: ()},
         {b1: true, b3: (), defaultableField: "", nillableField: ()}
@@ -247,7 +247,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType3() {
         {b1: true, b2: false}
     ]);
 
-    BooleanRecord10Array|csv:Error bm2br10 = csv:transform([bm2, bm2], {}, BooleanRecord10Array);
+    BooleanRecord10Array|csv:Error bm2br10 = csv:transform([bm2, bm2], {outputWithHeaders: false}, BooleanRecord10Array);
     test:assertEquals(bm2br10, [
         {b1: true, b2: false},
         {b1: true, b2: false}
@@ -325,7 +325,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType3() {
         {b1: true, b2: false, defaultableField: "", nillableField :null}
     ]);
 
-    BooleanRecord13Array|csv:Error bm2br13 = csv:transform([bm2, bm2], {}, BooleanRecord13Array);
+    BooleanRecord13Array|csv:Error bm2br13 = csv:transform([bm2, bm2], {outputWithHeaders: false}, BooleanRecord13Array);
     test:assertEquals(bm2br13, [
         {b1: true, b2: false, defaultableField: "", nillableField :null},
         {b1: true, b2: false, defaultableField: "", nillableField :null}
@@ -368,7 +368,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType4() {
     test:assertTrue(bm4br14 is csv:Error);
     test:assertEquals((<csv:Error>bm4br14).message(), common:generateErrorMessageForMissingRequiredField("requiredField"));
 
-    BooleanRecord14Array|csv:Error bm5br14 = csv:transform([bm5, bm5], {}, BooleanRecord14Array);
+    BooleanRecord14Array|csv:Error bm5br14 = csv:transform([bm5, bm5], {outputWithHeaders: false}, BooleanRecord14Array);
     test:assertTrue(bm5br14 is csv:Error);
     test:assertEquals((<csv:Error>bm5br14).message(), common:generateErrorMessageForMissingRequiredField("requiredField"));
 
@@ -384,13 +384,13 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType4() {
     test:assertTrue(bm4br15 is csv:Error);
     test:assertEquals((<csv:Error>bm4br15).message(), common:generateErrorMessageForMissingRequiredField("b1"));
 
-    BooleanRecord16Array|csv:Error bm1br16 = csv:transform([bm1, bm1], {}, BooleanRecord16Array);
+    BooleanRecord16Array|csv:Error bm1br16 = csv:transform([bm1, bm1], {headersOrder: ["b2", "b1"]}, BooleanRecord16Array);
     test:assertEquals(bm1br16, [
         {b1: true, b2: false},
         {b1: true, b2: false}
     ]);
 
-    BooleanRecord16Array|csv:Error bm2br16 = csv:transform([bm2, bm2], {}, BooleanRecord16Array);
+    BooleanRecord16Array|csv:Error bm2br16 = csv:transform([bm2, bm2], {outputWithHeaders: false}, BooleanRecord16Array);
     test:assertEquals(bm2br16, [
         {b1: true, b2: false, b3: (), n1: (), n3: ()},
         {b1: true, b2: false, b3: (), n1: (), n3: ()}
@@ -462,7 +462,7 @@ function testFromCsvWithTypeForMapAndRecordAsExpectedType4() {
         {b2: false, b3: (), i1: 1}
     ]);
 
-    BooleanRecord18Array|csv:Error bm4br18 = csv:transform([bm4, bm4], {}, BooleanRecord18Array);
+    BooleanRecord18Array|csv:Error bm4br18 = csv:transform([bm4, bm4], {outputWithHeaders: false}, BooleanRecord18Array);
     test:assertTrue(bm4br18 is csv:Error);
     test:assertEquals((<csv:Error>bm4br18).message(), common:generateErrorMessageForMissingRequiredField("b2"));
 
@@ -511,7 +511,7 @@ function testFromCsvWithTypeForMapAndMapAsExpectedType() {
         {b1: true, b2: false}
     ]);
 
-    NillableBooleanMapArray|csv:Error bm2nbma = csv:transform([bm2, bm2], {}, NillableBooleanMapArray);
+    NillableBooleanMapArray|csv:Error bm2nbma = csv:transform([bm2, bm2], {outputWithHeaders: false}, NillableBooleanMapArray);
     test:assertEquals(bm2nbma, [
         {b1: true, b2: false, b3:(), n1: (), n3: ()},
         {b1: true, b2: false, b3:(), n1: (), n3: ()}
@@ -633,7 +633,7 @@ function testFromCsvWithTypeForMapAndMapAsExpectedType2() {
         {b1: true, b2: false}
     ]);
 
-    JsonMapArray|csv:Error bm2jma = csv:transform([bm2, bm2], {}, JsonMapArray);
+    JsonMapArray|csv:Error bm2jma = csv:transform([bm2, bm2], {outputWithHeaders: false, headersOrder: []}, JsonMapArray);
     test:assertEquals(bm2jma, [
         {b1: true, b2: false, b3: (), n1: (), n3: ()},
         {b1: true, b2: false, b3: (), n1: (), n3: ()}
@@ -717,7 +717,7 @@ function testFromCsvWithTypeForMapAndMapAsExpectedType2() {
         {}
     ]);
 
-    StringMapArray|csv:Error bm1sma = csv:transform([bm1, bm1], {}, StringMapArray);
+    StringMapArray|csv:Error bm1sma = csv:transform([bm1, bm1], {outputWithHeaders: false}, StringMapArray);
     test:assertEquals(bm1sma, [
         {},
         {}
@@ -749,7 +749,7 @@ function testFromCsvWithTypeForMapAndMapAsExpectedType2() {
 }
 
 @test:Config
-function testArrayIndexes() {
+function testArrayIndexesInRecords() {
     map<int>[] csv = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}, {a: 7, b: 8}];
 
     record {}[2]|csv:Error rec = csv:transform(csv);
@@ -764,6 +764,6 @@ function testArrayIndexes() {
                 {a: 5}
             ]);
 
-    record {|int a;|}[5]|csv:Error rec2_2 = csv:transform(csv, {skipLines: [2]});
+    record {|int a;|}[5]|csv:Error rec2_2 = csv:transform(csv, {skipLines: [2], outputWithHeaders: false, headersOrder: ["a", "b"]});
     test:assertTrue(rec2_2 is csv:Error);
 }

@@ -525,12 +525,12 @@ function testParseListsWithOutputHeaders() {
                 ["a", "true", "1"]
             ]);
 
-     ct1bt1_4 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true}); 
-     test:assertEquals(ct1bt1_4, [
+    ct1bt1_4 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4, [
                 ["h1", "h2", "h3"],
                 ["a", "true", "1"],
                 ["a", "true", "1"]
-            ]); 
+            ]);
 
     (int|boolean|string)[][]|csv:Error ct1bt1_4_2 = csv:parseLists([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1, outputWithHeaders: true});
     test:assertEquals(ct1bt1_4_2, [
@@ -556,18 +556,18 @@ function testParseListsWithOutputHeaders() {
                 ["a", true, 1]
             ]);
 
-     ct1bt1_5 = csv:parseLists([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
-     test:assertEquals(ct1bt1_5, [
+    ct1bt1_5 = csv:parseLists([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_5, [
                 ["h1", "h2", "h3"],
                 ["a", true, 1]
             ]);
 
-     ct1bt1_5 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true}); 
-     test:assertEquals(ct1bt1_5, [
+    ct1bt1_5 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_5, [
                 ["h1", "h2", "h3"],
                 ["a", true, 1],
                 ["a", true, 1]
-            ]);    
+            ]);
 
     [string...][]|csv:Error ct1bt2 = csv:parseLists([["1", "a"], ["1", "a"]]);
     test:assertEquals(ct1bt2, [
@@ -581,16 +581,30 @@ function testParseListsWithOutputHeaders() {
                 ["a", true, 1]
             ]);
 
-     [string...][]|csv:Error ct1bt2_3 = csv:parseLists([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
-     test:assertEquals(ct1bt2_3, [
+    [string...][]|csv:Error ct1bt2_3 = csv:parseLists([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt2_3, [
                 ["h1", "h2", "h3"],
                 ["a", "true", "1"]
             ]);
 
-     ct1bt2_2 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true}); 
-     test:assertEquals(ct1bt2_2, [
+    ct1bt2_2 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt2_2, [
                 ["h1", "h2", "h3"],
                 ["a", true, 1],
                 ["a", true, 1]
-            ]); 
+            ]);
+
+    string[2][1]|csv:Error ct1bt6 = csv:parseLists([["a", "b", "c"], ["a", "true", "1"], ["a", "true", "1"], ["a", "true", "1"]], {headerRows: 2, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6, [
+                ["h1"],
+                ["a"]
+            ]);
+    [string, boolean|string, int|string...][1]|csv:Error ct1bt6_2 = csv:parseLists([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6_2, [
+                ["h1", "h2", "h3"]
+            ]);
+    [string...][1]|csv:Error ct1bt6_3 = csv:parseLists([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6_3, [
+                ["h1", "h2", "h3"]
+            ]);
 }
