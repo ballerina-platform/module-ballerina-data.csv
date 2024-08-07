@@ -54,6 +54,7 @@ var csv3 = string `a,b,c,d
                     5,6,7,8
                     9,10,11,12
                     13,14,15,16`;
+var csv4 = [{a: "1", b: "2", c: "3", d: "4"}, {a: "5", b: "6", c: "7", d: "8"}, {a: "9", b: "10", c: "11", d: "12"}, {a: "13", b: "14", c: "15", d: "16"}];
 
 var result1 = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]];
 var result2 = [{a: 1, b: 2, c: 3, d: 4}, {a: 5, b: 6, c: 7, d: 8}, {a: 9, b: 10, c: 11, d: 12}, {a: 13, b: 14, c: 15, d: 16}];
@@ -155,5 +156,216 @@ function testParseStringWithListWithOutputHeaders() {
     test:assertEquals(psu8, result4);
 
     psu8 = csv:parseString(csv3, op5);
+    test:assertEquals(psu8, result6);
+}
+
+@test:Config
+function testTransformWithMapWithOutputHeaders() {
+    UnionType9|csv:Error psu9 = csv:transform(csv2);
+    test:assertEquals(psu9, result2);
+
+    psu9 = csv:transform(csv2, op1);
+    test:assertEquals(psu9, result2);
+
+    psu9 = csv:transform(csv2, op2);
+    test:assertEquals(psu9, result2);
+
+    psu9 = csv:transform(csv2, op3);
+    test:assertEquals(psu9, result2);
+
+    psu9 = csv:transform(csv2, op4);
+    test:assertEquals(psu9, result2);
+
+    UnionType10|csv:Error psu10 = csv:transform(csv2);
+    test:assertEquals(psu10, result2);
+
+    psu10 = csv:transform(csv2, op1);
+    test:assertEquals(psu10, result2);
+
+    psu10 = csv:transform(csv2, op2);
+    test:assertEquals(psu10, result2);
+
+    psu10 = csv:transform(csv2, op3);
+    test:assertEquals(psu10, result2);
+
+    psu10 = csv:transform(csv2, op4);
+    test:assertEquals(psu10, result2);
+
+    UnionType11|csv:Error psu11 = csv:transform(csv2);
+    test:assertEquals(psu11, result2);
+
+    psu11 = csv:transform(csv2, op1);
+    test:assertEquals(psu11, result2);
+
+    psu11 = csv:transform(csv2, op2);
+    test:assertEquals(psu11, result2);
+
+    psu11 = csv:transform(csv2, op3);
+    test:assertEquals(psu11, result2);
+
+    psu11 = csv:transform(csv2, op4);
+    test:assertEquals(psu11, result2);
+
+    UnionType12|csv:Error psu12 = csv:transform(csv4);
+    test:assertEquals(psu12, result3);
+
+    psu12 = csv:transform(csv4, op1);
+    test:assertEquals(psu12, result3);
+
+    psu12 = csv:transform(csv4, op2);
+    test:assertEquals(psu12, result3);
+
+    psu12 = csv:transform(csv4, op3);
+    test:assertEquals(psu12, result3);
+
+    psu12 = csv:transform(csv4, op4);
+    test:assertEquals(psu12, result3);
+
+    UnionType13|csv:Error psu13 = csv:transform(csv4);
+    test:assertEquals(psu13, result3);
+
+    psu13 = csv:transform(csv4, op1);
+    test:assertEquals(psu13, result3);
+
+    psu13 = csv:transform(csv4, op2);
+    test:assertEquals(psu13, result3);
+
+    psu13 = csv:transform(csv4, op3);
+    test:assertEquals(psu13, result3);
+
+    psu13 = csv:transform(csv4, op4);
+    test:assertEquals(psu13, result3);
+
+    UnionType14|csv:Error psu14 = csv:transform(csv4);
+    test:assertEquals(psu14, result3);
+
+    psu14 = csv:transform(csv4, op1);
+    test:assertEquals(psu14, result3);
+
+    psu14 = csv:transform(csv4, op2);
+    test:assertEquals(psu14, result3);
+
+    psu14 = csv:transform(csv4, op3);
+    test:assertEquals(psu14, result3);
+
+    psu14 = csv:transform(csv4, op4);
+    test:assertEquals(psu14, result3);
+
+    UnionType15|csv:Error psu15 = csv:transform(csv4);
+    test:assertEquals(psu15, result3);
+
+    psu15 = csv:transform(csv4, op1);
+    test:assertEquals(psu15, result3);
+
+    psu15 = csv:transform(csv4, op2);
+    test:assertEquals(psu15, result3);
+
+    psu15 = csv:transform(csv4, op3);
+    test:assertEquals(psu15, result3);
+
+    psu15 = csv:transform(csv4, op4);
+    test:assertEquals(psu15, result3);
+}
+
+@test:Config
+function testTransformWithListWithOutputHeaders() {
+    UnionType1|csv:Error psu1 = csv:transform(csv4);
+    test:assertEquals(psu1, result4);
+
+    psu1 = csv:transform(csv4, op1);
+    test:assertEquals(psu1, result4);
+
+    psu1 = csv:transform(csv4, op2);
+    test:assertEquals(psu1, result6);
+
+    psu1 = csv:transform(csv4, op3);
+    test:assertEquals(psu1, result6);
+
+    psu1 = csv:transform(csv4, op4);
+    test:assertTrue(psu1 is csv:Error);
+    test:assertEquals((<error>psu1).message(), "The source value cannot convert in to the 'union_type_tests:UnionType1'");
+
+    UnionType2|csv:Error psu2 = csv:transform(csv4);
+    test:assertEquals(psu2, result4);
+
+    psu2 = csv:transform(csv4, op1);
+    test:assertEquals(psu2, result4);
+
+    psu2 = csv:transform(csv4, op2);
+    test:assertEquals(psu2, result6);
+
+    psu2 = csv:transform(csv4, op3);
+    test:assertEquals(psu2, result6);
+
+    UnionType3|csv:Error psu3 = csv:transform(csv4);
+    test:assertEquals(psu3, result4);
+
+    psu3 = csv:transform(csv4, op1);
+    test:assertEquals(psu3, result4);
+
+    psu3 = csv:transform(csv4, op2);
+    test:assertEquals(psu3, result6);
+
+    psu3 = csv:transform(csv4, op3);
+    test:assertEquals(psu3, result6);
+
+    UnionType4|csv:Error psu4 = csv:transform(csv4);
+    test:assertEquals(psu4, result4);
+
+    psu4 = csv:transform(csv4, op1);
+    test:assertEquals(psu4, result4);
+
+    psu4 = csv:transform(csv4, op2);
+    test:assertEquals(psu4, result6);
+
+    psu4 = csv:transform(csv4, op3);
+    test:assertEquals(psu4, result6);
+
+    UnionType5|csv:Error psu5 = csv:transform(csv4);
+    test:assertEquals(psu5, result4);
+
+    psu5 = csv:transform(csv4, op1);
+    test:assertEquals(psu5, result4);
+
+    psu5 = csv:transform(csv4, op2);
+    test:assertEquals(psu5, result6);
+
+    psu5 = csv:transform(csv4, op3);
+    test:assertEquals(psu5, result6);
+
+    UnionType6|csv:Error psu6 = csv:transform(csv4);
+    test:assertEquals(psu6, result4);
+
+    psu6 = csv:transform(csv4, op1);
+    test:assertEquals(psu6, result4);
+
+    psu6 = csv:transform(csv4, op2);
+    test:assertEquals(psu6, result6);
+
+    psu6 = csv:transform(csv4, op3);
+    test:assertEquals(psu6, result6);
+
+    UnionType7|csv:Error psu7 = csv:transform(csv4);
+    test:assertEquals(psu7, result4);
+
+    psu7 = csv:transform(csv4, op1);
+    test:assertEquals(psu7, result4);
+
+    psu7 = csv:transform(csv4, op2);
+    test:assertEquals(psu7, result6);
+
+    psu7 = csv:transform(csv4, op3);
+    test:assertEquals(psu7, result6);
+
+    UnionType8|csv:Error psu8 = csv:transform(csv4);
+    test:assertEquals(psu8, result4);
+
+    psu8 = csv:transform(csv4, op1);
+    test:assertEquals(psu8, result4);
+
+    psu8 = csv:transform(csv4, op2);
+    test:assertEquals(psu8, result6);
+
+    psu8 = csv:transform(csv4, op3);
     test:assertEquals(psu8, result6);
 }
