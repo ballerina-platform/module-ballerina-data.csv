@@ -1,20 +1,32 @@
 import ballerina/data.csv;
+import ballerina/lang.regexp;
 
 type A [[int, string], [int, string]];
-
 public function main() returns error? {
     stream<byte[], error?> s = (<byte[][]> [[1, 2, 3, 4, 5]]).toStream();
 
-    [[int, string], [int, string]] val = check csv:parseStringToList(string `a,b`, {});
-    [record{}, record{}, record{}, record{}] val2 = check csv:parseStringToRecord(string `a,b`, {});
-    [[int, string], [int, string]] val3 = check csv:parseStreamToList(s, {});
-    [record{}, record{}, record{}, record{}] val4 = check csv:parseStreamToRecord(s, {});
-    A val5 = check csv:parseBytesToList([1,2,3], {});
-    record{}[]|[record{}, record{}, record{}, record{}] val6 = check csv:parseBytesToRecord([1,2,3], {});
-    int[][]|[[int, string], [int, string]] val7 = check csv:parseRecordAsListType([{}], [], {});
-    [[int, string], [int, string]] val8 = check csv:parseListAsListType([], {});
-    [record{}, record{}, record{}, record{}] val9 = check csv:parseRecordAsRecordType([{}], {});
-    [record{}, record{}, record{}, record{}] val10 = check csv:parseListAsRecordType([], [], {});
-    record{}[2] val11 = check csv:parseListAsRecordType([], [], {});
-    int[3][2] val12 = check csv:parseListAsListType([], {});
+    [[int, string], [int, string]] _ = check csv:parseString(string `a,b`, {});
+    [record{}, record{}, record{}, record{}] _ = check csv:parseString(string `a,b`, {});
+    [[int, string], [int, string]] _ = check csv:parseStream(s, {});
+    [record{}, record{}, record{}, record{}] _ = check csv:parseStream(s, {});
+    A _ = check csv:parseBytes([1,2,3], {});
+    record{}[]|[record{}, record{}, record{}, record{}] _ = check csv:parseBytes([1,2,3], {});
+    int[][]|[[int, string], [int, string]] _ = check csv:transform([{}], {});
+    [[int, string], [int, string]] _ = check csv:parseList([], {});
+    [record{}, record{}, record{}, record{}] _ = check csv:transform([{}], {});
+    [record{}, record{}, record{}, record{}] _ = check csv:parseList([], {});
+    record{record{} a;}[] _ = check csv:parseList([], {});
+    record{int[] a;}[] _ = check csv:parseList([], {});
+    record{[int...] a;}[] _ = check csv:parseList([], {});
+    record{[int...] a;}[] _ = check csv:parseList([], {});
+    record{record{} a;}[] _ = check csv:parseList([], {});
+    record{xml a; regexp:RegExp b;}[] _ = check csv:parseList([], {});
+    [xml, xml][] _ = check csv:parseList([], {});
+    [regexp:RegExp, xml, int[]][] _ = check csv:parseList([], {});
+    [regexp:RegExp, xml, int[]][]|int[][] _ = check csv:parseList([], {});
+    int[][]|[regexp:RegExp, xml, int[]][] _ = check csv:parseList([], {});
+    int[][]|[record{}|regexp:RegExp][] _ = check csv:parseList([], {});
+    record{}[]|int[][] _ = check csv:parseList([], {});
+    record{}[2] _ = check csv:parseList([], {});
+    int[3][2] _ = check csv:parseList([], {});
 }

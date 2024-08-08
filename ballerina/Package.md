@@ -5,14 +5,14 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 ## Features
 
 - **Versatile CSV Data Input**: Accept CSV data as a string, byte array, or a stream and convert it into a subtype of ballerina records or lists.
-- **CSV to anydata Value Conversion**: Transform CSV data into expected type which is subtype of ballerina records or lists.
-- **Projection Support**: Perform selective conversion of CSV data subsets into ballerina records or lists values through projection.
+- **CSV to anydata Value transformation**: Transform CSV data into expected type which is subtype of ballerina record arrays or anydata arrays.
+- **Projection Support**: Perform selective conversion of CSV data subsets into ballerina record array or anydata array values through projection.
 
 ## Usage
 
 ### Converting CSV string to a record array
 
-To convert a CSV string into a record value, you can use the `parseStringToRecord` function from the library. The following example demonstrates how to transform a CSV document into an array of records.
+To convert a CSV string into a record array value, you can use the `parseString` function from the library. The following example demonstrates how to transform a CSV document into an array of records.
 
 ```ballerina
 import ballerina/data.csv;
@@ -29,7 +29,7 @@ public function main() returns error? {
                                Clean Code,Robert C. Martin,2008
                                The Pragmatic Programmer,Andrew Hunt and David Thomas,1999`;
 
-    Book[] books = check csv:parseStringToRecord(csvString);
+    Book[] books = check csv:parseString(csvString);
     foreach var book in books {
         io:println(book);
     }
@@ -38,7 +38,7 @@ public function main() returns error? {
 
 ### Converting external CSV document to a record value
 
-For transforming CSV content from an external source into a record value, the `parseStringToRecord`, `parseBytesToRecord`, `parseStreamToRecord`, `parseStringToList`, `parseBytesToList`and `parseStreamToList` functions can be used. This external source can be in the form of a string or a byte array/byte-block-stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
+For transforming CSV content from an external source into a record value, the `parseString`, `parseBytes` and `parseStream` functions can be used. This external source can be in the form of a string or a byte array/byte-block-stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
 
 ```ballerina
 import ballerina/data.csv;
@@ -53,12 +53,12 @@ type Book record {
 public function main() returns error? {
     // Read the CSV content as a string
     string csvContent = check io:fileReadString("path/to/file.csv");
-    Book[] book = check csv:parseStringToRecord(csvContent);
+    Book[] book = check csv:parseString(csvContent);
     io:println(book);
 
     // Read the CSV content as a stream
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("path/to/file.csv");
-    Book[] book2 = check csv:parseStreamToRecord(csvStream);
+    Book[] book2 = check csv:parseStream(csvStream);
     io:println(book2);
 }
 ```
@@ -67,8 +67,8 @@ Make sure to handle possible errors that may arise during the file reading or CS
 
 ## CSV to record array/anydata array of array representation
 
-The CSV Object can be represented as a value of type record/map array or string array of array in Ballerina which facilitates a structured and type-safe approach to handling CSV data.
-The conversion of CSV data to subtype of record array or anydata array of array representation is a fundamental feature of the library.
+The CSV Object can be represented as a value of type `record/map array` or `string array of array` in Ballerina, which facilitates a structured and type-safe approach to handling CSV data.
+The conversion of CSV data to subtype of `record array` or `anydata array of array` representation is a fundamental feature of the library.
 
 ```ballerina
 import ballerina/data.csv;
@@ -81,9 +81,19 @@ type Book record {
 
 public function main() returns error? {
     string[][] bookArray = [["Clean Code","2008"],["Clean Architecture","2017"]];
+    Book[] bookRecords = [{name: "Clean Code", year: 2008}, {name: "Clean Architecture", year: 2017}];
 
-    Book[] author = check csv:parseListAsRecordType(bookArray, customHeaders = ["name", "year"]);
-    io:println(author);
+    // Parse and output a record array from a source of string array of arrays.
+    Book[] books = check csv:parseList(bookArray, {customHeaders: ["name", "year"]});
+    io:println(books);
+
+    // Parse and output a tuple array from a source of string array of arrays.
+    [string, int][] books2 = check csv:parseList(bookArray, {customHeaders: ["name", "year"]});
+    io:println(books2);
+
+    // Transform CSV records to a string array of arrays.
+    [string, int][] books3 = check csv:transform(bookRecords);
+    io:println(books3);
 }
 ```
 
@@ -115,7 +125,7 @@ public function main() returns error? {
 
     // The CSV data above contains publisher and year fields which are not 
     // required to be converted into a record field.
-    Book[] book = check csv:parseRecordAsRecordType(csvContent);
+    Book[] book = check csv:transform(csvContent);
     io:println(book);
 }
 ```

@@ -24,16 +24,11 @@ package io.ballerina.lib.data.csvdata.compiler;
  * @since 0.1.0
  */
 public final class Constants {
-    static final String PARSE_STRING_TO_RECORD = "parseStringToRecord";
-    static final String PARSE_BYTES_TO_RECORD = "parseBytesToRecord";
-    static final String PARSE_STREAM_TO_RECORD = "parseStreamToRecord";
-    static final String PARSE_STRING_TO_LIST = "parseStringToList";
-    static final String PARSE_BYTES_TO_LIST = "parseBytesToList";
-    static final String PARSE_STREAM_TO_LIST = "parseStreamToList";
-    static final String PARSE_RECORD_AS_RECORD_TYPE = "parseRecordAsRecordType";
-    static final String PARSE_RECORD_AS_LIST_TYPE = "parseRecordAsListType";
-    static final String PARSE_LIST_AS_RECORD_TYPE = "parseListAsRecordType";
-    static final String PARSE_LIST_AS_LIST_TYPE = "parseListAsListType";
+    static final String PARSE_STRING = "parseString";
+    static final String PARSE_BYTES = "parseBytes";
+    static final String PARSE_STREAM = "parseStream";
+    static final String TRANSFORM = "transform";
+    static final String PARSE_LISTS = "parseList";
     static final String NAME = "Name";
     static final String CSVDATA = "csv";
     static final String BALLERINA = "ballerina";

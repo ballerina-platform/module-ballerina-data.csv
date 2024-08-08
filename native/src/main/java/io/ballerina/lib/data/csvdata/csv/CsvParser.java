@@ -144,6 +144,7 @@ public final class CsvParser {
         boolean isValueStart = false;
         State prevState;
         int arraySize = 0;
+        boolean addHeadersForOutput = false;
 
         StateMachine() {
             reset();
@@ -178,6 +179,7 @@ public final class CsvParser {
             isValueStart = false;
             prevState = null;
             arraySize = 0;
+            addHeadersForOutput = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -268,10 +270,19 @@ public final class CsvParser {
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
                             expectedArrayElementType);
                 case TypeTags.UNION_TAG:
+                    boolean outputHeaders = config.outputWithHeaders;
+                    Object customHeaders = config.customHeadersIfHeaderAbsent;
                     Object mapValue = execute(reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                     ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                     config.stringConversion = true;
+                    config.outputWithHeaders = outputHeaders;
+                    if (config.outputWithHeaders && customHeaders == null) {
+                        config.customHeadersIfHeaderAbsent = this.headers;
+                    }
+                    if (customHeaders != null) {
+                        config.customHeadersIfHeaderAbsent = customHeaders;
+                    }
                     return CsvTraversal.traverse((BArray) mapValue, config, bTypedesc);
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE,
@@ -282,8 +293,9 @@ public final class CsvParser {
             if (config.header != Boolean.FALSE) {
                 currentState = HEADER_START_STATE;
             } else {
-                if (config.customHeader != null) {
-                    CsvCreator.addCustomHeadersIfNotNull(this, config.customHeader);
+                Object customHeadersIfHeaderAbsent = config.customHeadersIfHeaderAbsent;
+                if (customHeadersIfHeaderAbsent != null) {
+                    CsvCreator.addCustomHeadersIfNotNull(this, customHeadersIfHeaderAbsent);
                 }
                 currentState = ROW_START_STATE;
                 addFieldNamesForNonHeaderState();
@@ -352,7 +364,6 @@ public final class CsvParser {
                 char ch;
                 State state = HEADER_START_STATE;
                 char separator = sm.config.delimiter;
-                Object customHeader = sm.config.customHeader;
                 int headerStartRowNumber = getHeaderStartRowWhenHeaderIsPresent(sm.config.header);
                 for (; i < count; i++) {
                     ch = buff[i];
@@ -376,16 +387,6 @@ public final class CsvParser {
                         continue;
                     }
                     sm.isHeaderConfigExceedLineNumber = false;
-                    if (customHeader != null) {
-                        if (sm.isNewLineOrEof(ch)) {
-                            CsvCreator.addCustomHeadersIfNotNull(sm, customHeader);
-                            sm.lineNumber++;
-                            state = HEADER_END_STATE;
-                            break;
-                        }
-                        state = this;
-                        continue;
-                    }
 
                     if (ch == sm.config.comment) {
                         sm.insideComment = true;
@@ -528,7 +529,7 @@ public final class CsvParser {
             State state = ROW_START_STATE;
 
             @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
+            public State transition(StateMachine sm, char[] buff, int i, int count) {
                 char separator = sm.config.delimiter;
                 long[] skipLines = CsvUtils.getSkipDataRows(sm.config.skipLines);
 
@@ -543,7 +544,7 @@ public final class CsvParser {
                     }
 
                     if (sm.skipTheRow) {
-                        if (sm.isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
+                        if (isEndOfTheRowAndValueIsNotEmpty(sm, ch)) {
                             sm.insideComment = false;
                             sm.skipTheRow = false;
                             sm.clear();
@@ -564,6 +565,7 @@ public final class CsvParser {
                             continue;
                         }
                         initiateNewRowType(sm);
+                        addHeadersAsTheFirstElementForArraysIfApplicable(sm);
                     }
                     if (!sm.insideComment && ch == sm.config.comment) {
                         handleEndOfTheRow(sm);
@@ -614,17 +616,17 @@ public final class CsvParser {
             }
         }
 
-        private static void handleEndOfTheRow(StateMachine sm) throws CsvParserException {
+        private static void handleEndOfTheRow(StateMachine sm) {
             handleEndOfTheRow(sm, true);
         }
 
-        private static void handleEndOfTheRow(StateMachine sm, boolean trim) throws CsvParserException {
+        private static void handleEndOfTheRow(StateMachine sm, boolean trim) {
             sm.isValueStart = false;
             handleCsvRow(sm, trim);
             CsvUtils.checkRequiredFieldsAndLogError(sm.fieldHierarchy, sm.config.absentAsNilableType);
         }
 
-        private static void handleCsvRow(StateMachine sm, boolean trim) throws CsvParserException {
+        private static void handleCsvRow(StateMachine sm, boolean trim) {
             String value = sm.peek();
             if (trim) {
                 value = value.trim();
@@ -665,6 +667,24 @@ public final class CsvParser {
             sm.currentCsvNode = CsvCreator.initRowValue(sm.expectedArrayElementType);
         }
 
+        private static void addHeadersAsTheFirstElementForArraysIfApplicable(StateMachine sm) {
+            if (!sm.addHeadersForOutput && CsvUtils
+                    .isExpectedTypeIsArray(sm.expectedArrayElementType) && sm.config.outputWithHeaders) {
+                ArrayList<String> headers = sm.headers;
+                if (!headers.isEmpty()) {
+                    for (String header : headers) {
+                        addHeaderAsRowValue(sm, header);
+                    }
+                    if (!sm.isCurrentCsvNodeEmpty) {
+                        finalizeTheRow(sm);
+                        initiateNewRowType(sm);
+                    }
+                }
+                sm.addHeadersForOutput = true;
+                sm.columnIndex = 0;
+            }
+        }
+
         private static void finalizeTheRow(StateMachine sm) {
             int rootArraySize = sm.rootArrayType.getSize();
             if (rootArraySize == -1) {
@@ -675,12 +695,11 @@ public final class CsvParser {
             sm.arraySize++;
         }
 
-        private static void addRowValue(StateMachine sm) throws CsvParserException {
+        private static void addRowValue(StateMachine sm) {
             addRowValue(sm, true);
         }
 
-        private static void addRowValue(StateMachine sm, boolean trim) throws CsvParserException {
-            Type type = null;
+        private static void addRowValue(StateMachine sm, boolean trim) {
             Field currentField = null;
             sm.isValueStart = false;
             Type exptype = sm.expectedArrayElementType;
@@ -689,15 +708,10 @@ public final class CsvParser {
                 value = value.trim();
             }
 
+            Type type = getExpectedRowType(sm, exptype);
+
             if (exptype instanceof RecordType) {
-                type = getExpectedRowTypeOfRecord(sm);
                 currentField = getCurrentField(sm);
-            } else if (exptype instanceof MapType mapType) {
-                type = (mapType.getConstrainedType());
-            } else if (exptype instanceof ArrayType arrayType) {
-                type = getExpectedRowTypeOfArray(sm, arrayType);
-            } else if (exptype instanceof TupleType tupleType) {
-                type = getExpectedRowTypeOfTuple(sm, tupleType);
             }
 
             if (type != null) {
@@ -705,6 +719,35 @@ public final class CsvParser {
                         value, type, sm.config, exptype, currentField);
             }
             sm.columnIndex++;
+        }
+
+        private static void addHeaderAsRowValue(StateMachine sm, String value) {
+            Type exptype = sm.expectedArrayElementType;
+            Field currentField = null;
+            Type type = getExpectedRowType(sm, exptype);
+
+            if (exptype instanceof RecordType) {
+                currentField = getCurrentField(sm);
+            }
+
+            if (type != null) {
+                CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                        value, type, sm.config, exptype, currentField);
+            }
+            sm.columnIndex++;
+        }
+
+        private static Type getExpectedRowType(StateMachine sm, Type exptype) {
+            if (exptype instanceof RecordType) {
+                return getExpectedRowTypeOfRecord(sm);
+            } else if (exptype instanceof MapType mapType) {
+                return (mapType.getConstrainedType());
+            } else if (exptype instanceof ArrayType arrayType) {
+                return getExpectedRowTypeOfArray(sm, arrayType);
+            } else if (exptype instanceof TupleType tupleType) {
+                return getExpectedRowTypeOfTuple(sm, tupleType);
+            }
+            return null;
         }
 
         private static Type getExpectedRowTypeOfTuple(StateMachine sm, TupleType tupleType) {
@@ -781,8 +824,7 @@ public final class CsvParser {
         private static class StringQuoteValueState implements State {
 
             @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count)
-                    throws CsvParserException {
+            public State transition(StateMachine sm, char[] buff, int i, int count) {
                 State state = this;
                 char ch;
                 for (; i < count; i++) {
@@ -821,8 +863,6 @@ public final class CsvParser {
                         sm.prevState = this;
                         sm.isQuoteClosed = false;
                         break;
-                    } else if (!sm.isQuoteClosed && !sm.peek().isEmpty() && ch == EOF) {
-                        throw new CsvParserException("unexpected end of csv stream");
                     } else {
                         if (!sm.isQuoteClosed) {
                             sm.append(ch);
@@ -885,8 +925,6 @@ public final class CsvParser {
                         sm.prevState = this;
                         state = HEADER_ESCAPE_CHAR_STATE;
                         break;
-                    } else if (!sm.isQuoteClosed && ch == EOF) {
-                        throw new CsvParserException("unexpected end of csv stream");
                     } else {
                         if (!sm.isQuoteClosed) {
                             sm.append(ch);

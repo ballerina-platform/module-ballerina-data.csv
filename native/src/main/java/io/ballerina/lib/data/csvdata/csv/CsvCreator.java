@@ -56,35 +56,31 @@ public final class CsvCreator {
     static Object initRowValue(Type expectedType) {
         expectedType = TypeUtils.getReferredType(expectedType);
 
-        switch (expectedType.getTag()) {
-            case TypeTags.RECORD_TYPE_TAG:
-                return ValueCreator.createRecordValue(expectedType.getPackage(), expectedType.getName());
-            case TypeTags.MAP_TAG:
-                return ValueCreator.createMapValue((MapType) expectedType);
-            case TypeTags.TUPLE_TAG:
-                return ValueCreator.createTupleValue((TupleType) expectedType);
-            case TypeTags.ARRAY_TAG:
-                return ValueCreator.createArrayValue((ArrayType) expectedType);
-            default:
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
-        }
+        return switch (expectedType.getTag()) {
+            case TypeTags.RECORD_TYPE_TAG ->
+                    ValueCreator.createRecordValue(expectedType.getPackage(), expectedType.getName());
+            case TypeTags.MAP_TAG -> ValueCreator.createMapValue((MapType) expectedType);
+            case TypeTags.TUPLE_TAG -> ValueCreator.createTupleValue((TupleType) expectedType);
+            case TypeTags.ARRAY_TAG -> ValueCreator.createArrayValue((ArrayType) expectedType);
+            default -> throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+        };
     }
 
-    static Object convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
-                                                  String value, Type type, CsvConfig config, Type exptype,
-                                                  Field currentField) {
+    static void convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
+                                                String value, Type type, CsvConfig config, Type exptype,
+                                                Field currentField) {
         Object currentCsv = sm.currentCsvNode;
         Object nilValue = config.nilValue;
         if (sm.config.nilAsOptionalField && !type.isNilable()
                 && CsvUtils.isNullValue(nilValue, value)
                 && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
-            return null;
+            return;
         }
         Object convertedValue = convertToExpectedType(StringUtils.fromString(value), type, config);
         sm.isCurrentCsvNodeEmpty = false;
         if (convertedValue instanceof BError || convertedValue instanceof CsvUtils.UnMappedValue) {
             if (ignoreIncompatibilityErrorsForMaps(sm, exptype)) {
-                return null;
+                return;
             }
             throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CAST, value, type);
         }
@@ -95,30 +91,27 @@ public final class CsvCreator {
             case TypeTags.RECORD_TYPE_TAG:
                 ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(getHeaderValueForColumnIndex(sm)),
                         convertedValue);
-                return currentCsv;
+                return;
             case TypeTags.ARRAY_TAG:
                 ArrayType arrayType = (ArrayType) currentCsvNodeType;
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < sm.columnIndex) {
-                    return currentCsv;
+                    return;
                 }
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
-                return currentCsv;
+                return;
             case TypeTags.TUPLE_TAG:
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
-                return currentCsv;
+                return;
             default:
-                return convertedValue;
         }
     }
 
     public static String getHeaderValueForColumnIndex(CsvParser.StateMachine sm) {
-        if (sm.config.customHeader == null &&  (sm.config.header == Boolean.FALSE)) {
+        if (sm.config.customHeadersIfHeaderAbsent == null &&  (sm.config.header == Boolean.FALSE)) {
             String header = String.valueOf(sm.columnIndex + 1);
             Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
-            if (fieldHierarchy.containsKey(header)) {
-                fieldHierarchy.remove(header);
-            }
+            fieldHierarchy.remove(header);
             return header;
         }
         if (sm.columnIndex >= sm.headers.size()) {
@@ -147,14 +140,9 @@ public final class CsvCreator {
         if (exptype.getTag() == TypeTags.RECORD_TYPE_TAG) {
             String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;
-            if (fields.containsKey(header)) {
-                return false;
-            }
-            return true;
-        } else if (exptype.getTag() == TypeTags.MAP_TAG) {
-            return true;
+            return !fields.containsKey(header);
         }
-        return false;
+        return exptype.getTag() == TypeTags.MAP_TAG;
     }
 
     public static Object convertToExpectedType(BString value, Type type, CsvConfig config) {

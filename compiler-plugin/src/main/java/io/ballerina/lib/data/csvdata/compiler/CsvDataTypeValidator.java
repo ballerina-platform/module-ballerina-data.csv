@@ -116,9 +116,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             Optional<Symbol> symbol = semanticModel.symbol(importDeclarationNode);
             symbol.filter(moduleSymbol -> moduleSymbol.kind() == SymbolKind.MODULE)
                     .filter(moduleSymbol -> isCsvDataImport((ModuleSymbol) moduleSymbol))
-                    .ifPresent(moduleSymbol -> {
-                        modulePrefix = ((ModuleSymbol) moduleSymbol).id().modulePrefix();
-                    });
+                    .ifPresent(moduleSymbol -> modulePrefix = ((ModuleSymbol) moduleSymbol).id().modulePrefix());
         }
     }
 
@@ -147,7 +145,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 continue;
             }
 
-            validateExpectedType(typeSymbol, ctx);
+            validateExpectedType(typeSymbol, currentLocation, ctx);
         }
     }
 
@@ -188,61 +186,114 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             return false;
         }
         String functionName = ((FunctionCallExpressionNode) expressionNode).functionName().toString().trim();
-        return functionName.contains(Constants.PARSE_STRING_TO_RECORD) ||
-                functionName.contains(Constants.PARSE_BYTES_TO_RECORD) ||
-                functionName.contains(Constants.PARSE_STREAM_TO_RECORD) ||
-                functionName.contains(Constants.PARSE_STRING_TO_LIST) ||
-                functionName.contains(Constants.PARSE_BYTES_TO_LIST) ||
-                functionName.contains(Constants.PARSE_STREAM_TO_LIST) ||
-                functionName.contains(Constants.PARSE_RECORD_AS_RECORD_TYPE) ||
-                functionName.contains(Constants.PARSE_RECORD_AS_LIST_TYPE) ||
-                functionName.contains(Constants.PARSE_LIST_AS_RECORD_TYPE) ||
-                functionName.contains(Constants.PARSE_LIST_AS_LIST_TYPE);
+        return functionName.contains(Constants.PARSE_STRING) ||
+                functionName.contains(Constants.PARSE_BYTES) ||
+                functionName.contains(Constants.PARSE_STREAM) ||
+                functionName.contains(Constants.TRANSFORM) ||
+                functionName.contains(Constants.PARSE_LISTS);
     }
 
-    private void validateExpectedType(TypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
-        typeSymbol.getLocation().ifPresent(location -> currentLocation = location);
-
+    private void validateExpectedType(TypeSymbol typeSymbol, Location currentLocation, SyntaxNodeAnalysisContext ctx) {
         switch (typeSymbol.typeKind()) {
-            case UNION -> validateUnionType((UnionTypeSymbol) typeSymbol, ctx);
-            case ARRAY -> validateArrayType((ArrayTypeSymbol) typeSymbol, ctx);
-            case TUPLE -> validateTupleType((TupleTypeSymbol) typeSymbol, ctx);
-            case TYPE_REFERENCE -> validateExpectedType(((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor(), ctx);
-            case INTERSECTION -> validateExpectedType(getRawType(typeSymbol), ctx);
+            case UNION -> validateUnionType((UnionTypeSymbol) typeSymbol, currentLocation, ctx);
+            case ARRAY -> validateArrayType((ArrayTypeSymbol) typeSymbol, currentLocation, ctx);
+            case TUPLE -> validateTupleType(currentLocation, ctx);
+            case TYPE_REFERENCE -> validateExpectedType(((TypeReferenceTypeSymbol) typeSymbol)
+                    .typeDescriptor(), currentLocation, ctx);
+            case INTERSECTION -> validateExpectedType(getRawType(typeSymbol), currentLocation, ctx);
         }
     }
 
-    private void validateTupleType(TupleTypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
-        reportDiagnosticInfo(ctx, typeSymbol.getLocation(), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
+    private void validateTupleType(Location currentLocation, SyntaxNodeAnalysisContext ctx) {
+        // Currently, this is unsupported.
+        reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
     }
 
-    private void validateArrayType(ArrayTypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
-        if (!isSupportedArrayMemberType(typeSymbol.memberTypeDescriptor())) {
-            reportDiagnosticInfo(ctx, typeSymbol.getLocation(), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
+    private void validateArrayType(ArrayTypeSymbol typeSymbol, Location currentLocation
+            , SyntaxNodeAnalysisContext ctx) {
+        if (!isSupportedArrayMemberType(ctx, currentLocation, typeSymbol.memberTypeDescriptor())) {
+            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
         }
     }
 
     private void validateUnionType(UnionTypeSymbol unionTypeSymbol,
-                                   SyntaxNodeAnalysisContext ctx) {
+                                   Location currentLocation, SyntaxNodeAnalysisContext ctx) {
         List<TypeSymbol> memberTypeSymbols = unionTypeSymbol.memberTypeDescriptors();
         for (TypeSymbol memberTypeSymbol : memberTypeSymbols) {
-            validateExpectedType(memberTypeSymbol, ctx);
+            validateExpectedType(memberTypeSymbol, currentLocation, ctx);
         }
     }
 
-    private boolean isSupportedArrayMemberType(TypeSymbol typeSymbol) {
+    private boolean isSupportedArrayMemberType(SyntaxNodeAnalysisContext ctx,
+                                               Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
         TypeDescKind kind = typeSymbol.typeKind();
         if (kind == TypeDescKind.TYPE_REFERENCE) {
             kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();
         }
 
         switch (kind) {
-            case RECORD, ARRAY, TUPLE, MAP, UNION, INTERSECTION -> {
+            case ARRAY, MAP, UNION, INTERSECTION -> {
                 return true;
             }
+            case RECORD -> validateRecordFields(ctx, currentLocation, typeSymbol);
+            case TUPLE -> validateTupleMembers(ctx, currentLocation, typeSymbol);
             default -> {
                 return false;
             }
+        }
+        return true;
+    }
+
+    private void validateTupleMembers(SyntaxNodeAnalysisContext ctx, Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
+        TupleTypeSymbol tupleTypeSymbol = (TupleTypeSymbol) typeSymbol;
+        tupleTypeSymbol.memberTypeDescriptors().forEach(symbol ->
+                validateNestedTypeSymbols(ctx, currentLocation, symbol, false));
+        Optional<TypeSymbol> restSymbol = tupleTypeSymbol.restTypeDescriptor();
+        if (restSymbol.isPresent()) {
+            TypeSymbol restSym = restSymbol.get();
+            validateNestedTypeSymbols(ctx, currentLocation, restSym, false);
+        }
+    }
+
+    private void validateRecordFields(SyntaxNodeAnalysisContext ctx, Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
+        RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeSymbol;
+
+        recordTypeSymbol.typeInclusions().forEach(symbol ->
+                validateNestedTypeSymbols(ctx, currentLocation, symbol, true));
+
+        recordTypeSymbol.fieldDescriptors().values().forEach(field -> validateNestedTypeSymbols(ctx,
+                currentLocation, field.typeDescriptor(), true));
+
+        Optional<TypeSymbol> restSymbol = recordTypeSymbol.restTypeDescriptor();
+        if (restSymbol.isPresent()) {
+            TypeSymbol restSym = restSymbol.get();
+            validateNestedTypeSymbols(ctx, currentLocation, restSym, true);
+        }
+    }
+
+    private void validateNestedTypeSymbols(SyntaxNodeAnalysisContext ctx,
+                                           Location location, TypeSymbol typeSymbol, boolean isField) {
+        TypeDescKind kind = typeSymbol.typeKind();
+        if (kind == TypeDescKind.TYPE_REFERENCE) {
+            kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();
+        }
+
+        switch (kind) {
+            case ARRAY, OBJECT, RECORD, MAP, ERROR, FUNCTION, TUPLE, STREAM, FUTURE, TYPEDESC,
+                 TYPE_REFERENCE, XML, XML_ELEMENT, XML_PROCESSING_INSTRUCTION, XML_COMMENT,
+                 XML_TEXT, HANDLE, TABLE, NEVER, REGEXP  ->
+                 reportDiagnosticInfo(ctx, Optional.ofNullable(location),
+                         isField ? CsvDataDiagnosticCodes.UNSUPPORTED_FIELD_TYPE
+                        : CsvDataDiagnosticCodes.UNSUPPORTED_TUPLE_MEMBER_TYPE);
         }
     }
 
@@ -285,7 +336,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
 
         Optional<Symbol> symbol = semanticModel.symbol(moduleVariableDeclarationNode.typedBindingPattern());
-        symbol.map(s -> (VariableSymbol) s).map(s -> s.typeDescriptor()).ifPresent(s -> validateExpectedType(s, ctx));
+        symbol.map(s -> (VariableSymbol) s).map(VariableSymbol::typeDescriptor)
+                .ifPresent(s -> validateExpectedType(s, currentLocation, ctx));
     }
 
     private void processTypeDefinitionNode(TypeDefinitionNode typeDefinitionNode, SyntaxNodeAnalysisContext ctx) {

@@ -20,73 +20,73 @@ import ballerina/test;
 
 @test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
-    StringTuple1Array|csv:Error st1st1 = csv:parseListAsListType([st1, st1], {}, StringTuple1Array);
+    StringTuple1Array|csv:Error st1st1 = csv:parseList([st1, st1], {}, StringTuple1Array);
     test:assertEquals(st1st1, [
                 [s1, s2, "", ""],
                 [s1, s2, "", ""]
             ]);
 
-    StringTuple1Array|csv:Error st2st1 = csv:parseListAsListType([st2, st2], {}, StringTuple1Array);
+    StringTuple1Array|csv:Error st2st1 = csv:parseList([st2, st2], {}, StringTuple1Array);
     test:assertEquals(st2st1, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringTuple1Array|csv:Error st3st1 = csv:parseListAsListType([st3, st3], {}, StringTuple1Array);
+    StringTuple1Array|csv:Error st3st1 = csv:parseList([st3, st3], {}, StringTuple1Array);
     test:assertEquals(st3st1, [
                 [s1, s2, "", ""],
                 [s1, s2, "", ""]
             ]);
 
-    StringTuple1Array|csv:Error st4st1 = csv:parseListAsListType([st4, st4], {}, StringTuple1Array);
+    StringTuple1Array|csv:Error st4st1 = csv:parseList([st4, st4], {}, StringTuple1Array);
     test:assertEquals(st4st1, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringTuple2Array|csv:Error st1st2 = csv:parseListAsListType([st1, st1], {}, StringTuple2Array);
+    StringTuple2Array|csv:Error st1st2 = csv:parseList([st1, st1], {}, StringTuple2Array);
     test:assertEquals(st1st2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple2Array|csv:Error st2st2 = csv:parseListAsListType([st2, st2], {}, StringTuple2Array);
+    StringTuple2Array|csv:Error st2st2 = csv:parseList([st2, st2], {}, StringTuple2Array);
     test:assertEquals(st2st2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple2Array|csv:Error st3st2 = csv:parseListAsListType([st3, st3], {}, StringTuple2Array);
+    StringTuple2Array|csv:Error st3st2 = csv:parseList([st3, st3], {}, StringTuple2Array);
     test:assertEquals(st3st2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple2Array|csv:Error st4st2 = csv:parseListAsListType([st4, st4], {}, StringTuple2Array);
+    StringTuple2Array|csv:Error st4st2 = csv:parseList([st4, st4], {}, StringTuple2Array);
     test:assertEquals(st4st2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple3Array|csv:Error st1st3 = csv:parseListAsListType([st1, st1], {}, StringTuple3Array);
+    StringTuple3Array|csv:Error st1st3 = csv:parseList([st1, st1], {}, StringTuple3Array);
     test:assertEquals(st1st3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple3Array|csv:Error st2st3 = csv:parseListAsListType([st2, st2], {}, StringTuple3Array);
+    StringTuple3Array|csv:Error st2st3 = csv:parseList([st2, st2], {}, StringTuple3Array);
     test:assertEquals(st2st3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringTuple3Array|csv:Error st3st3 = csv:parseListAsListType([st3, st3], {}, StringTuple3Array);
+    StringTuple3Array|csv:Error st3st3 = csv:parseList([st3, st3], {}, StringTuple3Array);
     test:assertEquals(st3st3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple3Array|csv:Error st4st3 = csv:parseListAsListType([st4, st4], {}, StringTuple3Array);
+    StringTuple3Array|csv:Error st4st3 = csv:parseList([st4, st4], {}, StringTuple3Array);
     test:assertEquals(st4st3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
@@ -95,179 +95,179 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType() {
 
 @test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType2() {
-    StringTuple4Array|csv:Error st1st4 = csv:parseListAsListType([st1, st1], {}, StringTuple4Array);
+    StringTuple4Array|csv:Error st1st4 = csv:parseList([st1, st1], {}, StringTuple4Array);
     test:assertEquals(st1st4, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple4Array|csv:Error st2st4 = csv:parseListAsListType([st2, st2], {}, StringTuple4Array);
+    StringTuple4Array|csv:Error st2st4 = csv:parseList([st2, st2], {}, StringTuple4Array);
     test:assertEquals(st2st4, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringTuple4Array|csv:Error st3st4 = csv:parseListAsListType([st3, st3], {}, StringTuple4Array);
+    StringTuple4Array|csv:Error st3st4 = csv:parseList([st3, st3], {}, StringTuple4Array);
     test:assertEquals(st3st4, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringTuple4Array|csv:Error st4st4 = csv:parseListAsListType([st4, st4], {}, StringTuple4Array);
+    StringTuple4Array|csv:Error st4st4 = csv:parseList([st4, st4], {}, StringTuple4Array);
     test:assertEquals(st4st4, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    AnydataTuple3Array|csv:Error st1anydt3 = csv:parseListAsListType([st1, st1], {}, AnydataTuple3Array);
+    AnydataTuple3Array|csv:Error st1anydt3 = csv:parseList([st1, st1], {}, AnydataTuple3Array);
     test:assertEquals(st1anydt3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    AnydataTuple3Array|csv:Error st2anydt3 = csv:parseListAsListType([st2, st2], {}, AnydataTuple3Array);
+    AnydataTuple3Array|csv:Error st2anydt3 = csv:parseList([st2, st2], {}, AnydataTuple3Array);
     test:assertEquals(st2anydt3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    AnydataTuple3Array|csv:Error st3anydt3 = csv:parseListAsListType([st3, st3], {}, AnydataTuple3Array);
+    AnydataTuple3Array|csv:Error st3anydt3 = csv:parseList([st3, st3], {}, AnydataTuple3Array);
     test:assertEquals(st3anydt3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    AnydataTuple3Array|csv:Error st4anydt3 = csv:parseListAsListType([st4, st4], {}, AnydataTuple3Array);
+    AnydataTuple3Array|csv:Error st4anydt3 = csv:parseList([st4, st4], {}, AnydataTuple3Array);
     test:assertEquals(st4anydt3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    JsonTuple3Array|csv:Error st1jt3 = csv:parseListAsListType([st1, st1], {}, JsonTuple3Array);
+    JsonTuple3Array|csv:Error st1jt3 = csv:parseList([st1, st1], {}, JsonTuple3Array);
     test:assertEquals(st1jt3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    JsonTuple3Array|csv:Error st2jt3 = csv:parseListAsListType([st2, st2], {}, JsonTuple3Array);
+    JsonTuple3Array|csv:Error st2jt3 = csv:parseList([st2, st2], {}, JsonTuple3Array);
     test:assertEquals(st2jt3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    JsonTuple3Array|csv:Error st3jt3 = csv:parseListAsListType([st3, st3], {}, JsonTuple3Array);
+    JsonTuple3Array|csv:Error st3jt3 = csv:parseList([st3, st3], {}, JsonTuple3Array);
     test:assertEquals(st3jt3, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    JsonTuple3Array|csv:Error st4jt3 = csv:parseListAsListType([st4, st4], {}, JsonTuple3Array);
+    JsonTuple3Array|csv:Error st4jt3 = csv:parseList([st4, st4], {}, JsonTuple3Array);
     test:assertEquals(st4jt3, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    DecimalTuple4Array|csv:Error st1dta = csv:parseListAsListType([st1, st1], {}, DecimalTuple4Array);
+    DecimalTuple4Array|csv:Error st1dta = csv:parseList([st1, st1], {}, DecimalTuple4Array);
     test:assertTrue(st1dta is csv:Error);
     test:assertEquals((<error>st1dta).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
 
-    IntegerTuple3Array|csv:Error st2bta = csv:parseListAsListType([st2, st2], {}, IntegerTuple3Array);
+    IntegerTuple3Array|csv:Error st2bta = csv:parseList([st2, st2], {}, IntegerTuple3Array);
     test:assertTrue(st2bta is csv:Error);
     test:assertEquals((<error>st2bta).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "int"));
 
-    NilTuple3Array|csv:Error st3nta = csv:parseListAsListType([st3, st3], {}, NilTuple3Array);
+    NilTuple3Array|csv:Error st3nta = csv:parseList([st3, st3], {}, NilTuple3Array);
     test:assertTrue(st3nta is csv:Error);
     test:assertEquals((<error>st3nta).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "()"));
 
-    BooleanTuple4Array|csv:Error st4bta = csv:parseListAsListType([st4, st4], {}, BooleanTuple4Array);
+    BooleanTuple4Array|csv:Error st4bta = csv:parseList([st4, st4], {}, BooleanTuple4Array);
     test:assertTrue(st4bta is csv:Error);
     test:assertEquals((<error>st4bta).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "boolean"));
 }
 
 @test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType3() {
-    [string, boolean, int][]|csv:Error ct1bt4 = csv:parseListAsListType([["a", "true", "1"], ["a", "true", "1"]], {});
+    [string, boolean, int][]|csv:Error ct1bt4 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {});
     test:assertEquals(ct1bt4, [
                 ["a", true, 1],
                 ["a", true, 1]
             ]);
 
-    [(), float, decimal, boolean, int, string][]|csv:Error ct1bt6 = csv:parseListAsListType(
+    [(), float, decimal, boolean, int, string][]|csv:Error ct1bt6 = csv:parseList(
             [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertEquals(ct1bt6, [
                 [(), <float>2.23, <decimal>0, true, 1, "a"],
                 [(), <float>0, <decimal>2.23, true, 1, "a"]
             ]);
 
-    [decimal, boolean, int, string][]|csv:Error ct1bt7 = csv:parseListAsListType(
+    [decimal, boolean, int, string][]|csv:Error ct1bt7 = csv:parseList(
             [["0", "true", "1", "a"], ["2.23", "true", "1", "a"]]);
     test:assertEquals(ct1bt7, [
                 [<decimal>0, true, 1, "a"],
                 [<decimal>2.23, true, 1, "a"]
             ]);
 
-    [decimal, boolean, int, string, anydata...][]|csv:Error ct1bt8 = csv:parseListAsListType(
+    [decimal, boolean, int, string, anydata...][]|csv:Error ct1bt8 = csv:parseList(
             [["0", "true", "1", "a", "null", "2.23"], ["2.23", "true", "1", "a", "null", "0"]]);
     test:assertEquals(ct1bt8, [
                 [<decimal>0, true, 1, "a", (), 2.23],
                 [<decimal>2.23, true, 1, "a", (), 0]
             ]);
 
-    [(), float, decimal, boolean, int, string, string...][]|csv:Error ct1bt9 = csv:parseListAsListType(
+    [(), float, decimal, boolean, int, string, string...][]|csv:Error ct1bt9 = csv:parseList(
             [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertEquals(ct1bt9, [
                 [(), <float>2.23, <decimal>0, true, 1, "a"],
                 [(), <float>0, <decimal>2.23, true, 1, "a"]
             ]);
 
-    [decimal, boolean, int, string, string...][]|csv:Error ct1bt10 = csv:parseListAsListType(
+    [decimal, boolean, int, string, string...][]|csv:Error ct1bt10 = csv:parseList(
             [["0", "true", "1", "a", "null", "2.23"], ["2.23", "true", "1", "a", "null", "0"]]);
     test:assertEquals(ct1bt10, [
                 [<decimal>0, true, 1, "a", "null", "2.23"],
                 [<decimal>2.23, true, 1, "a", "null", "0"]
             ]);
 
-    [decimal, boolean, int, string, ()...][]|csv:Error ct1bt11 = csv:parseListAsListType(
+    [decimal, boolean, int, string, ()...][]|csv:Error ct1bt11 = csv:parseList(
             [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertTrue(ct1bt11 is csv:Error);
     //TODO: Fix the message
     test:assertEquals((<error>ct1bt11).message(), common:generateErrorMessageForInvalidValueForArrayType("null", "0", "decimal"));
 
-    [(), decimal, float, boolean, ()...][]|csv:Error ct1bt11_2 = csv:parseListAsListType(
+    [(), decimal, float, boolean, ()...][]|csv:Error ct1bt11_2 = csv:parseList(
             [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertTrue(ct1bt11_2 is csv:Error);
     test:assertEquals((<error>ct1bt11_2).message(), common:generateErrorMessageForInvalidValueForArrayType("1", "4", "()"));
 
-    [()...][]|csv:Error ct1bt12 = csv:parseListAsListType(
+    [()...][]|csv:Error ct1bt12 = csv:parseList(
             [["null", "2.23", "0", "true", "1", "a"], ["null", "0", "2.23", "true", "1", "a"]]);
     test:assertTrue(ct1bt12 is csv:Error);
     test:assertEquals((<error>ct1bt12).message(), common:generateErrorMessageForInvalidValueForArrayType("2.23", "1", "()"));
 
-    [string...][]|csv:Error ct1bt13 = csv:parseListAsListType(
+    [string...][]|csv:Error ct1bt13 = csv:parseList(
             [["1", "a"], ["1", "a"]]);
     test:assertEquals(ct1bt13, [
                 ["1", "a"],
                 ["1", "a"]
             ]);
 
-    [boolean...][]|csv:Error ct1bt14 = csv:parseListAsListType(
+    [boolean...][]|csv:Error ct1bt14 = csv:parseList(
             [["2.23", "null"], ["7", "()"]]);
     test:assertTrue(ct1bt14 is csv:Error);
     test:assertEquals((<error>ct1bt14).message(), common:generateErrorMessageForInvalidValueForArrayType("2.23", "0", "boolean"));
 
-    int?[][]|csv:Error ct1bt15 = csv:parseListAsListType(
+    int?[][]|csv:Error ct1bt15 = csv:parseList(
             [["1", "()"], ["1", "2"]]);
     test:assertEquals(ct1bt15, [
                 [1, ()],
                 [1, 2]
             ]);
 
-    int[][]|csv:Error ct1bt16 = csv:parseListAsListType(
+    int[][]|csv:Error ct1bt16 = csv:parseList(
             [["1", "2"], ["1", "()"]]);
     test:assertTrue(ct1bt16 is csv:Error);
     test:assertEquals((<error>ct1bt16).message(), common:generateErrorMessageForInvalidValueForArrayType("()", "1", "int"));
 
-    int[][]|csv:Error ct1bt17 = csv:parseListAsListType(
+    int[][]|csv:Error ct1bt17 = csv:parseList(
             [["a", "b"], ["a", "b"]]);
     test:assertTrue(ct1bt17 is csv:Error);
     test:assertEquals((<error>ct1bt17).message(), common:generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
@@ -275,55 +275,55 @@ function testFromCsvWithTypeForTupleAndTupleAsExpectedType3() {
 
 @test:Config
 function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
-    StringArrayArray|csv:Error st1saa = csv:parseListAsListType([st1, st1], {}, StringArrayArray);
+    StringArrayArray|csv:Error st1saa = csv:parseList([st1, st1], {}, StringArrayArray);
     test:assertEquals(st1saa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringArrayArray|csv:Error st2saa = csv:parseListAsListType([st2, st2], {}, StringArrayArray);
+    StringArrayArray|csv:Error st2saa = csv:parseList([st2, st2], {}, StringArrayArray);
     test:assertEquals(st2saa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringArrayArray|csv:Error st3saa = csv:parseListAsListType([st3, st3], {}, StringArrayArray);
+    StringArrayArray|csv:Error st3saa = csv:parseList([st3, st3], {}, StringArrayArray);
     test:assertEquals(st3saa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringArrayArray|csv:Error st4saa = csv:parseListAsListType([st4, st4], {}, StringArrayArray);
+    StringArrayArray|csv:Error st4saa = csv:parseList([st4, st4], {}, StringArrayArray);
     test:assertEquals(st4saa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    NillableStringArrayArray|csv:Error st1nsaa = csv:parseListAsListType([st1, st1], {}, NillableStringArrayArray);
+    NillableStringArrayArray|csv:Error st1nsaa = csv:parseList([st1, st1], {}, NillableStringArrayArray);
     test:assertEquals(st1nsaa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    NillableStringArrayArray|csv:Error st2nsaa = csv:parseListAsListType([st2, st2], {}, NillableStringArrayArray);
+    NillableStringArrayArray|csv:Error st2nsaa = csv:parseList([st2, st2], {}, NillableStringArrayArray);
     test:assertEquals(st2nsaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    NillableStringArrayArray|csv:Error st3nsaa = csv:parseListAsListType([st3, st3], {}, NillableStringArrayArray);
+    NillableStringArrayArray|csv:Error st3nsaa = csv:parseList([st3, st3], {}, NillableStringArrayArray);
     test:assertEquals(st3nsaa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    NillableStringArrayArray|csv:Error st4nsaa = csv:parseListAsListType([st4, st4], {}, NillableStringArrayArray);
+    NillableStringArrayArray|csv:Error st4nsaa = csv:parseList([st4, st4], {}, NillableStringArrayArray);
     test:assertEquals(st4nsaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    NillableIntOrUnionStringArrayArray|csv:Error st1nsuiaa = csv:parseListAsListType([st1, st1], {}, NillableIntOrUnionStringArrayArray);
+    NillableIntOrUnionStringArrayArray|csv:Error st1nsuiaa = csv:parseList([st1, st1], {}, NillableIntOrUnionStringArrayArray);
     test:assertEquals(st1nsuiaa, [
                 [s1, s2],
                 [s1, s2]
@@ -332,101 +332,279 @@ function testFromCsvWithTypeForTupleAndArrayAsExpectedType() {
 
 @test:Config
 function testFromCsvWithTypeForTupleAndTupleAsExpectedType4() {
-    NillableIntOrUnionStringArrayArray|csv:Error st2nsuiaa = csv:parseListAsListType([st2, st2], {}, NillableIntOrUnionStringArrayArray);
+    NillableIntOrUnionStringArrayArray|csv:Error st2nsuiaa = csv:parseList([st2, st2], {}, NillableIntOrUnionStringArrayArray);
     test:assertEquals(st2nsuiaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    NillableIntOrUnionStringArrayArray|csv:Error st3nsuiaa = csv:parseListAsListType([st3, st3], {}, NillableIntOrUnionStringArrayArray);
+    NillableIntOrUnionStringArrayArray|csv:Error st3nsuiaa = csv:parseList([st3, st3], {}, NillableIntOrUnionStringArrayArray);
     test:assertEquals(st3nsuiaa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    NillableIntOrUnionStringArrayArray|csv:Error st4nsuiaa = csv:parseListAsListType([st4, st4], {}, NillableIntOrUnionStringArrayArray);
+    NillableIntOrUnionStringArrayArray|csv:Error st4nsuiaa = csv:parseList([st4, st4], {}, NillableIntOrUnionStringArrayArray);
     test:assertEquals(st4nsuiaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    StringArray2Array|csv:Error st1saa2 = csv:parseListAsListType([st1, st1], {}, StringArray2Array);
+    StringArray2Array|csv:Error st1saa2 = csv:parseList([st1, st1], {}, StringArray2Array);
     test:assertEquals(st1saa2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringArray2Array|csv:Error st2saa2 = csv:parseListAsListType([st2, st2], {}, StringArray2Array);
+    StringArray2Array|csv:Error st2saa2 = csv:parseList([st2, st2], {}, StringArray2Array);
     test:assertEquals(st2saa2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringArray2Array|csv:Error st3saa2 = csv:parseListAsListType([st3, st3], {}, StringArray2Array);
+    StringArray2Array|csv:Error st3saa2 = csv:parseList([st3, st3], {}, StringArray2Array);
     test:assertEquals(st3saa2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    StringArray2Array|csv:Error st4saa2 = csv:parseListAsListType([st4, st4], {}, StringArray2Array);
+    StringArray2Array|csv:Error st4saa2 = csv:parseList([st4, st4], {}, StringArray2Array);
     test:assertEquals(st4saa2, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    JsonArray1Array|csv:Error st1jaa = csv:parseListAsListType([st1, st1], {}, JsonArray1Array);
+    JsonArray1Array|csv:Error st1jaa = csv:parseList([st1, st1], {}, JsonArray1Array);
     test:assertEquals(st1jaa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    JsonArray1Array|csv:Error st2jaa = csv:parseListAsListType([st2, st2], {}, JsonArray1Array);
+    JsonArray1Array|csv:Error st2jaa = csv:parseList([st2, st2], {}, JsonArray1Array);
     test:assertEquals(st2jaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    JsonArray1Array|csv:Error st3jaa = csv:parseListAsListType([st3, st3], {}, JsonArray1Array);
+    JsonArray1Array|csv:Error st3jaa = csv:parseList([st3, st3], {}, JsonArray1Array);
     test:assertEquals(st3jaa, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    JsonArray1Array|csv:Error st4jaa = csv:parseListAsListType([st4, st4], {}, JsonArray1Array);
+    JsonArray1Array|csv:Error st4jaa = csv:parseList([st4, st4], {}, JsonArray1Array);
     test:assertEquals(st4jaa, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    AnydataArray1Array|csv:Error st1anyda = csv:parseListAsListType([st1, st1], {}, AnydataArray1Array);
+    AnydataArray1Array|csv:Error st1anyda = csv:parseList([st1, st1], {}, AnydataArray1Array);
     test:assertEquals(st1anyda, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    AnydataArray1Array|csv:Error st2anyda = csv:parseListAsListType([st2, st2], {}, AnydataArray1Array);
+    AnydataArray1Array|csv:Error st2anyda = csv:parseList([st2, st2], {}, AnydataArray1Array);
     test:assertEquals(st2anyda, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    AnydataArray1Array|csv:Error st3anyda = csv:parseListAsListType([st3, st3], {}, AnydataArray1Array);
+    AnydataArray1Array|csv:Error st3anyda = csv:parseList([st3, st3], {}, AnydataArray1Array);
     test:assertEquals(st3anyda, [
                 [s1, s2],
                 [s1, s2]
             ]);
 
-    AnydataArray1Array|csv:Error st4anyda = csv:parseListAsListType([st4, st4], {}, AnydataArray1Array);
+    AnydataArray1Array|csv:Error st4anyda = csv:parseList([st4, st4], {}, AnydataArray1Array);
     test:assertEquals(st4anyda, [
                 [s1, s2, s3, s2],
                 [s1, s2, s3, s2]
             ]);
 
-    DecimalArray1Array|csv:Error st1dda = csv:parseListAsListType([st1, st1], {}, DecimalArray1Array);
+    DecimalArray1Array|csv:Error st1dda = csv:parseList([st1, st1], {}, DecimalArray1Array);
     test:assertTrue(st1dda is csv:Error);
     test:assertEquals((<error>st1dda).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
 
-    DecimalArray1Array|csv:Error st3dda = csv:parseListAsListType([st3, st3], {}, DecimalArray1Array);
+    DecimalArray1Array|csv:Error st3dda = csv:parseList([st3, st3], {}, DecimalArray1Array);
     test:assertTrue(st3dda is csv:Error);
     test:assertEquals((<error>st3dda).message(), common:generateErrorMessageForInvalidValueForArrayType("string", "0", "decimal"));
+}
+
+@test:Config
+function testArrayIndexes() {
+    string[][] csv = [["1", "2", "3"], ["3", "4", "5"], ["5", "6", "7"], ["7", "8", "9"]];
+
+    [int, int][2]|csv:Error rec3_2 = csv:parseList(csv);
+    test:assertEquals(rec3_2, [
+                [1, 2],
+                [3, 4]
+            ]);
+
+    int[2][]|csv:Error rec5 = csv:parseList(csv);
+    test:assertEquals(rec5, [
+                [1, 2, 3],
+                [3, 4, 5]
+            ]);
+}
+
+@test:Config
+function testParseListsWithOutputHeaders() {
+    [string, boolean, int][]|csv:Error ct1bt1 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1});
+    test:assertEquals(ct1bt1, [
+                ["a", true, 1]
+            ]);
+
+    ct1bt1 = csv:parseList([["a", "b", "c"], ["a", "b", "c"]], {headerRows: 2});
+    test:assertEquals(ct1bt1, []);
+
+    ct1bt1 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"]});
+    test:assertEquals(ct1bt1, [
+                ["a", true, 1]
+            ]);
+
+    ct1bt1 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"]});
+    test:assertEquals(ct1bt1, [
+                ["a", true, 1],
+                ["a", true, 1]
+            ]);
+
+    ct1bt1 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 21});
+    test:assertEquals(ct1bt1, []);
+
+    (string|boolean|int)[][]|csv:Error ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1});
+    test:assertEquals(ct1bt1_2, [
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "b", "c"]], {headerRows: 2});
+    test:assertEquals(ct1bt1_2, []);
+
+    ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"]});
+    test:assertEquals(ct1bt1_2, [
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"]});
+    test:assertEquals(ct1bt1_2, [
+                ["a", true, 1],
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 21});
+    test:assertEquals(ct1bt1_2, []);
+
+    [string, boolean, int][]|csv:Error ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, outputWithHeaders: true});
+    test:assertEquals(ct1bt1_3, [
+                ["a", true, 1],
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 2, outputWithHeaders: true});
+    test:assertTrue(ct1bt1_3 is csv:Error);
+    test:assertEquals((<error>ct1bt1_3).message(), "Custom headers should be provided");
+
+    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"], ["a", "true", "1"]], {headerRows: 2, outputWithHeaders: true});
+    test:assertTrue(ct1bt1_3 is csv:Error);
+    test:assertEquals((<error>ct1bt1_3).message(), "Custom headers should be provided");
+
+    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertTrue(ct1bt1_3 is csv:Error);
+    test:assertEquals((<error>ct1bt1_3).message(), common:generateErrorMessageForInvalidValueForArrayType("h2", "1", "boolean"));
+
+    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertTrue(ct1bt1_3 is csv:Error);
+    test:assertEquals((<error>ct1bt1_3).message(), common:generateErrorMessageForInvalidValueForArrayType("h2", "1", "boolean"));
+
+    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 21, outputWithHeaders: true});
+    test:assertEquals(ct1bt1_3, []);
+
+    string[][]|csv:Error ct1bt1_4 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1, outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4, [
+                ["a", "b", "c"],
+                ["a", "true", "1"]
+            ]);
+
+    ct1bt1_4 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4, [
+                ["h1", "h2", "h3"],
+                ["a", "true", "1"],
+                ["a", "true", "1"]
+            ]);
+
+    (int|boolean|string)[][]|csv:Error ct1bt1_4_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 1, outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4_2, [
+                ["a", "b", "c"],
+                ["a", true, 1]
+            ]);
+
+    string[][]|csv:Error ct1bt1_4_3 = csv:parseList([["a", "b", "c"], ["a", "true", "1"], ["a", "true", "1"], ["a", "true", "1"]], {headerRows: 2, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4_3, [
+                ["h1", "h2", "h3"],
+                ["a", "true", "1"],
+                ["a", "true", "1"]
+            ]);
+
+    (int|boolean|string)[][]|csv:Error ct1bt1_4_4 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headerRows: 2, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_4_4, [
+                ["h1", "h2", "h3"]
+            ]);
+
+    [string, boolean|string, int|string][]|csv:Error ct1bt1_5 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_5, [
+                ["h1", "h2", "h3"],
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_5 = csv:parseList([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_5, [
+                ["h1", "h2", "h3"],
+                ["a", true, 1]
+            ]);
+
+    ct1bt1_5 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt1_5, [
+                ["h1", "h2", "h3"],
+                ["a", true, 1],
+                ["a", true, 1]
+            ]);
+
+    [string...][]|csv:Error ct1bt2 = csv:parseList([["1", "a"], ["1", "a"]]);
+    test:assertEquals(ct1bt2, [
+                ["1", "a"],
+                ["1", "a"]
+            ]);
+
+    [string, boolean|string, int|string...][]|csv:Error ct1bt2_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt2_2, [
+                ["h1", "h2", "h3"],
+                ["a", true, 1]
+            ]);
+
+    [string...][]|csv:Error ct1bt2_3 = csv:parseList([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt2_3, [
+                ["h1", "h2", "h3"],
+                ["a", "true", "1"]
+            ]);
+
+    ct1bt2_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 0, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt2_2, [
+                ["h1", "h2", "h3"],
+                ["a", true, 1],
+                ["a", true, 1]
+            ]);
+
+    string[2][1]|csv:Error ct1bt6 = csv:parseList([["a", "b", "c"], ["a", "true", "1"], ["a", "true", "1"], ["a", "true", "1"]], {headerRows: 2, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6, [
+                ["h1"],
+                ["a"]
+            ]);
+    [string, boolean|string, int|string...][1]|csv:Error ct1bt6_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6_2, [
+                ["h1", "h2", "h3"]
+            ]);
+    [string...][1]|csv:Error ct1bt6_3 = csv:parseList([["a", "true", "2"], ["a", "true", "1"]], {headerRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
+    test:assertEquals(ct1bt6_3, [
+                ["h1", "h2", "h3"]
+            ]);
 }

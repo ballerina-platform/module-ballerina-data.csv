@@ -35,57 +35,57 @@ function testFromCsvStringWithTypeCompatibility() {
         ${i1}, ${s1},${b1}, null,${f1}, ${d1},${b1}, ${d1},${s2}, ${s3}
     `;
 
-    AnydataArray1Array|csv:Error v3anyd1a = csv:parseStringToList(value);
+    AnydataArray1Array|csv:Error v3anyd1a = csv:parseString(value);
     test:assertEquals(v3anyd1a, [
         [i1, i2, s1, s2, b1, b2, n1, n2, 2.234, -3.21, 2.234, -3.21, b1, 2.234, b2, -3.21],
         [i1, i2, s1, s2, b1, b2, n1, n2, 2.234, -3.21, 2.234, -3.21, b1, 2.234, b2, -3.21]
     ]);
 
-    CustomRecord27Array|csv:Error vcr27a = csv:parseStringToRecord(value, {}, CustomRecord27Array);
+    CustomRecord27Array|csv:Error vcr27a = csv:parseString(value, {}, CustomRecord27Array);
     test:assertEquals(vcr27a, [
         {i1, s1, b1, n1, f1, d1, a1: 2.234, j1: b1, defaultableField: "", nillableField: null, i2: "-2", s2: "", b2: "false", n2: "()", f2: "-3.21", d2: "-3.21", j2: "false", a2: "-3.21"},
         {i1, s1, b1, n1, f1, d1, a1: 2.234, j1: b1, defaultableField: "", nillableField: null, i2: "-2", s2: "", b2: "false", n2: "()", f2: "-3.21", d2: "-3.21", j2: "false", a2: "-3.21"}
     ]);
 
-    CustomRecord27Array|csv:Error v2cr27a = csv:parseStringToRecord(value2, {}, CustomRecord27Array);
+    CustomRecord27Array|csv:Error v2cr27a = csv:parseString(value2, {}, CustomRecord27Array);
     test:assertEquals(v2cr27a, [
         {i1, s1, b1, n1, f1, d1, a1: 2.234, j1: b1, defaultableField: "", nillableField: null, s2, j2: "false", a2: "-3.21", s3}
     ]);
 
-    CustomRecord27Array|csv:Error v3cr27a = csv:parseStringToRecord(value3, {});
+    CustomRecord27Array|csv:Error v3cr27a = csv:parseString(value3, {});
     test:assertEquals(v3cr27a, [
         {i1, s1, b1, n1, f1, d1, a1: 2.234, j1: b1, defaultableField: "", nillableField: null, s2, s3}
     ]);
 
-    AnydataMapArray|csv:Error vanydma = csv:parseStringToRecord(value);
+    AnydataMapArray|csv:Error vanydma = csv:parseString(value);
     test:assertEquals(vanydma, [
         {i1, i2, s1, s2, b1, b2, n1, n2, f1: 2.234, f2: -3.21, d1: 2.234, d2: -3.21, j1: b1, a1: 2.234, j2: false, a2: -3.21},
         {i1, i2, s1, s2, b1, b2, n1, n2, f1: 2.234, f2: -3.21, d1: 2.234, d2: -3.21, j1: b1, a1: 2.234, j2: false, a2: -3.21}
     ]);
 
-    JsonMapArray|csv:Error vjma = csv:parseStringToRecord(value);
+    JsonMapArray|csv:Error vjma = csv:parseString(value);
     test:assertEquals(vjma, <JsonMapArray>[
         {i1, i2, s1, s2, b1, b2, n1, n2, f1: 2.234, f2: -3.21, d1: 2.234, d2: -3.21, j1: b1, a1: 2.234, j2: false, a2: -3.21},
         {i1, i2, s1, s2, b1, b2, n1, n2, f1: 2.234, f2: -3.21, d1: 2.234, d2: -3.21, j1: b1, a1: 2.234, j2: false, a2: -3.21}
     ]);
 
-    StringMapArray|csv:Error vsma = csv:parseStringToRecord(value);
+    StringMapArray|csv:Error vsma = csv:parseString(value);
     test:assertEquals(vsma, <JsonMapArray>[
         {i1: "1", s1: "string", b1: "true", n1: "()", f1: "2.234", d1: "2.234", a1: "2.234", j1: "true", i2: "-2", s2: "", b2: "false", n2: "()", f2: "-3.21", d2: "-3.21", j2: "false", a2: "-3.21"},
         {i1: "1", s1: "string", b1: "true", n1: "()", f1: "2.234", d1: "2.234", a1: "2.234", j1: "true", i2: "-2", s2: "", b2: "false", n2: "()", f2: "-3.21", d2: "-3.21", j2: "false", a2: "-3.21"}
     ]);
 
-    CustomTuple7Array|csv:Error v2ct7a = csv:parseStringToList(value2);
+    CustomTuple7Array|csv:Error v2ct7a = csv:parseString(value2);
     test:assertEquals(v2ct7a, <CustomTuple7[]>[
         [i1, s1, b1, n1, 2.234, 2.234, b1, 2.234, s2, s3, "false", "-3.21"]
     ]);
 
-    CustomTuple7Array|csv:Error v3ct7a = csv:parseStringToList(value3);
+    CustomTuple7Array|csv:Error v3ct7a = csv:parseString(value3);
     test:assertEquals(v3ct7a, <CustomTuple7[]>[
         [i1, s1, b1, n1, 2.234, 2.234, b1, 2.234, s2, s3]
     ]);
 
-    [float, decimal, string][]|csv:Error mrrta = csv:parseStringToList(string `a, b,c
+    [float, decimal, string][]|csv:Error mrrta = csv:parseString(string `a, b,c
                                                                             1.23, 1.23, 1.23
                                                                             0,0,0
                                                                             0.0,0.0,0.0
@@ -97,7 +97,7 @@ function testFromCsvStringWithTypeCompatibility() {
         [<float>-1.2, <decimal>-1.2, "-1.2"]
     ]);
 
-    [float, decimal, string, int][]|csv:Error m2rrta = csv:parseStringToList(string `a, b,c,d
+    [float, decimal, string, int][]|csv:Error m2rrta = csv:parseString(string `a, b,c,d
                                                                             1, 1, 1,1
                                                                             0,0,0,0
                                                                             -1,-1,-1,-1`);
@@ -107,12 +107,12 @@ function testFromCsvStringWithTypeCompatibility() {
         [<float>-1, <decimal>-1, "-1", -1]
     ]);
 
-    [int...][]|csv:Error m3rrta = csv:parseStringToList(string `a, b,c,d
+    [int...][]|csv:Error m3rrta = csv:parseString(string `a, b,c,d
                                                                             1.2, abc, true,1.0`);
     test:assertTrue(m3rrta is csv:Error);
     test:assertEquals((<csv:Error>m3rrta).message(), common:generateErrorMessageForInvalidCast("1.2", "int"));
 
-    [boolean|int, int|boolean][]|csv:Error m4rrta = csv:parseStringToList(string `a, b
+    [boolean|int, int|boolean][]|csv:Error m4rrta = csv:parseString(string `a, b
                                                                             1, 1
                                                                             0,0`);
     test:assertEquals(m4rrta, [
@@ -120,7 +120,7 @@ function testFromCsvStringWithTypeCompatibility() {
         [0, 0]
     ]);
 
-    record {|int...;|}[]|csv:Error irrma = csv:parseStringToRecord(string `
+    record {|int...;|}[]|csv:Error irrma = csv:parseString(string `
                                                                             a, b, c
                                                                             1, a, 2.3
                                                                             1, -2, true
@@ -131,7 +131,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {b: i2}
     ]);
 
-    record {|()...;|}[]|csv:Error nrrma = csv:parseStringToRecord(string `
+    record {|()...;|}[]|csv:Error nrrma = csv:parseString(string `
                                                                             a, b, c
                                                                             1, a, ()
                                                                             1, null, ()
@@ -142,7 +142,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {}
     ]);
 
-    record {|decimal...;|}[]|csv:Error drra = csv:parseStringToRecord(string `a, b,     c
+    record {|decimal...;|}[]|csv:Error drra = csv:parseString(string `a, b,     c
                                                                             2.234, invalid , 1
                                                                             ${f2}, 0, 2.3d
                                                                             invalid, ${d2}, ${f3}`);
@@ -153,7 +153,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {b: -3.21d, c: <decimal>f3}
     ]);
 
-    record {|string...;|}[]|csv:Error srra = csv:parseStringToRecord(string `a, b, c
+    record {|string...;|}[]|csv:Error srra = csv:parseString(string `a, b, c
                                                                             1, a, 2.3
                                                                             1, -2, true
                                                                             hello, -2, hello`);
@@ -164,7 +164,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {a: "hello", b: "-2", c: "hello"}
     ]);
 
-    record {|float...;|}[]|csv:Error frra = csv:parseStringToRecord(string `a, b,     c
+    record {|float...;|}[]|csv:Error frra = csv:parseString(string `a, b,     c
                                                                             1.2, invalid , 1
                                                                             ${d2}, ${d3}, true
                                                                             ${d4}, ${f2}, 0.0`);
@@ -174,7 +174,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {a: <float>d4, b: f2, c: 0.0}
     ]);
 
-    record {float a; decimal b; string c;}[]|csv:Error mrra = csv:parseStringToRecord(string `a, b,c
+    record {float a; decimal b; string c;}[]|csv:Error mrra = csv:parseString(string `a, b,c
                                                                             1.23, 1.23, 1.23
                                                                             0,0,0
                                                                             0.0,0.0,0.0
@@ -186,7 +186,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {a: <float>-1.2, b: <decimal>-1.2, c: "-1.2"}
     ]);
 
-    record {|float a; decimal b; string c; int d;|}[]|csv:Error m2rra = csv:parseStringToRecord(string `a, b,c,d
+    record {|float a; decimal b; string c; int d;|}[]|csv:Error m2rra = csv:parseString(string `a, b,c,d
                                                                             1, 1, 1,1
                                                                             0,0,0,0
                                                                             -1,-1,-1,-1`);
@@ -196,7 +196,7 @@ function testFromCsvStringWithTypeCompatibility() {
         {a: <float>-1, b: <decimal>-1, c: "-1", d: -1}
     ]);
 
-    record {int d;}[]|csv:Error m3rra = csv:parseStringToRecord(string `a, b,c,d
+    record {int d;}[]|csv:Error m3rra = csv:parseString(string `a, b,c,d
                                                                             1.2, abc, true,1.0`);
     test:assertTrue(m3rra is csv:Error);
     test:assertEquals((<csv:Error>m3rra).message(), common:generateErrorMessageForInvalidCast("1.0", "int"));
@@ -207,7 +207,7 @@ function testSpaceBetweendData() {
     string csv = string `a b, b  d  e, f
                          "Hello world", "  Hi I am ", \"  Hi I am \"`;
 
-    record{|string...;|}[]|csv:Error rec = csv:parseStringToRecord(csv);
+    record{|string...;|}[]|csv:Error rec = csv:parseString(csv);
     test:assertEquals(rec, [
         {"a b":"Hello world","b  d  e":"  Hi I am ","f":"\"Hi I am \""}]);
 }
@@ -216,25 +216,53 @@ function testSpaceBetweendData() {
 function testParseBytes() returns error? {
     byte[] csvBytes = check io:fileReadBytes(filepath);
 
-    record{}[]|csv:Error rec = csv:parseBytesToRecord(csvBytes, {});
+    record{}[]|csv:Error rec = csv:parseBytes(csvBytes, {});
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
     );
 
-    string[][]|csv:Error rec2 = csv:parseBytesToList(csvBytes, {});
+    rec = csv:parseBytes(csvBytes, {outputWithHeaders: true});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
+    string[][]|csv:Error rec2 = csv:parseBytes(csvBytes, {});
     test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);
 
-    int[][]|csv:Error rec3 = csv:parseBytesToList(csvBytes, {});
+    rec2 = csv:parseBytes(csvBytes, {outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["a", "b", "c d", "e"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    rec2 = csv:parseBytes(csvBytes, {outputWithHeaders: true, header: 1});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    rec2 = csv:parseBytes(csvBytes, { header: 1});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    int[][]|csv:Error rec3 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertEquals((<error> rec3).message(), common:generateErrorMessageForInvalidCast("Hello World", "int"));
 
-    record{int a;}[]|csv:Error rec4 = csv:parseBytesToRecord(csvBytes, {});
+    record{int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertEquals((<error> rec4).message(), common:generateErrorMessageForInvalidCast("Hello World", "int"));
 }
@@ -242,7 +270,7 @@ function testParseBytes() returns error? {
 @test:Config
 function testParseStream() returns error? {
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    record{}[]|csv:Error rec = csv:parseStreamToRecord(csvByteStream, {});
+    record{}[]|csv:Error rec = csv:parseStream(csvByteStream, {});
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -250,7 +278,15 @@ function testParseStream() returns error? {
     );
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    string[][]|csv:Error rec2 = csv:parseStreamToList(csvByteStream, {});
+    rec = csv:parseStream(csvByteStream, {outputWithHeaders: true});
+    test:assertEquals(rec, [
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
+        {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
+    );
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    string[][]|csv:Error rec2 = csv:parseStream(csvByteStream, {});
     test:assertEquals(rec2, [
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
         ["Hello World", "\"Hello World\"", "Hello World", "2"],
@@ -258,13 +294,37 @@ function testParseStream() returns error? {
     ]);
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    record{int a;}[]|csv:Error rec3 = csv:parseStreamToRecord(csvByteStream, {});
+    rec2 = csv:parseStream(csvByteStream, {header: 1, outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec2 = csv:parseStream(csvByteStream, {outputWithHeaders: true});
+    test:assertEquals(rec2, [
+        ["a", "b", "c d", "e"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    rec2 = csv:parseStream(csvByteStream, {header: 1});
+    test:assertEquals(rec2, [
+        ["Hello World", "\"Hello World\"", "Hello World", "2"],
+        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+    ]);
+
+    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    record{int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertEquals((<error> rec3).message(), "Error occurred while reading the stream: " 
                     + common:generateErrorMessageForInvalidCast("Hello World", "int"));
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    int[][]|csv:Error rec4 = csv:parseStreamToList(csvByteStream, {});
+    int[][]|csv:Error rec4 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertEquals((<error> rec4).message(), "Error occurred while reading the stream: " 
                     + common:generateErrorMessageForInvalidCast("Hello World", "int"));
@@ -274,11 +334,11 @@ function testParseStream() returns error? {
 function testErrorParseBytes() returns error? {
     byte[] csvBytes = check io:fileReadBytes(errorFilepath);
 
-    int[][]|csv:Error rec3 = csv:parseBytesToList(csvBytes, {});
+    int[][]|csv:Error rec3 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 
-    record{int a;}[]|csv:Error rec4 = csv:parseBytesToRecord(csvBytes, {});
+    record{int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 }
@@ -288,12 +348,12 @@ function testErrorParseStream() returns error? {
     byte[] csvBytes = check io:fileReadBytes(errorFilepath);
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(errorFilepath);
 
-    record{int a;}[]|csv:Error rec3 = csv:parseStreamToRecord(csvByteStream, {});
+    record{int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 
     csvByteStream = check io:fileReadBlocksAsStream(errorFilepath);
-    int[][]|csv:Error rec4 = csv:parseStreamToList(csvByteStream, {});
+    int[][]|csv:Error rec4 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertTrue((<error> rec4).message().includes("cannot be cast into"));
 }

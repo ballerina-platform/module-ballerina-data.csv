@@ -29,7 +29,11 @@ import static io.ballerina.tools.diagnostics.DiagnosticSeverity.ERROR;
  */
 public enum CsvDataDiagnosticCodes {
     DUPLICATE_FIELD("CSV_ERROR_1", "invalid field: duplicate field found", ERROR),
-    UNSUPPORTED_TYPE("CSV_ERROR_2", "unsupported type: type is not supported", ERROR);
+    UNSUPPORTED_TYPE("CSV_ERROR_2", "unsupported type: type is not supported", ERROR),
+    UNSUPPORTED_FIELD_TYPE("CSV_ERROR_3", "Unsupported type in the field: Only basic types are supported for fields, " +
+                              "and other types are not allowed.", ERROR),
+    UNSUPPORTED_TUPLE_MEMBER_TYPE("CSV_ERROR_4", "Unsupported type in the tuple member: Tuple members can only " +
+                                          "be basic types, other types are not supported.", ERROR);
 
     private final String code;
     private final String message;
