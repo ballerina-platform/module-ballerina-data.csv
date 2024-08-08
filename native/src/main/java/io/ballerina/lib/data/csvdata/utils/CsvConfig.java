@@ -42,7 +42,7 @@ public class CsvConfig {
         this.locale = config.locale;
     }
 
-    public static CsvConfig createParseListsOptions(BMap<BString, Object> options) {
+    public static CsvConfig createParseListOptions(BMap<BString, Object> options) {
         updateDataProjectOptions(options);
         return new CsvConfig(
                 options.getBooleanValue(Constants.ConfigConstants.NIL_AS_OPTIONAL),
@@ -51,7 +51,6 @@ public class CsvConfig {
                 options.get(Constants.ConfigConstants.SKIP_LINES),
                 options.getBooleanValue(Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION),
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
-                options.getBooleanValue(Constants.ConfigConstants.STRING_CONVERSION),
                 options.getIntValue(Constants.ConfigConstants.HEADER_ROWS),
                 options.get(Constants.ConfigConstants.CUSTOM_HEADERS)
         );
@@ -59,14 +58,13 @@ public class CsvConfig {
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     boolean stringConversion, long headerRows, Object headers) {
+                     long headerRows, Object headers) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.skipLines = skipLines;
         this.enableConstraintValidation = enableConstraintValidation;
         this.outputWithHeaders = outputWithHeaders;
-        this.stringConversion = stringConversion;
         this.headerRows = headerRows;
         this.customHeaders = headers;
     }

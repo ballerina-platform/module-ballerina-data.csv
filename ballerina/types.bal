@@ -63,8 +63,6 @@ public type ParseOptions record {|
 # Represents options for treating a list as a record.
 public type ParseListOptions record {|
     *Options;
-    # If `true`, enables conversion of strings during processing.
-    boolean stringConversion = true;
     # If `0`, all the sources will treat as data rows.
     # Otherwise specify the header rows(Starts from 1)
     int:Unsigned32 headerRows = 0;
@@ -91,7 +89,6 @@ public enum LineTerminator {
 # Enum representing possible nil values.
 public enum NilValue {
     NULL = "null",
-    EMPTY_STRING = "",
     NOT_APPLICABLE = "N/A",
     BAL_NULL = "()"
 };

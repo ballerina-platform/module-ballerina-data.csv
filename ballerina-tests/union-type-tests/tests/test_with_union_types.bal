@@ -311,22 +311,13 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: true});
+    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op9, [
         {a: 1},
         {a: 2, d: 0, e: 0},
         {a: 3},
         {a: 4},
         {a: 5, d: 3}
-    ]);
-
-    (record{|int...;|}|record{|string...;|})[]|csv:Error csv1op9_2 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
-    test:assertEquals(csv1op9_2, [
-        {},
-        {},
-        {},
-        {},
-        {}
     ]);
 
     (record{|int a; string...;|}|record{|string a; int...;|})[]|csv:Error csv1op10 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, -1, 4]});
@@ -344,10 +335,6 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
         {a: "4"},
         {a: "5", d: 3}
     ]);
-
-    (record{|int a; int...;|}|record{|int a; string...;|})[]|csv:Error csv1op12 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
-    test:assertTrue(csv1op12 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '(union_type_tests:record {| int a; int...; |}|union_type_tests:record {| int a; string...; |})[]'");
 
     (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op13 = csv:parseList([["1", "2"], ["a", "b"]], {customHeaders: ["a", "b"]});
     test:assertEquals(csv1op13, [
@@ -515,10 +502,6 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
         ["3"],
         ["5"]
     ]);
-
-    ([boolean...]|[int...])[]|csv:Error csv1op8 = csv:parseList(value, {stringConversion: false});
-    test:assertTrue(csv1op8 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op8).message(), "The source value cannot convert in to the '([boolean...]|[int...])[]'");
 
     ([string...]|[int...])[]|csv:Error csv1op8_2 = csv:parseList(value, {});
     test:assertEquals(csv1op8_2, value);
@@ -826,22 +809,13 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: "5", b: "string5", c: "true", d: "3", e: "3.0", f: "()"}
     ]);
 
-    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: true});
+    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(csv1op9, [
         {a: 1},
         {a: 2, d: 0, e: 0},
         {a: 3},
         {a: 4},
         {a: 5, d: 3}
-    ]);
-
-    record{|int...;|}[]|record{|string...;|}[]|csv:Error csv1op9_2 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
-    test:assertEquals(csv1op9_2, [
-        {},
-        {},
-        {},
-        {},
-        {}
     ]);
 
     record{|int a; string...;|}[]|record{|string a; int...;|}[]|csv:Error csv1op10 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], skipLines: [2, -1, 4]});
@@ -859,10 +833,6 @@ function testParseToStringWithUnionExpectedTypes8() returns error? {
         {a: "4"},
         {a: "5", d: 3}
     ]);
-
-    record{|int a; int...;|}[]|record{|int a; string...;|}[]|csv:Error csv1op12 = csv:parseList(value, {customHeaders: ["a", "b", "c", "d", "e", "f"], stringConversion: false});
-    test:assertTrue(csv1op12 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '(union_type_tests:record {| int a; int...; |}[]|union_type_tests:record {| int a; string...; |}[])'");
 
     record{|int a; int...;|}[]|record{|string a; string...;|}[]|csv:Error csv1op13 = csv:parseList([["1", "2"], ["a", "b"]], {customHeaders: ["a", "b"]});
     test:assertEquals(csv1op13, [
@@ -1024,10 +994,6 @@ function testParseToStringWithUnionExpectedTypes10() returns error? {
         ["3"],
         ["5"]
     ]);
-
-    [boolean...][]|[int...][]|csv:Error csv1op8 = csv:parseList(value, {stringConversion: false});
-    test:assertTrue(csv1op8 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op8).message(), "The source value cannot convert in to the '([boolean...][]|[int...][])'");
 
     [string...][]|[int...][]|csv:Error csv1op8_2 = csv:parseList(value, {});
     test:assertEquals(csv1op8_2, value);

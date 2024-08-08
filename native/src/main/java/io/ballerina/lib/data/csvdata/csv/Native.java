@@ -98,7 +98,9 @@ public final class Native {
     }
     public static Object parseList(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createParseListOptions(options), type);
+            CsvConfig config = CsvConfig.createParseListOptions(options);
+            config.stringConversion = true;
+            return CsvTraversal.traverse(csv, config, type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }

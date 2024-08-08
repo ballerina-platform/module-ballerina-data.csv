@@ -20,7 +20,7 @@ import ballerina/test;
 
 @test:Config
 function testCSVEncoding() returns error? {
-  record {}[]|csv:Error rec;
+    record {}[]|csv:Error rec;
 
     string csvStr = string `value
                             Alice
@@ -34,63 +34,63 @@ function testCSVEncoding() returns error? {
 
 @test:Config
 function testCSVLocale() {
-  record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
+    record {|string name; decimal completed\ tasks; string city;|}[]|csv:Error rec;
 
-  rec = csv:parseString(string `
+    rec = csv:parseString(string `
                                          name, completed tasks, city
                                          Alice, "1234", New York
                                          Bob, "1,234", London
                                          €123, "12,34", Berlin`, {header: 1, locale: "fr_FR"});
-  test:assertEquals(rec, [
-      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
-      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
-      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
-  ]);
+    test:assertEquals(rec, [
+                {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+                {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+                {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+            ]);
 
-  rec = csv:parseString(string `
+    rec = csv:parseString(string `
                                            name, completed tasks, city
                                            Alice, "1234", New York
                                            Bob, "1.234", London
                                            €123, "12.34", Berlin`, {header: 1, locale: "en"});
     test:assertEquals(rec, [
-        {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
-        {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
-        {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
-    ]);
+                {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+                {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+                {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+            ]);
 
-  rec = csv:parseString(string `
+    rec = csv:parseString(string `
                                            name, completed tasks, city
                                            Alice, "1234", New York
                                            Bob, "1.234", London
                                            €123, "12.34", Berlin`, {header: 1, locale: "en_US_WIN"});
-  test:assertEquals(rec, [
-      {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
-      {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
-      {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
-  ]);
+    test:assertEquals(rec, [
+                {name: "Alice", "completed tasks": <decimal>1234, city: "New York"},
+                {name: "Bob", "completed tasks": <decimal>1.234, city: "London"},
+                {name: "€123", "completed tasks": <decimal>12.34, city: "Berlin"}
+            ]);
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
 function testFromCsvStringWithParserOptions() {
     [int, string, boolean, decimal, float, string][]|csv:Error csv1op3 = csv:parseString(csvStringData1, option3);
     test:assertEquals(csv1op3, [
-        [3, "string3", false, <decimal>1.23, <float>1.23, "()"],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, "()"],
-        [5, "string5", true, <decimal>3, <float>3.0, "()"]
-    ]);
+                [3, "string3", false, <decimal>1.23, <float>1.23, "()"],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, "()"],
+                [5, "string5", true, <decimal>3, <float>3.0, "()"]
+            ]);
 
     record {int a; string b; boolean c; decimal d; float e; string f;}[]|csv:Error csv1op3_2 = csv:parseString(csvStringData1, ptOption1);
     test:assertEquals(csv1op3_2, [
-        {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: "()"},
-        {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: "()"},
-        {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: "()"}
-    ]);
+                {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: "()"},
+                {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: "()"},
+                {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: "()"}
+            ]);
 
     record {int a; string b; boolean c; decimal d; float e; string f;}[]|csv:Error csv1op3_3 = csv:parseString(csvStringData1, ptOption2);
     test:assertEquals(csv1op3_3, [
-        {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: "()"},
-        {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: "()"}
-    ]);
+                {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: "()"},
+                {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: "()"}
+            ]);
 
     [int, string, boolean, decimal, float, string][]|csv:Error csv2op4 = csv:parseString(csvStringData2, option4);
     test:assertEquals(csv2op4, []);
@@ -100,35 +100,35 @@ function testFromCsvStringWithParserOptions() {
 
     record {}[]|csv:Error csv2op4_3 = csv:parseString(csvStringData2, ptOption4);
     test:assertEquals(csv2op4_3, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
+            ]);
 
     [int, string, boolean, decimal, float, string][]|csv:Error csv3op3 = csv:parseString(csvStringData3, option3);
     test:assertEquals(csv3op3, [
-        [3, "string3", false, <decimal>1.23, <float>1.23, "()"],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, "()"],
-        [5, "string5", true, <decimal>3, <float>3.0, "()"]
-    ]);
+                [3, "string3", false, <decimal>1.23, <float>1.23, "()"],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, "()"],
+                [5, "string5", true, <decimal>3, <float>3.0, "()"]
+            ]);
 
     record {}[]|csv:Error csv3op3_2 = csv:parseString(csvStringData3, ptOption1);
     test:assertEquals(csv3op3_2, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: "()"},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
+            ]);
 
     record {}[]|csv:Error csv3op3_3 = csv:parseString(csvStringData3, ptOption2);
     test:assertEquals(csv3op3_3, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: "()"},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
+            ]);
 
     record {}[]|csv:Error csv3op3_4 = csv:parseString(csvStringData3, {header: 9, skipLines: "2-10"});
     test:assertEquals(csv3op3_4, [
-        {'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": null}
-    ]);
+                {'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": null}
+            ]);
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
@@ -139,73 +139,73 @@ function testFromCsvStringWithHeaderLessParserOptions() {
 
     record {}[]|csv:Error csv1op5_2 = csv:parseString(csvStringData1, ptOption5);
     test:assertEquals(csv1op5_2, [
-        {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv1op6_2 = csv:parseString(csvStringData1, {header: false, skipLines: [3, 5]});
     test:assertEquals(csv1op6_2, [
-        {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv3op6_2 = csv:parseString(csvStringData3, {header: false, skipLines: [1, 3, 5, -1, 100, 100]});
     test:assertEquals(csv3op6_2, [
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv4op6_2 = csv:parseString(csvStringData4, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv4op6_2, [
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv5op6_2 = csv:parseString(csvStringData5, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv5op6_2, [
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv6op6_2 = csv:parseString(csvStringData6, {header: false, skipLines: [2, 4, -1, 100, 100]});
     test:assertEquals(csv6op6_2, [
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 
     record {}[]|csv:Error csv2op6_2 = csv:parseString(csvStringData2, {header: false, skipLines: [5, 7]});
     test:assertEquals(csv2op6_2, [
-        {'1: "hello", '2: "hello", '3: (), '4: 12, '5: true, '6: 12.34},
-        {'1: "// comment"},
-        {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
-        {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
-        {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
-        {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
-    ]);
+                {'1: "hello", '2: "hello", '3: (), '4: 12, '5: true, '6: 12.34},
+                {'1: "// comment"},
+                {'1: "a", '2: "b", '3: "c", '4: "d", '5: "e", '6: "f"},
+                {'1: 1, '2: "string1", '3: true, '4: 2.234, '5: 2.234, '6: ()},
+                {'1: 3, '2: "string3", '3: false, '4: 1.23, '5: 1.23, '6: ()},
+                {'1: 5, '2: "string5", '3: true, '4: 3, '5: 3, '6: ()}
+            ]);
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
 function testHeaderOption() {
     record {}[]|csv:Error csv2cop1 = csv:parseString(csvStringData2, {header: 4});
     test:assertEquals(csv2cop1, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
+                {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
+                {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
+            ]);
 
     record {}[]|csv:Error csv2cop2 = csv:parseString(csvStringData2, {header: 100});
     test:assertTrue(csv2cop2 is csv:Error);
-    test:assertEquals((<error> csv2cop2).message(), "The provided header row is empty");
+    test:assertEquals((<error>csv2cop2).message(), "The provided header row is empty");
 
     record {}[]|csv:Error csv2cop3 = csv:parseString(csvStringData2, {header: 11});
     test:assertEquals(csv2cop3, []);
@@ -433,116 +433,116 @@ function testCommentConfigOption2() {
 function testSkipLineParserOption() {
     [int, string, boolean, decimal, float, ()][]|csv:Error csv1cp = csv:parseString(csvStringData1, {skipLines: [], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [2, "string2", false, <decimal>0, <float>0, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [2, "string2", false, <decimal>0, <float>0, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [0], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [2, "string2", false, <decimal>0, <float>0, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [2, "string2", false, <decimal>0, <float>0, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [0, 4, 10], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [2, "string2", false, <decimal>0, <float>0, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [2, "string2", false, <decimal>0, <float>0, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [1, 2, 3, 4, 5], header: 1});
     test:assertEquals(csv1cp, [
-    ]);
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: "1-5", header: 1});
     test:assertEquals(csv1cp, [
-    ]);
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [4, 2], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: "2-4", header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [4, 2, -1], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [4, -1, 2], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [5, 4, 3, 2, 1], header: 1});
     test:assertEquals(csv1cp, [
-    ]);
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [10], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [2, "string2", false, <decimal>0, <float>0, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [2, "string2", false, <decimal>0, <float>0, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [-2], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [2, "string2", false, <decimal>0, <float>0, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [2, "string2", false, <decimal>0, <float>0, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: [-2, 0, 2], header: 1});
     test:assertEquals(csv1cp, [
-        [1, "string1", true, <decimal>2.234, <float>2.234, ()],
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [1, "string1", true, <decimal>2.234, <float>2.234, ()],
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 
     csv1cp = csv:parseString(csvStringData1, {skipLines: "0-2", header: 1});
     test:assertEquals(csv1cp, [
-        [3, "string3", false, <decimal>1.23, <float>1.23, ()],
-        [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
-        [5, "string5", true, <decimal>3, <float>3.0, ()]
-    ]);
+                [3, "string3", false, <decimal>1.23, <float>1.23, ()],
+                [4, "string4", true, <decimal>-6.51, <float>-6.51, ()],
+                [5, "string5", true, <decimal>3, <float>3.0, ()]
+            ]);
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
 function testCustomHeaderOption() {
     anydata[][]|csv:Error bm1ba = csv:transform([bm1, bm1], {headersOrder: ["b1", "b2"]});
     test:assertEquals(bm1ba, [
-        [true, false],
-        [true, false]
-    ]);
+                [true, false],
+                [true, false]
+            ]);
 
     anydata[][]|csv:Error bm1ba2 = csv:transform([bm1, bm1], {headersOrder: ["b2", "b1"]});
     test:assertEquals(bm1ba2, [
-        [false, true],
-        [false, true]
-    ]);
+                [false, true],
+                [false, true]
+            ]);
 
     anydata[][]|csv:Error bm2ba = csv:transform([bm2, bm2], {headersOrder: ["b1", "n1", "b2", "n2", "b3"]});
     test:assertTrue(bm2ba is csv:Error);
@@ -589,67 +589,66 @@ function testCustomHeaderOption() {
     test:assertTrue(ct1br6 is csv:Error);
     test:assertEquals((<error>ct1br6).message(), common:generateErrorMessageForMissingRequiredField("c"));
 
-    record {string a; string b;}[]|csv:Error ct1br7 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "e", "b"],
-        stringConversion: false
-    });
+    record {string a; string b;}[]|csv:Error ct1br7 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {
+                                                                                                                  customHeaders: ["a", "e", "b"]
+                                                                                                              });
     test:assertEquals(ct1br7, [
-        {a: "a", e: "1", b: "true"},
-        {a: "a", e: "1", b: "true"}
-    ]);
+                {a: "a", e: 1, b: "true"},
+                {a: "a", e: 1, b: "true"}
+            ]);
 
-    record {|string a; string b;|}[]|csv:Error ct1br8 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "e", "b"],
-        stringConversion: false
-    });
+    record {|string a; string b;|}[]|csv:Error ct1br8 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {
+                                                                                                                    customHeaders: ["a", "e", "b"]
+                                                                                                                });
     test:assertEquals(ct1br8, [
-        {a: "a", b: "true"},
-        {a: "a", b: "true"}
-    ]);
+                {a: "a", b: "true"},
+                {a: "a", b: "true"}
+            ]);
 
-    record {|string...;|}[]|csv:Error ct1br9 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "e", "b"],
-        stringConversion: false
-    });
+    record {|string...;|}[]|csv:Error ct1br9 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {
+                                                                                                           customHeaders: ["a", "e", "b"]
+                                                                                                       });
     test:assertEquals(ct1br9, [
-        {a: "a", b: "true", e: "1"},
-        {a: "a", b: "true", e: "1"}
-    ]);
+                {a: "a", b: "true", e: "1"},
+                {a: "a", b: "true", e: "1"}
+            ]);
 
     record {|string...;|}[]|csv:Error ct1br10 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {
-        stringConversion: false
-    });
+                                                                                                        });
     test:assertEquals(ct1br10, [
-        {'1: "a", '3: "true", '2: "1"},
-        {'1: "a", '3: "true", '2: "1"}
-    ]);
+                {'1: "a", '3: "true", '2: "1"},
+                {'1: "a", '3: "true", '2: "1"}
+            ]);
 }
 
 @test:Config
 function testCustomHeaderParserOption2() {
     record {}[]|csv:Error ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeaderAbsent: ["a", "b"]});
     test:assertEquals(ct1br, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
+                {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
+                {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
+            ]);
 
     ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeaderAbsent: ["f", "e", "d", "c", "b", "a"]});
     test:assertEquals(ct1br, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
+                {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
+                {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
+            ]);
 
     ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeaderAbsent: ["b", "a"]});
     test:assertEquals(ct1br, [
-        {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
-        {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
-    ]);
+                {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
+                {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
+                {a: 3, b: "string3", c: false, d: 1.23, e: 1.23, f: ()},
+                {a: 4, b: "string4", c: true, d: -6.51, e: -6.51, f: ()},
+                {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
+            ]);
 
     record {}[]|csv:Error ct1br2 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: []});
     test:assertTrue(ct1br2 is csv:Error);
@@ -661,57 +660,57 @@ function testCustomHeaderParserOption2() {
 
     record {int a; string b; boolean c; decimal d; float e; () f;}[]|csv:Error ct1br4 = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeaderAbsent: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(ct1br4, [
-        {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
-        {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3, f: ()}
-    ]);
+                {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
+                {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
+                {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
+                {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
+                {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3, f: ()}
+            ]);
 
     record {() a; float b; decimal c; boolean d; string e; int f;}[]|csv:Error ct1br5 = csv:parseString(csvStringData4, {header: 1, customHeadersIfHeaderAbsent: ["f", "e", "d", "c", "b", "a"]});
     test:assertTrue(ct1br5 is csv:Error);
 
     ct1br5 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: ["f", "e", "d", "c", "b", "a"]});
     test:assertEquals(ct1br5, [
-        {f: 1, e: "string1", d: true, c: <decimal>2.234, b: <float>2.234, a: ()},
-        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
-        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
-        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
-        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
-    ]);
+                {f: 1, e: "string1", d: true, c: <decimal>2.234, b: <float>2.234, a: ()},
+                {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+                {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+                {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+                {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+            ]);
 
     record {() a; float b; decimal c; boolean d; string e; int f;}[]|csv:Error ct1br5_2 = csv:parseString(csvStringData4, {header: false, skipLines: [1], customHeadersIfHeaderAbsent: ["f", "e", "d", "c", "b", "a"]});
     test:assertEquals(ct1br5_2, [
-        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
-        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
-        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
-        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
-    ]);
+                {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+                {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+                {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+                {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+            ]);
 
     record {() a; float b; decimal c; boolean d; string e; int f;}[]|csv:Error ct1br5_3 = csv:parseString(csvStringData4, {skipLines: [1], header: false, customHeadersIfHeaderAbsent: ["f", "e", "d", "c", "b", "a"]});
     test:assertEquals(ct1br5_3, [
-        {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
-        {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
-        {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
-        {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
-    ]);
+                {f: 2, e: "string2", d: false, c: <decimal>0, b: <float>0, a: ()},
+                {f: 3, e: "string3", d: false, c: <decimal>1.23, b: <float>1.23, a: ()},
+                {f: 4, e: "string4", d: true, c: <decimal>-6.51, b: <float>-6.51, a: ()},
+                {f: 5, e: "string5", d: true, c: <decimal>3, b: <float>3, a: ()}
+            ]);
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br7 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: ["f1", "e1", "d1", "c1", "b1", "a1"]});
     test:assertEquals(ct1br7, [
-        {e1: "string1", d1: true},
-        {e1: "string2", d1: false},
-        {e1: "string3", d1: false},
-        {e1: "string4", d1: true},
-        {e1: "string5", d1: true}
-    ]);
+                {e1: "string1", d1: true},
+                {e1: "string2", d1: false},
+                {e1: "string3", d1: false},
+                {e1: "string4", d1: true},
+                {e1: "string5", d1: true}
+            ]);
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br7_2 = csv:parseString(csvStringData4, {header: false, skipLines: [1], customHeadersIfHeaderAbsent: ["f1", "e1", "d1", "c1", "b1", "a1"]});
     test:assertEquals(ct1br7_2, [
-        {e1: "string2", d1: false},
-        {e1: "string3", d1: false},
-        {e1: "string4", d1: true},
-        {e1: "string5", d1: true}
-    ]);
+                {e1: "string2", d1: false},
+                {e1: "string3", d1: false},
+                {e1: "string4", d1: true},
+                {e1: "string5", d1: true}
+            ]);
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br8 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: ["e1", "d1"]});
     test:assertTrue(ct1br8 is csv:Error);
@@ -719,12 +718,12 @@ function testCustomHeaderParserOption2() {
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br9 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: ["f1", "e1", "d1", "c1", "b1", "a1"]});
     test:assertEquals(ct1br9, [
-        {e1: "string1", d1: true},
-        {e1: "string2", d1: false},
-        {e1: "string3", d1: false},
-        {e1: "string4", d1: true},
-        {e1: "string5", d1: true}
-    ]);
+                {e1: "string1", d1: true},
+                {e1: "string2", d1: false},
+                {e1: "string3", d1: false},
+                {e1: "string4", d1: true},
+                {e1: "string5", d1: true}
+            ]);
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br11 = csv:parseString(csvStringData1, {header: false, customHeadersIfHeaderAbsent: ["f1", "e1"]});
     test:assertTrue(ct1br11 is csv:Error);
@@ -732,12 +731,12 @@ function testCustomHeaderParserOption2() {
 
     record {|string d1; string e1;|}[]|csv:Error ct1br12 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeaderAbsent: ["f1", "e1", "d1", "c1", "b1", "a1"]});
     test:assertEquals(ct1br12, [
-        {e1: "string1", d1: "true"},
-        {e1: "string2", d1: "false"},
-        {e1: "string3", d1: "false"},
-        {e1: "string4", d1: "true"},
-        {e1: "string5", d1: "true"}
-    ]);
+                {e1: "string1", d1: "true"},
+                {e1: "string2", d1: "false"},
+                {e1: "string3", d1: "false"},
+                {e1: "string4", d1: "true"},
+                {e1: "string5", d1: "true"}
+            ]);
 
     record {|string d1; string e1;|}[]|csv:Error ct1br13 = csv:parseString(csvStringData1, {header: false, customHeadersIfHeaderAbsent: ["f1", "e1", "dd1", "c1", "b1", "a1"]});
     test:assertTrue(ct1br13 is csv:Error);
@@ -896,21 +895,21 @@ function testEscapeCharactersWithParserOptions() {
 function testDelimiterWithParserOptions() {
     record {}[]|csv:Error cn = csv:parseString(csvStringData7, {header: 1, delimiter: "@"});
     test:assertEquals(cn, [
-        {a: 1, b: "string", c: true, d: 2.234, e: -3.21, f: ()},
-        {a: 2, b: "s,tring", c: true, d: 2.234, e: -3.21, f: ()},
-        {a: 3, b: "stri,ng", c: true, d: 2.234, e: -3.21, f: ()},
-        {a: 4, b: "string", c: true, d: 2.234, e: -3.21, f: ()},
-        {a: 5, b: "string", c: true, d: 2.234, e: -3.21, f: ()}
-    ]);
+                {a: 1, b: "string", c: true, d: 2.234, e: -3.21, f: ()},
+                {a: 2, b: "s,tring", c: true, d: 2.234, e: -3.21, f: ()},
+                {a: 3, b: "stri,ng", c: true, d: 2.234, e: -3.21, f: ()},
+                {a: 4, b: "string", c: true, d: 2.234, e: -3.21, f: ()},
+                {a: 5, b: "string", c: true, d: 2.234, e: -3.21, f: ()}
+            ]);
 
     anydata[][]|csv:Error cn2 = csv:parseString(csvStringData7, {header: 1, delimiter: "@"});
     test:assertEquals(cn2, [
-        [1, "string", true, 2.234, -3.21, ()],
-        [2, "s,tring", true, 2.234, -3.21, ()],
-        [3, "stri,ng", true, 2.234, -3.21, ()],
-        [4, "string", true, 2.234, -3.21, ()],
-        [5, "string", true, 2.234, -3.21, ()]
-    ]);
+                [1, "string", true, 2.234, -3.21, ()],
+                [2, "s,tring", true, 2.234, -3.21, ()],
+                [3, "stri,ng", true, 2.234, -3.21, ()],
+                [4, "string", true, 2.234, -3.21, ()],
+                [5, "string", true, 2.234, -3.21, ()]
+            ]);
 }
 
 @test:Config
@@ -950,7 +949,7 @@ function testSkipLineParameterWithOutputHeaderConfig() {
                         3,4
                         4,5`;
 
-    record{}[]|csv:Error result = csv:parseString(csv3, {outputWithHeaders: true, skipLines: "2-3"});
+    record {}[]|csv:Error result = csv:parseString(csv3, {outputWithHeaders: true, skipLines: "2-3"});
     test:assertEquals(result, [{a: 1, b: 2}, {a: 4, b: 5}]);
 
     anydata[][]|csv:Error result2 = csv:parseString(csv3, {outputWithHeaders: true, skipLines: "2-3"});
