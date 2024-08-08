@@ -193,21 +193,21 @@ function testSubtypeExpectedTypes() returns error? {
     SubtypeTuple3[]|csv:Error a12 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a12, value3); 
 
-    SubtypeRecord[]|csv:Error a13 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeRecord[]|csv:Error a13 = csv:parseList(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a13, value1);
 
-    SubtypeRecord2[]|csv:Error a14 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeRecord2[]|csv:Error a14 = csv:parseList(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a14, [{a: 1, c: 1}, {a: 1, c: 1}]);
 
-    SubtypeRecord3[]|csv:Error a15 = csv:parseLists(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeRecord3[]|csv:Error a15 = csv:parseList(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a15, value1);
 
-    SubtypeTuple[]|csv:Error a16 = csv:parseLists(value2, {});
+    SubtypeTuple[]|csv:Error a16 = csv:parseList(value2, {});
     test:assertEquals(a16, value3);
 
-    SubtypeTuple2[]|csv:Error a17 = csv:parseLists(value2, {});
+    SubtypeTuple2[]|csv:Error a17 = csv:parseList(value2, {});
     test:assertEquals(a17, [[1, 1], [1, 1]]);
 
-    SubtypeTuple3[]|csv:Error a18 = csv:parseLists(value2, {});
+    SubtypeTuple3[]|csv:Error a18 = csv:parseList(value2, {});
     test:assertEquals(a18, value3);   
 }

@@ -126,49 +126,49 @@ function testIntersectionExpectedTypes2() returns error? {
 
 @test:Config
 function testIntersectionExpectedTypes3() returns error? {
-    (int[] & readonly)[]|csv:Error a = csv:parseLists([["1", "2"], ["4", "5"]], {});
+    (int[] & readonly)[]|csv:Error a = csv:parseList([["1", "2"], ["4", "5"]], {});
     test:assertTrue(a is (int[] & readonly)[]);
     test:assertEquals(a, [[1, 2], [4, 5]]);
 
-    ([string, string])[] & readonly|csv:Error a2 = csv:parseLists([["a", "a"], ["c", "c"]], {});
+    ([string, string])[] & readonly|csv:Error a2 = csv:parseList([["a", "a"], ["c", "c"]], {});
     test:assertTrue(a2 is [string, string][] & readonly);
     test:assertEquals(a2, [["a", "a"], ["c", "c"]]);
 
-    (record {int a; string b;} & readonly)[]|csv:Error a3 = csv:parseLists([["1", "2"], ["4", "5"]], {customHeaders: ["a", "b"]});
+    (record {int a; string b;} & readonly)[]|csv:Error a3 = csv:parseList([["1", "2"], ["4", "5"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a3 is (record {int a; string b;} & readonly)[]);
     test:assertEquals(a3, [{a: 1, b: "2"}, {a: 4, b: "5"}]);
 
-    record {|string...;|}[] & readonly|csv:Error a4 = csv:parseLists([["a", "a"], ["c", "c"]], {customHeaders: ["a", "b"]});
+    record {|string...;|}[] & readonly|csv:Error a4 = csv:parseList([["a", "a"], ["c", "c"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a4 is record {|string...;|}[] & readonly);
     test:assertEquals(a4, [{a: "a", b: "a"}, {a: "c", b: "c"}]);
 
-    ([int] & readonly)[]|csv:Error a5 = csv:parseLists([["1", "2"], ["4", "5"]], {});
+    ([int] & readonly)[]|csv:Error a5 = csv:parseList([["1", "2"], ["4", "5"]], {});
     test:assertTrue(a5 is ([int] & readonly)[]);
     test:assertEquals(a5, [[1], [4]]);
 
-    ([string, string])[] & readonly|csv:Error a6 = csv:parseLists([["a", "a"], ["c", "c"]], {});
+    ([string, string])[] & readonly|csv:Error a6 = csv:parseList([["a", "a"], ["c", "c"]], {});
     test:assertTrue(a6 is [string, string][] & readonly);
     test:assertEquals(a6, [["a", "a"], ["c", "c"]]);
 
-    (record {int a; string b;} & readonly)[]|csv:Error a7 = csv:parseLists([["1", "2"], ["4", "5"]], {customHeaders: ["a", "b"]});
+    (record {int a; string b;} & readonly)[]|csv:Error a7 = csv:parseList([["1", "2"], ["4", "5"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a7 is record {int a; string b;}[] & readonly);
     test:assertEquals(a7, [{a: 1, b: "2"}, {a: 4, b: "5"}]);
 
-    map<string>[] & readonly|csv:Error a8 = csv:parseLists([["a", "a"], ["c", "c"]], {customHeaders: ["a", "b"]});
+    map<string>[] & readonly|csv:Error a8 = csv:parseList([["a", "a"], ["c", "c"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a8 is map<string>[] & readonly);
     test:assertEquals(a8, [{a: "a", b: "a"}, {a: "c", b: "c"}]);
 
-    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:parseLists([["1", "2"], ["a", "b"]], {});
+    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:parseList([["1", "2"], ["a", "b"]], {});
     test:assertTrue(a9 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
     test:assertEquals(a9, [[1, 2], ["a", "b"]]);
 
     ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
-                                    & readonly|csv:Error a10 = csv:parseLists([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
+                                    & readonly|csv:Error a10 = csv:parseList([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a10 is ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[] & readonly);
     test:assertEquals(a10, [{a: "a", b: "a"}, {a: "1", b: "2"}]);
 
     ((record {int a; int b;} & readonly)|(record {string a; string b;} & readonly))[]
-                                    & readonly|csv:Error a11 = csv:parseLists([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
+                                    & readonly|csv:Error a11 = csv:parseList([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a11 is ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[] & readonly);
     test:assertEquals(a11, [{a: "a", b: "a"}, {a: 1, b: 2}]);
 }

@@ -673,10 +673,10 @@ function testsRecordsOutputWithHeadrs() {
     bm3anyd3t_4 = csv:transform([{"a": 1, "b": 2}, {"c": 3, "d": 4}], {outputWithHeaders: true});
     test:assertEquals(bm3anyd3t_4, [{"a": 1, "b": 2}, {"c": 3, "d": 4}]);
 
-    bm3anyd3t_3 = csv:parseLists([["a", "b"], ["c", "d", "e"]], {outputWithHeaders: true});
+    bm3anyd3t_3 = csv:parseList([["a", "b"], ["c", "d", "e"]], {outputWithHeaders: true});
     test:assertEquals(bm3anyd3t_3, [["a", "b"], ["c", "d", "e"]]);
 
-    bm3anyd3t_4 = csv:parseLists([["a", "b"], ["c", "d", "e"]], {outputWithHeaders: true});
+    bm3anyd3t_4 = csv:parseList([["a", "b"], ["c", "d", "e"]], {outputWithHeaders: true});
     test:assertTrue(bm3anyd3t_4 is csv:Error);
     test:assertEquals((<error> bm3anyd3t_4).message(), "CSV data rows with varying headers are not yet supported");
 }

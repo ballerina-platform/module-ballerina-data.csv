@@ -29,7 +29,8 @@ public type Options record {
     # Lines to skip during processing, specified either as an array of integers or a string.
     int[]|string skipLines = [];
     # If `true`, enables validation of constraints during processing.
-    boolean enableConstraintValidation = true;  # If `true`, the resulted CSV contains the headers as the first row.
+    boolean enableConstraintValidation = true;  
+    # If `true`, the resulted CSV contains the headers as the first row.
     # This field is only acceptable if the expected type is subset of `anydata[][]`
     boolean outputWithHeaders = false;
 };
@@ -60,7 +61,7 @@ public type ParseOptions record {|
 |};
 
 # Represents options for treating a list as a record.
-public type ParseListsOptions record {|
+public type ParseListOptions record {|
     *Options;
     # If `true`, enables conversion of strings during processing.
     boolean stringConversion = true;

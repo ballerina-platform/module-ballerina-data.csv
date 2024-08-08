@@ -16,9 +16,9 @@ public function test() returns error? {
     A val5 = check csv:parseBytes([1,2,3], {});
     record{}[]|[record{}, record{}, record{}, record{}] val6 = check csv:parseBytes([1,2,3], {});
     int[][]|[[int, string], [int, string]] val7 = check csv:transform([{}], {});
-    [[int, string], [int, string]] val8 = check csv:parseLists([], {});
+    [[int, string], [int, string]] val8 = check csv:parseList([], {});
     [record{}, record{}, record{}, record{}] val9 = check csv:transform([{}], {});
-    [record{}, record{}, record{}, record{}] val10 = check csv:parseLists([], {});
-    record{}[2] val11 = check csv:parseLists([], {});
-    int[3][2] val12 = check csv:parseLists([], {});
+    [record{}, record{}, record{}, record{}] val10 = check csv:parseList([], {});
+    record{}[2] val11 = check csv:parseList([], {});
+    int[3][2] val12 = check csv:parseList([], {});
 }

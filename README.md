@@ -89,7 +89,7 @@ type Book record {
 public function main() returns error? {
     string[][] bookArray = [["Clean Code","2008"],["Clean Architecture","2017"]];
 
-    Book[] author = check csv:parseLists(bookArray, customHeaders = ["name", "year"]);
+    Book[] author = check csv:parseList(bookArray, customHeaders = ["name", "year"]);
     io:println(author);
 }
 ```

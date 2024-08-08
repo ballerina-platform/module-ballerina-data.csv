@@ -327,7 +327,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         readonly & int a; 
         readonly & string b; 
         (readonly & boolean) | (readonly & decimal) c;
-    }[]|csv:Error rt11a = csv:parseLists(
+    }[]|csv:Error rt11a = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {customHeaders: ["a", "b", "c"]});
 
     test:assertEquals(rt11a , [
@@ -336,7 +336,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: 3, b: "string3", c: true}
     ]);
 
-    record{A a; B b; C c;}[]|csv:Error rt12a = csv:parseLists(
+    record{A a; B b; C c;}[]|csv:Error rt12a = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {customHeaders: ["a", "b", "c"]});
 
     test:assertEquals(rt12a , [
@@ -345,14 +345,14 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: 3, b: "string3", c: true}
     ]);
 
-    record{A a; B b; C c;}[]|csv:Error rt12a_2 = csv:parseLists(
+    record{A a; B b; C c;}[]|csv:Error rt12a_2 = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {customHeaders: ["a", "b", "c"], stringConversion: false});
 
     test:assertTrue(rt12a_2 is csv:Error);
     test:assertEquals((<csv:Error>rt12a_2).message(), 
         common:generateErrorMessageForInvalidFieldType("1", "a"));
 
-    record{string|decimal a; B b; C c;}[]|csv:Error rt12a_3 = csv:parseLists(
+    record{string|decimal a; B b; C c;}[]|csv:Error rt12a_3 = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {customHeaders: ["a", "b", "c"]});
 
     test:assertEquals(rt12a_3 , [
@@ -361,7 +361,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: <decimal>3, b: "string3", c: true}
     ]);
 
-    record{A2 a; B2 b; C2 c;}[]|csv:Error rt13a = csv:parseLists(
+    record{A2 a; B2 b; C2 c;}[]|csv:Error rt13a = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {customHeaders: ["a", "b", "c"]});
 
     test:assertEquals(rt13a , [
@@ -370,7 +370,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: <int>3, b: "string3", c: true}
     ]);
 
-    record{|A2 a; B2 b; C2...;|}[]|csv:Error rt14a = csv:parseLists(
+    record{|A2 a; B2 b; C2...;|}[]|csv:Error rt14a = csv:parseList(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]
         , {customHeaders: ["a", "b", "c", "d"]});
 
@@ -380,7 +380,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: <int>3, b: "string3", c: true, d: "string3"}
     ]);
 
-    record{|C2...;|}[]|csv:Error rt15a = csv:parseLists(
+    record{|C2...;|}[]|csv:Error rt15a = csv:parseList(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]
         , {customHeaders: ["a", "b", "c", "d"]});
 
@@ -390,7 +390,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         {a: "3", b: "string3", c: true, d: "string3"}
     ]);
 
-    record{|C2...;|}[]|csv:Error rt15a_2 = csv:parseLists(
+    record{|C2...;|}[]|csv:Error rt15a_2 = csv:parseList(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]], 
         {stringConversion: false, customHeaders: ["a", "b", "c", "d"]});
 
@@ -401,7 +401,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
     ]);
 
     [readonly & int, readonly & string, (readonly & boolean) | (readonly & decimal)][]|csv:Error rt16a = 
-    csv:parseLists(
+    csv:parseList(
         [["1", "string", "true"], 
         ["2", "string2", "false"], 
         ["3", "string3", "true"]]);
@@ -412,7 +412,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         [3, "string3", true]
     ]);
 
-    [A, B, C][]|csv:Error rt17a = csv:parseLists(
+    [A, B, C][]|csv:Error rt17a = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]]);
 
     test:assertEquals(rt17a , [
@@ -421,13 +421,13 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         [3, "string3", true]
     ]);
 
-    [A, B, C][]|csv:Error rt17a_2 = csv:parseLists(
+    [A, B, C][]|csv:Error rt17a_2 = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]], {stringConversion: false});
 
     test:assertTrue(rt17a_2 is csv:Error);
     test:assertEquals((<error>rt17a_2).message(), common:generateErrorMessageForInvalidValueForArrayType("1", "0", "type_compatible_tests:A"));
 
-    [A2, B2, C2][]|csv:Error rt18a = csv:parseLists(
+    [A2, B2, C2][]|csv:Error rt18a = csv:parseList(
         [["1", "string", "true"], ["2", "string2", "false"], ["3", "string3", "true"]]);
 
     test:assertEquals(rt18a , [
@@ -436,7 +436,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         [<int>3, "string3", true]
     ]);
 
-    [A2, B2, C2...][]|csv:Error rt19a = csv:parseLists(
+    [A2, B2, C2...][]|csv:Error rt19a = csv:parseList(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]);
 
     test:assertEquals(rt19a , [
@@ -445,7 +445,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
         [<int>3, "string3", true, "string3"]
     ]);
 
-    [C2...][]|csv:Error rt20a = csv:parseLists(
+    [C2...][]|csv:Error rt20a = csv:parseList(
         [["1", "string", "true", "string"], ["2", "string2", "false", "string2"], ["3", "string3", "true", "string3"]]);
 
     test:assertEquals(rt20a, [["1", "string",true, "string"], 

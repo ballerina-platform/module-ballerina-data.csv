@@ -28,7 +28,7 @@ public final class Constants {
     static final String PARSE_BYTES = "parseBytes";
     static final String PARSE_STREAM = "parseStream";
     static final String TRANSFORM = "transform";
-    static final String PARSE_LISTS = "parseLists";
+    static final String PARSE_LISTS = "parseList";
     static final String NAME = "Name";
     static final String CSVDATA = "csv";
     static final String BALLERINA = "ballerina";

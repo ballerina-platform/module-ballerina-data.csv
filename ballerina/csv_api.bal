@@ -16,19 +16,19 @@
 
 import ballerina/jballerina.java;
 
-public isolated function parseString(string s, ParseOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
+public isolated function parseString(string csvString, ParseOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-public isolated function parseBytes(byte[] s, ParseOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
+public isolated function parseBytes(byte[] csvBytes, ParseOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-public isolated function parseStream(stream<byte[], error?> s,
+public isolated function parseStream(stream<byte[], error?> csvByteStream,
            ParseOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-public isolated function transform(record{}[] s,
+public isolated function transform(record{}[] csvRecords,
            TransformOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-public isolated function parseLists(string[][] s, ParseListsOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
+public isolated function parseList(string[][] csvList, ParseListOptions options = {}, typedesc<record{}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;

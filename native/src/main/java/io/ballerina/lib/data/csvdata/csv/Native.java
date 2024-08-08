@@ -96,9 +96,9 @@ public final class Native {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
     }
-    public static Object parseLists(BArray csv, BMap<BString, Object> options, BTypedesc type) {
+    public static Object parseList(BArray csv, BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvTraversal.traverse(csv, CsvConfig.createParseListsOptions(options), type);
+            return CsvTraversal.traverse(csv, CsvConfig.createParseListOptions(options), type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
         }
