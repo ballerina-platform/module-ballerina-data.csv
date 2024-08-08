@@ -90,5 +90,6 @@ public enum LineTerminator {
 public enum NilValue {
     NULL = "null",
     NOT_APPLICABLE = "N/A",
+    EMPTY_STRING = "",
     BAL_NULL = "()"
 };
