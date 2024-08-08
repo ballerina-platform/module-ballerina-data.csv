@@ -31,7 +31,7 @@ public type Options record {
     # If `true`, enables validation of constraints during processing.
     boolean enableConstraintValidation = true;  
     # If `true`, the resulted CSV contains the headers as the first row.
-    # This field is only acceptable if the expected type is subset of `anydata[][]`
+    # This field is only considered if the expected type is a subset of `anydata[][]`
     boolean outputWithHeaders = false;
 };
 
@@ -63,8 +63,8 @@ public type ParseOptions record {|
 # Represents options for treating a list as a record.
 public type ParseListOptions record {|
     *Options;
-    # If `0`, all the sources will treat as data rows.
-    # Otherwise specify the header rows(Starts from 1)
+    # If `0`, all the source data will treat as data rows.
+    # Otherwise specify the header rows(Starts from 1) in the source data.
     int:Unsigned32 headerRows = 0;
     # Specify the header names of the source data.
     # This field will overwrite the header values in the header rows.
