@@ -1,0 +1,16 @@
+[package]
+org = "ballerina"
+name = "@package.name@"
+version = "@toml.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "@test.common@"
+repository = "local"
+version = "@toml.version@"
+
+[platform.java17]
+graalvmCompatible = true
+
+[build-options]
+graalvmBuildOptions = "-H:+IncludeAllLocales"

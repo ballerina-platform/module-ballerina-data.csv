@@ -1,0 +1,16 @@
+[package]
+org = "ballerina"
+name = "parse_record_types_tests"
+version = "0.1.0"
+
+[[dependency]]
+org = "ballerina"
+name = "csv_commons"
+repository = "local"
+version = "0.1.0"
+
+[platform.java17]
+graalvmCompatible = true
+
+[build-options]
+graalvmBuildOptions = "-H:+IncludeAllLocales"

@@ -16,6 +16,12 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.data {
+module io.ballerina.lib.data {
     requires io.ballerina.runtime;
+    requires io.ballerina.lang.value;
+    requires junit;
+    requires org.apache.commons.lang3;
+    requires io.ballerina.stdlib.constraint;
+    exports io.ballerina.lib.data.csvdata.csv;
+    exports io.ballerina.lib.data.csvdata.utils;
 }
