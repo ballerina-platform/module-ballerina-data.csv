@@ -66,24 +66,6 @@ public final class CsvCreator {
         };
     }
 
-    static boolean isExpectedTypeIsArray(Type expectedType) {
-        expectedType = TypeUtils.getReferredType(expectedType);
-
-        return switch (expectedType.getTag()) {
-            case TypeTags.TUPLE_TAG, TypeTags.ARRAY_TAG -> true;
-            default -> false;
-        };
-    }
-
-    static boolean isExpectedTypeIsMap(Type expectedType) {
-        expectedType = TypeUtils.getReferredType(expectedType);
-
-        return switch (expectedType.getTag()) {
-            case TypeTags.MAP_TAG, TypeTags.RECORD_TYPE_TAG -> true;
-            default -> false;
-        };
-    }
-
     static void convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
                                                 String value, Type type, CsvConfig config, Type exptype,
                                                 Field currentField) {
@@ -129,9 +111,7 @@ public final class CsvCreator {
         if (sm.config.customHeadersIfHeaderAbsent == null &&  (sm.config.header == Boolean.FALSE)) {
             String header = String.valueOf(sm.columnIndex + 1);
             Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
-            if (fieldHierarchy.containsKey(header)) {
-                fieldHierarchy.remove(header);
-            }
+            fieldHierarchy.remove(header);
             return header;
         }
         if (sm.columnIndex >= sm.headers.size()) {
@@ -160,14 +140,9 @@ public final class CsvCreator {
         if (exptype.getTag() == TypeTags.RECORD_TYPE_TAG) {
             String header = getHeaderValueForColumnIndex(sm);
             Map<String, Field> fields = sm.fieldNames;
-            if (fields.containsKey(header)) {
-                return false;
-            }
-            return true;
-        } else if (exptype.getTag() == TypeTags.MAP_TAG) {
-            return true;
+            return !fields.containsKey(header);
         }
-        return false;
+        return exptype.getTag() == TypeTags.MAP_TAG;
     }
 
     public static Object convertToExpectedType(BString value, Type type, CsvConfig config) {

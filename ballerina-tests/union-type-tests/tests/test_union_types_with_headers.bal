@@ -17,37 +17,15 @@ csv:ParseListsOptions op11 = {outputWithHeaders: true, customHeaders: ["a", "b",
 csv:ParseListsOptions op12 = {headerRows: 1, customHeaders: ["a", "b", "c", "d"]};
 csv:ParseListsOptions op13 = {customHeaders: ["a", "b", "c", "d"]};
 
-type UnionType1 string[][]|boolean[][];
+type UnionType1 boolean[][]|string[][];
 
-type UnionType2 boolean[][]|string[][];
+type UnionType2 ([boolean...]|[string, string...])[];
 
-type UnionType3 (boolean|string)[][];
+type UnionType3 record {int d1;}[]|record {}[];
 
-type UnionType4 [string...][]|[boolean, string, string, string][];
+type UnionType4 (map<string>|map<int>)[];
 
-type UnionType5 [string, string, string, string][]|[string...][];
-
-type UnionType6 ([string...][]|[string, string, string, string])[];
-
-type UnionType7 string[][]|[string...][];
-
-type UnionType8 ([boolean...]|string[])[];
-
-type UnionType9 record {}[]|record {int d1;}[];
-
-type UnionType10 record {int d1;}[]|record {}[];
-
-type UnionType11 (record {int d1;}|record {})[];
-
-type UnionType12 map<string>[]|record {int d1;}[];
-
-type UnionType13 record {int d1;}[]|map<string>[];
-
-type UnionType14 (map<string>|map<int>)[];
-
-type UnionType15 (record {int d1;}|map<string>)[];
-
-var csv1 = [["1", "2", "3", "4"], ["5", "6", "7", "8"], ["9", "10", "11", "12"], ["13", "14", "15", "16"]];
+string[][] csv1 = [["1", "2", "3", "4"], ["5", "6", "7", "8"], ["9", "10", "11", "12"], ["13", "14", "15", "16"]];
 var csv2 = [{a: 1, b: 2, c: 3, d: 4}, {a: 5, b: 6, c: 7, d: 8}, {a: 9, b: 10, c: 11, d: 12}, {a: 13, b: 14, c: 15, d: 16}];
 var csv3 = string `a,b,c,d
                     1,2,3,4
@@ -62,50 +40,22 @@ var result3 = [{a: "1", b: "2", c: "3", d: "4"}, {a: "5", b: "6", c: "7", d: "8"
 var result4 = [["1", "2", "3", "4"], ["5", "6", "7", "8"], ["9", "10", "11", "12"], ["13", "14", "15", "16"]];
 var result5 = [["a", "b", "c", "d"], [1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]];
 var result6 = [["a", "b", "c", "d"], ["1", "2", "3", "4"], ["5", "6", "7", "8"], ["9", "10", "11", "12"], ["13", "14", "15", "16"]];
+var result7 = [{'1: 1, '2: 2, '3: 3, '4: 4}, {'1: 5, '2: 6, '3: 7, '4: 8}, {'1: 9, '2: 10, '3: 11, '4: 12}, {'1: 13, '2: 14, '3: 15, '4: 16}];
+var result8 = [{'1: "1", '2: "2", '3: "3", '4: "4"}, {'1: "5", '2: "6", '3: "7", '4: "8"}, {'1: "9", '2: "10", '3: "11", '4: "12"}, {'1: "13", '2: "14", '3: "15", '4: "16"}];
 
 @test:Config
 function testParseStringWithMapWithOutputHeaders() {
-    UnionType9|csv:Error psu9 = csv:parseString(csv3);
-    test:assertEquals(psu9, result2);
+    UnionType3|csv:Error psu3 = csv:parseString(csv3);
+    test:assertEquals(psu3, result2);
 
-    psu9 = csv:parseString(csv3, op5);
-    test:assertEquals(psu9, result2);
+    psu3 = csv:parseString(csv3, op5);
+    test:assertEquals(psu3, result2);
 
-    UnionType10|csv:Error psu10 = csv:parseString(csv3);
-    test:assertEquals(psu10, result2);
+    UnionType4|csv:Error psu4 = csv:parseString(csv3);
+    test:assertEquals(psu4, result3);
 
-    psu10 = csv:parseString(csv3, op5);
-    test:assertEquals(psu10, result2);
-
-    UnionType11|csv:Error psu11 = csv:parseString(csv3);
-    test:assertEquals(psu11, result2);
-
-    psu11 = csv:parseString(csv3, op5);
-    test:assertEquals(psu11, result2);
-
-    UnionType12|csv:Error psu12 = csv:parseString(csv3);
-    test:assertEquals(psu12, result3);
-
-    psu12 = csv:parseString(csv3, op5);
-    test:assertEquals(psu12, result3);
-
-    UnionType13|csv:Error psu13 = csv:parseString(csv3);
-    test:assertEquals(psu13, result3);
-
-    psu13 = csv:parseString(csv3, op5);
-    test:assertEquals(psu13, result3);
-
-    UnionType14|csv:Error psu14 = csv:parseString(csv3);
-    test:assertEquals(psu14, result3);
-
-    psu14 = csv:parseString(csv3, op5);
-    test:assertEquals(psu14, result3);
-
-    UnionType15|csv:Error psu15 = csv:parseString(csv3);
-    test:assertEquals(psu15, result3);
-
-    psu15 = csv:parseString(csv3, op5);
-    test:assertEquals(psu15, result3);
+    psu4 = csv:parseString(csv3, op5);
+    test:assertEquals(psu4, result3);
 }
 
 @test:Config
@@ -121,150 +71,39 @@ function testParseStringWithListWithOutputHeaders() {
 
     psu2 = csv:parseString(csv3, op5);
     test:assertEquals(psu2, result6);
-
-    UnionType3|csv:Error psu3 = csv:parseString(csv3);
-    test:assertEquals(psu3, result4);
-
-    psu3 = csv:parseString(csv3, op5);
-    test:assertEquals(psu3, result6);
-
-    UnionType4|csv:Error psu4 = csv:parseString(csv3);
-    test:assertEquals(psu4, result4);
-
-    psu4 = csv:parseString(csv3, op5);
-    test:assertEquals(psu4, result6);
-
-    UnionType5|csv:Error psu5 = csv:parseString(csv3);
-    test:assertEquals(psu5, result4);
-
-    psu5 = csv:parseString(csv3, op5);
-    test:assertEquals(psu5, result6);
-
-    UnionType6|csv:Error psu6 = csv:parseString(csv3);
-    test:assertEquals(psu6, result4);
-
-    psu6 = csv:parseString(csv3, op5);
-    test:assertEquals(psu6, result6);
-
-    UnionType7|csv:Error psu7 = csv:parseString(csv3);
-    test:assertEquals(psu7, result4);
-
-    psu7 = csv:parseString(csv3, op5);
-    test:assertEquals(psu7, result6);
-
-    UnionType8|csv:Error psu8 = csv:parseString(csv3);
-    test:assertEquals(psu8, result4);
-
-    psu8 = csv:parseString(csv3, op5);
-    test:assertEquals(psu8, result6);
 }
 
 @test:Config
 function testTransformWithMapWithOutputHeaders() {
-    UnionType9|csv:Error psu9 = csv:transform(csv2);
-    test:assertEquals(psu9, result2);
+    UnionType3|csv:Error psu3 = csv:transform(csv2);
+    test:assertEquals(psu3, result2);
 
-    psu9 = csv:transform(csv2, op1);
-    test:assertEquals(psu9, result2);
+    psu3 = csv:transform(csv2, op1);
+    test:assertEquals(psu3, result2);
 
-    psu9 = csv:transform(csv2, op2);
-    test:assertEquals(psu9, result2);
+    psu3 = csv:transform(csv2, op2);
+    test:assertEquals(psu3, result2);
 
-    psu9 = csv:transform(csv2, op3);
-    test:assertEquals(psu9, result2);
+    psu3 = csv:transform(csv2, op3);
+    test:assertEquals(psu3, result2);
 
-    psu9 = csv:transform(csv2, op4);
-    test:assertEquals(psu9, result2);
+    psu3 = csv:transform(csv2, op4);
+    test:assertEquals(psu3, result2);
 
-    UnionType10|csv:Error psu10 = csv:transform(csv2);
-    test:assertEquals(psu10, result2);
+    UnionType4|csv:Error psu4 = csv:transform(csv4);
+    test:assertEquals(psu4, result3);
 
-    psu10 = csv:transform(csv2, op1);
-    test:assertEquals(psu10, result2);
+    psu4 = csv:transform(csv4, op1);
+    test:assertEquals(psu4, result3);
 
-    psu10 = csv:transform(csv2, op2);
-    test:assertEquals(psu10, result2);
+    psu4 = csv:transform(csv4, op2);
+    test:assertEquals(psu4, result3);
 
-    psu10 = csv:transform(csv2, op3);
-    test:assertEquals(psu10, result2);
+    psu4 = csv:transform(csv4, op3);
+    test:assertEquals(psu4, result3);
 
-    psu10 = csv:transform(csv2, op4);
-    test:assertEquals(psu10, result2);
-
-    UnionType11|csv:Error psu11 = csv:transform(csv2);
-    test:assertEquals(psu11, result2);
-
-    psu11 = csv:transform(csv2, op1);
-    test:assertEquals(psu11, result2);
-
-    psu11 = csv:transform(csv2, op2);
-    test:assertEquals(psu11, result2);
-
-    psu11 = csv:transform(csv2, op3);
-    test:assertEquals(psu11, result2);
-
-    psu11 = csv:transform(csv2, op4);
-    test:assertEquals(psu11, result2);
-
-    UnionType12|csv:Error psu12 = csv:transform(csv4);
-    test:assertEquals(psu12, result3);
-
-    psu12 = csv:transform(csv4, op1);
-    test:assertEquals(psu12, result3);
-
-    psu12 = csv:transform(csv4, op2);
-    test:assertEquals(psu12, result3);
-
-    psu12 = csv:transform(csv4, op3);
-    test:assertEquals(psu12, result3);
-
-    psu12 = csv:transform(csv4, op4);
-    test:assertEquals(psu12, result3);
-
-    UnionType13|csv:Error psu13 = csv:transform(csv4);
-    test:assertEquals(psu13, result3);
-
-    psu13 = csv:transform(csv4, op1);
-    test:assertEquals(psu13, result3);
-
-    psu13 = csv:transform(csv4, op2);
-    test:assertEquals(psu13, result3);
-
-    psu13 = csv:transform(csv4, op3);
-    test:assertEquals(psu13, result3);
-
-    psu13 = csv:transform(csv4, op4);
-    test:assertEquals(psu13, result3);
-
-    UnionType14|csv:Error psu14 = csv:transform(csv4);
-    test:assertEquals(psu14, result3);
-
-    psu14 = csv:transform(csv4, op1);
-    test:assertEquals(psu14, result3);
-
-    psu14 = csv:transform(csv4, op2);
-    test:assertEquals(psu14, result3);
-
-    psu14 = csv:transform(csv4, op3);
-    test:assertEquals(psu14, result3);
-
-    psu14 = csv:transform(csv4, op4);
-    test:assertEquals(psu14, result3);
-
-    UnionType15|csv:Error psu15 = csv:transform(csv4);
-    test:assertEquals(psu15, result3);
-
-    psu15 = csv:transform(csv4, op1);
-    test:assertEquals(psu15, result3);
-
-    psu15 = csv:transform(csv4, op2);
-    test:assertEquals(psu15, result3);
-
-    psu15 = csv:transform(csv4, op3);
-    test:assertEquals(psu15, result3);
-
-    psu15 = csv:transform(csv4, op4);
-    test:assertEquals(psu15, result3);
+    psu4 = csv:transform(csv4, op4);
+    test:assertEquals(psu4, result3);
 }
 
 @test:Config
@@ -281,10 +120,6 @@ function testTransformWithListWithOutputHeaders() {
     psu1 = csv:transform(csv4, op3);
     test:assertEquals(psu1, result6);
 
-    psu1 = csv:transform(csv4, op4);
-    test:assertTrue(psu1 is csv:Error);
-    test:assertEquals((<error>psu1).message(), "The source value cannot convert in to the 'union_type_tests:UnionType1'");
-
     UnionType2|csv:Error psu2 = csv:transform(csv4);
     test:assertEquals(psu2, result4);
 
@@ -296,76 +131,124 @@ function testTransformWithListWithOutputHeaders() {
 
     psu2 = csv:transform(csv4, op3);
     test:assertEquals(psu2, result6);
+}
 
-    UnionType3|csv:Error psu3 = csv:transform(csv4);
-    test:assertEquals(psu3, result4);
+@test:Config
+function testParseListWithMapWithOutputHeaders() {
+    UnionType3|csv:Error psu3 = csv:parseLists(csv1);
+    test:assertEquals(psu3, result7);
 
-    psu3 = csv:transform(csv4, op1);
-    test:assertEquals(psu3, result4);
+    psu3 = csv:parseLists(csv1, op6);
+    test:assertEquals(psu3, result7);
 
-    psu3 = csv:transform(csv4, op2);
-    test:assertEquals(psu3, result6);
+    psu3 = csv:parseLists(csv1, op7);
+    test:assertEquals(psu3, [{"1": 5, "2": 6, "3": 7, "4": 8}, {"1": 9, "2": 10, "3": 11, "4": 12}, {"1": 13, "2": 14, "3": 15, "4": 16}]);
 
-    psu3 = csv:transform(csv4, op3);
-    test:assertEquals(psu3, result6);
+    psu3 = csv:parseLists(csv1, op9);
+    test:assertEquals(psu3, [{"a": 9, "b": 10, "c": 11, "d": 12}, {"a": 13, "b": 14, "c": 15, "d": 16}]);
 
-    UnionType4|csv:Error psu4 = csv:transform(csv4);
-    test:assertEquals(psu4, result4);
+    UnionType4|csv:Error psu4 = csv:parseLists(csv1);
+    test:assertEquals(psu4, result8);
 
-    psu4 = csv:transform(csv4, op1);
-    test:assertEquals(psu4, result4);
+    psu4 = csv:parseLists(csv1, op6);
+    test:assertEquals(psu4, result8);
 
-    psu4 = csv:transform(csv4, op2);
-    test:assertEquals(psu4, result6);
+    psu4 = csv:parseLists(csv1, op7);
+    test:assertEquals(psu4, [{"1": "5", "2": "6", "3": "7", "4": "8"}, {"1": "9", "2": "10", "3": "11", "4": "12"}, {"1": "13", "2": "14", "3": "15", "4": "16"}]);
 
-    psu4 = csv:transform(csv4, op3);
-    test:assertEquals(psu4, result6);
+    psu4 = csv:parseLists(csv1, op9);
+    test:assertEquals(psu4, [{"a": "9", "b": "10", "c": "11", "d": "12"}, {"a": "13", "b": "14", "c": "15", "d": "16"}]);
+}
 
-    UnionType5|csv:Error psu5 = csv:transform(csv4);
-    test:assertEquals(psu5, result4);
+@test:Config
+function testParseListWithListWithOutputHeaders() {
+    UnionType1|csv:Error psu1 = csv:parseLists(csv1);
+    test:assertEquals(psu1, result4);
 
-    psu5 = csv:transform(csv4, op1);
-    test:assertEquals(psu5, result4);
+    psu1 = csv:parseLists(csv1, op6);
+    test:assertEquals(psu1, result4);
 
-    psu5 = csv:transform(csv4, op2);
-    test:assertEquals(psu5, result6);
+    psu1 = csv:parseLists(csv1, op7);
+    test:assertEquals(psu1, result4);
 
-    psu5 = csv:transform(csv4, op3);
-    test:assertEquals(psu5, result6);
+    psu1 = csv:parseLists(csv1, op9);
+    test:assertEquals(psu1, [["a","b","c","d"],["9","10","11","12"],["13","14","15","16"]]);
 
-    UnionType6|csv:Error psu6 = csv:transform(csv4);
-    test:assertEquals(psu6, result4);
+    UnionType2|csv:Error psu2 = csv:parseLists(csv1);
+    test:assertEquals(psu2, result4);
 
-    psu6 = csv:transform(csv4, op1);
-    test:assertEquals(psu6, result4);
+    psu2 = csv:parseLists(csv1, op6);
+    test:assertEquals(psu2, result4);
 
-    psu6 = csv:transform(csv4, op2);
-    test:assertEquals(psu6, result6);
+    psu2 = csv:parseLists(csv1, op7);
+    test:assertEquals(psu2, result4);
 
-    psu6 = csv:transform(csv4, op3);
-    test:assertEquals(psu6, result6);
+    psu2 = csv:parseLists(csv1, op9);
+    test:assertEquals(psu2, [["a","b","c","d"],["9","10","11","12"],["13","14","15","16"]]);
+}
 
-    UnionType7|csv:Error psu7 = csv:transform(csv4);
-    test:assertEquals(psu7, result4);
+@test:Config
+function testParseListWithMapWithOutputHeaders2() {
+    UnionType3|csv:Error psu3 = csv:parseLists(csv1);
+    test:assertEquals(psu3, result7);
 
-    psu7 = csv:transform(csv4, op1);
-    test:assertEquals(psu7, result4);
+    psu3 = csv:parseLists(csv1, op10);
+    test:assertEquals(psu3, [{"a":5,"b":6,"c":7,"d":8},{"a":9,"b":10,"c":11,"d":12},{"a":13,"b":14,"c":15,"d":16}]);
 
-    psu7 = csv:transform(csv4, op2);
-    test:assertEquals(psu7, result6);
+    psu3 = csv:parseLists(csv1, op11);
+    test:assertEquals(psu3, result2);
 
-    psu7 = csv:transform(csv4, op3);
-    test:assertEquals(psu7, result6);
+    psu3 = csv:parseLists(csv1, op12);
+    test:assertEquals(psu3, [{"a":5,"b":6,"c":7,"d":8},{"a":9,"b":10,"c":11,"d":12},{"a":13,"b":14,"c":15,"d":16}]);
 
-    UnionType8|csv:Error psu8 = csv:transform(csv4);
-    test:assertEquals(psu8, result4);
+    psu3 = csv:parseLists(csv1, op13);
+    test:assertEquals(psu3, result2);
 
-    psu8 = csv:transform(csv4, op1);
-    test:assertEquals(psu8, result4);
+    UnionType4|csv:Error psu4 = csv:parseLists(csv1);
+    test:assertEquals(psu4, result8);
 
-    psu8 = csv:transform(csv4, op2);
-    test:assertEquals(psu8, result6);
+    psu4 = csv:parseLists(csv1, op10);
+    test:assertEquals(psu4, [{a: "5", b: "6", c: "7", d: "8"}, {a: "9", b: "10", c: "11", d: "12"}, {a: "13", b: "14", c: "15", d: "16"}]);
 
-    psu8 = csv:transform(csv4, op3);
-    test:assertEquals(psu8, result6);
+    psu4 = csv:parseLists(csv1, op11);
+    test:assertEquals(psu4, result3);
+
+    psu4 = csv:parseLists(csv1, op12);
+    test:assertEquals(psu4, [{a: "5", b: "6", c: "7", d: "8"}, {a: "9", b: "10", c: "11", d: "12"}, {a: "13", b: "14", c: "15", d: "16"}]);
+
+    psu4 = csv:parseLists(csv1, op13);
+    test:assertEquals(psu4, result3);
+}
+
+@test:Config
+function testParseListWithListWithOutputHeaders2() {
+    UnionType1|csv:Error psu1 = csv:parseLists(csv1);
+    test:assertEquals(psu1, result4);
+
+    psu1 = csv:parseLists(csv1, op10);
+    test:assertEquals(psu1, [["a","b","c","d"],["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
+
+    psu1 = csv:parseLists(csv1, op11);
+    test:assertEquals(psu1, result6);
+
+    psu1 = csv:parseLists(csv1, op12);
+    test:assertEquals(psu1, [["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
+
+    psu1 = csv:parseLists(csv1, op13);
+    test:assertEquals(psu1, result4);
+
+    UnionType2|csv:Error psu2 = csv:parseLists(csv1);
+    test:assertEquals(psu2, result4);
+
+    psu2 = csv:parseLists(csv1, op10);
+    test:assertEquals(psu2, [["a","b","c","d"],["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
+
+    psu2 = csv:parseLists(csv1, op11);
+    test:assertEquals(psu2, [["a","b","c","d"], ["1", "2", "3", "4"],["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
+
+    psu2 = csv:parseLists(csv1, op12);
+    test:assertEquals(psu2, [["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
+
+    psu2 = csv:parseLists(csv1, op13);
+    test:assertEquals(psu2, [["1", "2", "3", "4"],["5","6","7","8"],["9","10","11","12"],["13","14","15","16"]]);
 }

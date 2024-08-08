@@ -529,7 +529,7 @@ public final class CsvParser {
             State state = ROW_START_STATE;
 
             @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count) throws CsvParserException {
+            public State transition(StateMachine sm, char[] buff, int i, int count) {
                 char separator = sm.config.delimiter;
                 long[] skipLines = CsvUtils.getSkipDataRows(sm.config.skipLines);
 
@@ -616,17 +616,17 @@ public final class CsvParser {
             }
         }
 
-        private static void handleEndOfTheRow(StateMachine sm) throws CsvParserException {
+        private static void handleEndOfTheRow(StateMachine sm) {
             handleEndOfTheRow(sm, true);
         }
 
-        private static void handleEndOfTheRow(StateMachine sm, boolean trim) throws CsvParserException {
+        private static void handleEndOfTheRow(StateMachine sm, boolean trim) {
             sm.isValueStart = false;
             handleCsvRow(sm, trim);
             CsvUtils.checkRequiredFieldsAndLogError(sm.fieldHierarchy, sm.config.absentAsNilableType);
         }
 
-        private static void handleCsvRow(StateMachine sm, boolean trim) throws CsvParserException {
+        private static void handleCsvRow(StateMachine sm, boolean trim) {
             String value = sm.peek();
             if (trim) {
                 value = value.trim();
@@ -668,7 +668,7 @@ public final class CsvParser {
         }
 
         private static void addHeadersAsTheFirstElementForArraysIfApplicable(StateMachine sm) {
-            if (!sm.addHeadersForOutput && CsvCreator
+            if (!sm.addHeadersForOutput && CsvUtils
                     .isExpectedTypeIsArray(sm.expectedArrayElementType) && sm.config.outputWithHeaders) {
                 ArrayList<String> headers = sm.headers;
                 if (!headers.isEmpty()) {
@@ -695,11 +695,11 @@ public final class CsvParser {
             sm.arraySize++;
         }
 
-        private static void addRowValue(StateMachine sm) throws CsvParserException {
+        private static void addRowValue(StateMachine sm) {
             addRowValue(sm, true);
         }
 
-        private static void addRowValue(StateMachine sm, boolean trim) throws CsvParserException {
+        private static void addRowValue(StateMachine sm, boolean trim) {
             Field currentField = null;
             sm.isValueStart = false;
             Type exptype = sm.expectedArrayElementType;
@@ -824,8 +824,7 @@ public final class CsvParser {
         private static class StringQuoteValueState implements State {
 
             @Override
-            public State transition(StateMachine sm, char[] buff, int i, int count)
-                    throws CsvParserException {
+            public State transition(StateMachine sm, char[] buff, int i, int count) {
                 State state = this;
                 char ch;
                 for (; i < count; i++) {
@@ -864,8 +863,6 @@ public final class CsvParser {
                         sm.prevState = this;
                         sm.isQuoteClosed = false;
                         break;
-                    } else if (!sm.isQuoteClosed && !sm.peek().isEmpty() && ch == EOF) {
-                        throw new CsvParserException("unexpected end of csv stream");
                     } else {
                         if (!sm.isQuoteClosed) {
                             sm.append(ch);
@@ -928,8 +925,6 @@ public final class CsvParser {
                         sm.prevState = this;
                         state = HEADER_ESCAPE_CHAR_STATE;
                         break;
-                    } else if (!sm.isQuoteClosed && ch == EOF) {
-                        throw new CsvParserException("unexpected end of csv stream");
                     } else {
                         if (!sm.isQuoteClosed) {
                             sm.append(ch);

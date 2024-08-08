@@ -9,6 +9,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BDecimal;
@@ -42,30 +43,33 @@ public class CsvUtils {
         }
     }
 
+    public static boolean isExpectedTypeIsArray(Type expectedType) {
+        expectedType = TypeUtils.getReferredType(expectedType);
+
+        return switch (expectedType.getTag()) {
+            case TypeTags.TUPLE_TAG, TypeTags.ARRAY_TAG -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isExpectedTypeIsMap(Type expectedType) {
+        expectedType = TypeUtils.getReferredType(expectedType);
+
+        return switch (expectedType.getTag()) {
+            case TypeTags.MAP_TAG, TypeTags.RECORD_TYPE_TAG -> true;
+            default -> false;
+        };
+    }
+
     public static boolean isBasicType(Type type) {
-        switch (type.getTag()) {
-            case TypeTags.INT_TAG:
-            case TypeTags.STRING_TAG:
-            case TypeTags.BOOLEAN_TAG:
-            case TypeTags.DECIMAL_TAG:
-            case TypeTags.FLOAT_TAG:
-            case TypeTags.NULL_TAG:
-            case TypeTags.JSON_TAG:
-            case TypeTags.ANYDATA_TAG:
-            case TypeTags.UNION_TAG:
-            case TypeTags.INTERSECTION_TAG:
-            case TypeTags.CHAR_STRING_TAG:
-            case TypeTags.BYTE_TAG:
-            case TypeTags.SIGNED8_INT_TAG:
-            case TypeTags.SIGNED16_INT_TAG:
-            case TypeTags.SIGNED32_INT_TAG:
-            case TypeTags.UNSIGNED8_INT_TAG:
-            case TypeTags.UNSIGNED16_INT_TAG:
-            case TypeTags.UNSIGNED32_INT_TAG:
-                return true;
-            default:
-                return false;
-        }
+        return switch (type.getTag()) {
+            case TypeTags.INT_TAG, TypeTags.STRING_TAG, TypeTags.BOOLEAN_TAG, TypeTags.DECIMAL_TAG, TypeTags.FLOAT_TAG,
+                 TypeTags.NULL_TAG, TypeTags.JSON_TAG, TypeTags.ANYDATA_TAG, TypeTags.UNION_TAG,
+                 TypeTags.INTERSECTION_TAG, TypeTags.CHAR_STRING_TAG, TypeTags.BYTE_TAG, TypeTags.SIGNED8_INT_TAG,
+                 TypeTags.SIGNED16_INT_TAG, TypeTags.SIGNED32_INT_TAG, TypeTags.UNSIGNED8_INT_TAG,
+                 TypeTags.UNSIGNED16_INT_TAG, TypeTags.UNSIGNED32_INT_TAG -> true;
+            default -> false;
+        };
     }
 
     public static String[] createHeadersForParseLists(BArray csvElement, String[] headers, CsvConfig config) {
@@ -171,9 +175,7 @@ public class CsvUtils {
             }
         }
         if (csv == null) {
-            if (tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag)) {
-                return true;
-            }
+            return tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag);
         }
         return false;
     }
@@ -303,10 +305,7 @@ public class CsvUtils {
                 || Constants.Values.BALLERINA_NULL.equalsIgnoreCase(v))) {
             return true;
         }
-        if (nullValue != null && value.equals(StringUtils.getStringValue(nullValue))) {
-            return true;
-        }
-        return false;
+        return nullValue != null && value.equals(StringUtils.getStringValue(nullValue));
     }
 
     public static boolean isCharContainsInLineTerminatorUserConfig(char c, Object lineTerminatorObj) {
@@ -326,10 +325,7 @@ public class CsvUtils {
         if (c == Constants.LineTerminator.LF) {
             if (lineTerminator != null) {
                 if (lineTerminator.equals(Constants.LineTerminator.CRLF)) {
-                    if (isCarriageTokenPresent) {
-                        return true;
-                    }
-                    return false;
+                    return isCarriageTokenPresent;
                 }
                 return true;
             }
