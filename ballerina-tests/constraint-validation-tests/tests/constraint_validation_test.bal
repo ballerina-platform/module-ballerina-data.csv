@@ -30,6 +30,52 @@ type ConstrainedRec record {
     string b;
 };
 
+@constraint:Array {length: 4}
+type ConstrainedList int[][];
+
+@test:Config
+function testConstraintWithLists() returns error? {
+    ConstrainedList|csv:Error cList1 = csv:parseString(string `1 
+                                            2 
+                                            3 
+                                            4`, {header: false, customHeadersIfHeaderAbsent: ["a", "b", "c", "d"]});
+    test:assertEquals(cList1, [[1], [2], [3], [4]]);
+
+    cList1 = csv:parseString(string `1 
+                                     2 
+                                     3
+                                     4
+                                     5
+                                     6`, {header: false, customHeadersIfHeaderAbsent: ["a", "b", "c", "d", "e", "f"]});
+    test:assertTrue(cList1 is csv:Error);
+    test:assertTrue((<error>cList1).message().startsWith("Validation failed")
+                    && (<error>cList1).message().includes("length"));
+
+    cList1 = csv:parseString(string `1 
+                                     2 
+                                     3
+                                     4
+                                     5
+                                     6`, {header: false, customHeadersIfHeaderAbsent: ["a", "b", "c", "d", "e", "f"], enableConstraintValidation: false});
+    test:assertEquals(cList1, [[1], [2], [3], [4], [5], [6]]);
+
+    cList1 = csv:transform([{"a": 1}, {"a": 1}, {"a": 1}, {"a": 1}], {});
+    test:assertEquals(cList1, [[1], [1], [1], [1]]);
+
+    cList1 = csv:transform([{"a": 1}, {"a": 1}, {"a": 1}, {"a": 1}, {"a": 1}, {"a": 1}], {});
+    test:assertTrue(cList1 is csv:Error);
+    test:assertTrue((<error>cList1).message().startsWith("Validation failed")
+                    && (<error>cList1).message().includes("length"));
+
+    cList1 = csv:parseLists([["1"], ["2"], ["3"], ["4"]], {customHeaders: ["a", "b", "c", "d"]});
+    test:assertEquals(cList1, [[1], [2], [3], [4]]);
+
+    cList1 = csv:parseLists([["1"], ["2"], ["3"], ["4"], ["5"], ["6"]], {customHeaders: ["a", "b", "c", "d"]});
+    test:assertTrue(cList1 is csv:Error);
+    test:assertTrue((<error>cList1).message().startsWith("Validation failed")
+                    && (<error>cList1).message().includes("length"));
+}
+
 @test:Config
 function testConstraintWithRecords() returns error? {
     ConstrainedRec[]|csv:Error cRec1 = csv:parseString(string `a,b

@@ -226,6 +226,9 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private boolean isSupportedArrayMemberType(SyntaxNodeAnalysisContext ctx,
                                                Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
         TypeDescKind kind = typeSymbol.typeKind();
         if (kind == TypeDescKind.TYPE_REFERENCE) {
             kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();
@@ -245,13 +248,23 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private void validateTupleMembers(SyntaxNodeAnalysisContext ctx, Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
         TupleTypeSymbol tupleTypeSymbol = (TupleTypeSymbol) typeSymbol;
-        List<TypeSymbol> typeSymbols = tupleTypeSymbol.memberTypeDescriptors();
-        tupleTypeSymbol.restTypeDescriptor().ifPresent(typeSymbols::add);
-        typeSymbols.forEach(symbol -> validateNestedTypeSymbols(ctx, currentLocation, symbol, false));
+        tupleTypeSymbol.memberTypeDescriptors().forEach(symbol ->
+                validateNestedTypeSymbols(ctx, currentLocation, symbol, false));
+        Optional<TypeSymbol> restSymbol = tupleTypeSymbol.restTypeDescriptor();
+        if (restSymbol.isPresent()) {
+            TypeSymbol restSym = restSymbol.get();
+            validateNestedTypeSymbols(ctx, currentLocation, restSym, false);
+        }
     }
 
     private void validateRecordFields(SyntaxNodeAnalysisContext ctx, Location currentLocation, TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+        }
         RecordTypeSymbol recordTypeSymbol = (RecordTypeSymbol) typeSymbol;
 
         recordTypeSymbol.typeInclusions().forEach(symbol ->
@@ -391,18 +404,5 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         ModuleID moduleId = moduleSymbol.id();
         return Constants.BALLERINA.equals(moduleId.orgName())
                 && Constants.DATA_CSVDATA.equals(moduleId.moduleName());
-    }
-
-    private boolean isComplexSymbolKind(TypeDescKind kind) {
-        switch (kind) {
-            case ARRAY, OBJECT, RECORD, MAP, ERROR, FUNCTION, TUPLE, STREAM, FUTURE, TYPEDESC,
-                 TYPE_REFERENCE, XML, XML_ELEMENT, XML_PROCESSING_INSTRUCTION, XML_COMMENT,
-                 XML_TEXT, HANDLE, TABLE, NEVER, REGEXP -> {
-                return true;
-            }
-            default -> {
-                return false;
-            }
-        }
     }
 }
