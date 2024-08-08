@@ -27,6 +27,9 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.ballerina.lib.data.csvdata.compiler.CsvDataDiagnosticCodes.UNSUPPORTED_FIELD_TYPE;
+import static io.ballerina.lib.data.csvdata.compiler.CsvDataDiagnosticCodes.UNSUPPORTED_TUPLE_MEMBER_TYPE;
+
 /**
  * This class includes tests for Ballerina Csv Data compiler plugin.
  *
@@ -36,15 +39,19 @@ public class CompilerPluginTest {
 
     static final String UNSUPPORTED_TYPE = "unsupported type: type is not supported";
     static final String DUPLICATE_FIELD = "invalid field: duplicate field found";
+    static final String UNSUPPORTED_FIELD_TYPE = "Unsupported type in the field: Only basic types " +
+            "are supported for fields, and other types are not allowed.";
+    static final String UNSUPPORTED_TUPLE_MEMBER_TYPE = "Unsupported type in the tuple member: " +
+            "Tuple members can only be basic types, other types are not supported.";
 
-    @Test(enabled = false)
+    @Test
     public void testInvalidExpectedUnionType() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_1").getCompilation().diagnosticResult();
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnosticsList.size(), 10);
+        Assert.assertEquals(errorDiagnosticsList.size(), 20);
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
@@ -55,9 +62,23 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(10).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(11).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(12).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(13).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(14).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(15).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(16).
+                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(17).
+                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(18).
+                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(19).
+                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testInvalidRecordFields() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_2").getCompilation().diagnosticResult();
@@ -68,7 +89,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testInvalidProgram() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_3").getCompilation().diagnosticResult();
@@ -78,7 +99,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 1);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testModuleLevelInvalidExpectedUnionType() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_4").getCompilation().diagnosticResult();
@@ -98,7 +119,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testEmptyProject() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_5").getCompilation().diagnosticResult();
@@ -108,7 +129,7 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 0);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testInvalidExpectedUnionType2() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_6").getCompilation().diagnosticResult();
