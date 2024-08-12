@@ -256,4 +256,14 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(11).diagnosticInfo()
                 .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
     }
+
+    @Test
+    public void testNonCsvFunctionCall() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_11").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 0);
+    }
 }
