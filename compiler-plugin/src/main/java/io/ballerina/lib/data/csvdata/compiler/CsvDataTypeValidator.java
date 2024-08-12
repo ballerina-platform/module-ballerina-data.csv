@@ -36,18 +36,30 @@ import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.syntax.tree.AssignmentStatementNode;
+import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.CheckExpressionNode;
 import io.ballerina.compiler.syntax.tree.ChildNodeList;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.FunctionCallExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
+import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.NameReferenceNode;
+import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
+import io.ballerina.compiler.syntax.tree.NilLiteralNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
+import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
+import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.compiler.syntax.tree.VariableDeclarationNode;
@@ -124,29 +136,50 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                                                SyntaxNodeAnalysisContext ctx) {
         ChildNodeList childNodeList = functionDefinitionNode.functionBody().children();
         for (Node node : childNodeList) {
-            if (node.kind() != SyntaxKind.LOCAL_VAR_DECL) {
-                continue;
+            if (node.kind() == SyntaxKind.LOCAL_VAR_DECL) {
+                processLocalVarDeclNode((VariableDeclarationNode) node, ctx);
+            } else if (node.kind() == SyntaxKind.ASSIGNMENT_STATEMENT) {
+                processAssignmentStmtNode((AssignmentStatementNode) node, ctx);
             }
-            VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) node;
-            Optional<ExpressionNode> initializer = variableDeclarationNode.initializer();
-            if (initializer.isEmpty()) {
-                continue;
-            }
-
-            currentLocation = variableDeclarationNode.typedBindingPattern().typeDescriptor().location();
-            Optional<Symbol> symbol = semanticModel.symbol(variableDeclarationNode.typedBindingPattern());
-            if (symbol.isEmpty()) {
-                continue;
-            }
-
-            TypeSymbol typeSymbol = ((VariableSymbol) symbol.get()).typeDescriptor();
-            if (!isParseFunctionOfStringSource(initializer.get())) {
-                checkTypeAndDetectDuplicateFields(typeSymbol, ctx);
-                continue;
-            }
-
-            validateExpectedType(typeSymbol, currentLocation, ctx);
         }
+    }
+
+    private void processAssignmentStmtNode(AssignmentStatementNode assignmentStatementNode,
+                                           SyntaxNodeAnalysisContext ctx) {
+        ExpressionNode expressionNode = assignmentStatementNode.expression();
+        if (!isParseFunctionOfStringSource(expressionNode)) {
+            return;
+        }
+        currentLocation = assignmentStatementNode.location();
+        Optional<Symbol> symbol = semanticModel.symbol(assignmentStatementNode.varRef());
+        if (symbol.isEmpty()) {
+            return;
+        }
+        TypeSymbol typeSymbol = ((VariableSymbol) symbol.get()).typeDescriptor();
+        validateFunctionParameterTypes(expressionNode, typeSymbol, currentLocation, ctx);
+    }
+
+    private void processLocalVarDeclNode(VariableDeclarationNode variableDeclarationNode,
+                                         SyntaxNodeAnalysisContext ctx) {
+        Optional<ExpressionNode> initializer = variableDeclarationNode.initializer();
+        if (initializer.isEmpty()) {
+            return;
+        }
+
+        currentLocation = variableDeclarationNode.typedBindingPattern().typeDescriptor().location();
+        Optional<Symbol> symbol = semanticModel.symbol(variableDeclarationNode.typedBindingPattern());
+        if (symbol.isEmpty()) {
+            return;
+        }
+
+        TypeSymbol typeSymbol = ((VariableSymbol) symbol.get()).typeDescriptor();
+        ExpressionNode expressionNode = initializer.get();
+        if (!isParseFunctionOfStringSource(expressionNode)) {
+            checkTypeAndDetectDuplicateFields(typeSymbol, ctx);
+            return;
+        }
+        validateExpectedType(typeSymbol, currentLocation, ctx);
+        validateFunctionParameterTypes(expressionNode, typeSymbol, expressionNode.location(), ctx);
     }
 
     private void checkTypeAndDetectDuplicateFields(TypeSymbol typeSymbol, SyntaxNodeAnalysisContext ctx) {
@@ -169,28 +202,174 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
     }
 
-    private boolean isParseFunctionOfStringSource(ExpressionNode expressionNode) {
+    private FunctionCallExpressionNode getFunctionCallExpressionNodeIfPresent(ExpressionNode expressionNode) {
         if (expressionNode.kind() == SyntaxKind.CHECK_EXPRESSION) {
             expressionNode = ((CheckExpressionNode) expressionNode).expression();
         }
 
         if (expressionNode.kind() != SyntaxKind.FUNCTION_CALL) {
-            return false;
+            return null;
         }
-        NameReferenceNode nameReferenceNode = ((FunctionCallExpressionNode) expressionNode).functionName();
+        return ((FunctionCallExpressionNode) expressionNode);
+    }
+
+    private String getFunctionName(FunctionCallExpressionNode node) {
+        NameReferenceNode nameReferenceNode = node.functionName();
         if (nameReferenceNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
-            return false;
+            return "";
         }
-        String prefix = ((QualifiedNameReferenceNode) nameReferenceNode).modulePrefix().text();
+        QualifiedNameReferenceNode qualifiedNameReferenceNode = (QualifiedNameReferenceNode) nameReferenceNode;
+        String prefix = qualifiedNameReferenceNode.modulePrefix().text();
         if (!prefix.equals(modulePrefix)) {
+            return "";
+        }
+        return qualifiedNameReferenceNode.identifier().text();
+    }
+
+    private boolean isParseFunctionOfStringSource(ExpressionNode expressionNode) {
+        FunctionCallExpressionNode node = getFunctionCallExpressionNodeIfPresent(expressionNode);
+        if (node == null) {
             return false;
         }
-        String functionName = ((FunctionCallExpressionNode) expressionNode).functionName().toString().trim();
+        String functionName = getFunctionName(node);
         return functionName.contains(Constants.PARSE_STRING) ||
                 functionName.contains(Constants.PARSE_BYTES) ||
                 functionName.contains(Constants.PARSE_STREAM) ||
                 functionName.contains(Constants.TRANSFORM) ||
                 functionName.contains(Constants.PARSE_LISTS);
+    }
+
+    private void validateFunctionParameterTypes(ExpressionNode expressionNode,
+                                                TypeSymbol expType,
+                                                Location currentLocation, SyntaxNodeAnalysisContext ctx) {
+        FunctionCallExpressionNode node = getFunctionCallExpressionNodeIfPresent(expressionNode);
+        if (node == null) {
+            return;
+        }
+        String functionName = getFunctionName(node);
+        SeparatedNodeList<FunctionArgumentNode> args = node.arguments();
+        validateFunctionParameterTypesWithExpType(expType, currentLocation, ctx, functionName, args);
+    }
+
+    private void validateFunctionParameterTypesWithExpType(TypeSymbol expType, Location currentLocation,
+                                                           SyntaxNodeAnalysisContext ctx, String functionName,
+           SeparatedNodeList<FunctionArgumentNode> args) {
+        switch (expType.typeKind()) {
+            case ARRAY -> validateFunctionParameterTypesWithArrayType(
+                    (ArrayTypeSymbol) expType, currentLocation, ctx, functionName, args);
+            case TYPE_REFERENCE -> validateFunctionParameterTypesWithExpType(
+                    ((TypeReferenceTypeSymbol) expType).typeDescriptor(), currentLocation, ctx, functionName, args);
+            case INTERSECTION -> validateFunctionParameterTypesWithExpType(
+                    getRawType(expType), currentLocation, ctx, functionName, args);
+        }
+    }
+
+    private void validateFunctionParameterTypesWithArrayType(ArrayTypeSymbol expType, Location currentLocation,
+                                                             SyntaxNodeAnalysisContext ctx, String functionName,
+            SeparatedNodeList<FunctionArgumentNode> args) {
+        TypeSymbol memberTypeSymbol = expType.memberTypeDescriptor();
+        if (memberTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            memberTypeSymbol = ((TypeReferenceTypeSymbol) memberTypeSymbol).typeDescriptor();
+        }
+        switch (memberTypeSymbol.typeKind()) {
+            case RECORD, MAP -> validateFunctionParameterTypesWithMappingArray(
+                    currentLocation, ctx, functionName, args);
+        }
+    }
+
+    private void validateFunctionParameterTypesWithMappingArray(Location currentLocation,
+            SyntaxNodeAnalysisContext ctx, String functionName, SeparatedNodeList<FunctionArgumentNode> args) {
+        ExpressionNode expression;
+        SeparatedNodeList<MappingFieldNode> fields;
+        String header = null, headersRows = null, customHeaders = null,
+                customHeadersIfHeaderAbsent = null, outputWithHeaders = null, headersOrder = null;
+        boolean isCustomHeaderPresent = false;
+        for (FunctionArgumentNode arg : args) {
+            if (arg instanceof PositionalArgumentNode positionalArgumentNode) {
+                expression = positionalArgumentNode.expression();
+            } else if (arg instanceof NamedArgumentNode namedArgumentNode) {
+                expression = namedArgumentNode.expression();
+            } else {
+                continue;
+            }
+            if (expression instanceof MappingConstructorExpressionNode mappingConstructorExpressionNode) {
+                fields = mappingConstructorExpressionNode.fields();
+                for (MappingFieldNode field : fields) {
+                    if (field instanceof SpecificFieldNode specificFieldNode) {
+                        Node node = specificFieldNode.fieldName();
+                        if (node instanceof IdentifierToken identifierToken) {
+                            String fieldName = identifierToken.text();
+                            if (fieldName.equals(Constants.UserConfigurations.HEADER)) {
+                                header = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            }
+                            if (fieldName.equals(Constants.UserConfigurations.CUSTOM_HEADERS_IF_ABSENT)) {
+                                customHeadersIfHeaderAbsent = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            }
+                            if (fieldName.equals(Constants.UserConfigurations.HEADERS_ROWS)) {
+                                headersRows = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            }
+                            if (fieldName.equals(Constants.UserConfigurations.CUSTOM_HEADERS)) {
+                                customHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                isCustomHeaderPresent = true;
+                            }
+                            if (fieldName.equals(Constants.UserConfigurations.HEADERS_ORDER)) {
+                                headersOrder = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            }
+                            if (fieldName.equals(Constants.UserConfigurations.OUTPUT_WITH_HEADERS)) {
+                                outputWithHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        throwErrorsIfIgnoredFieldFoundForRecordOutputs(header, customHeadersIfHeaderAbsent, headersRows,
+                customHeaders, isCustomHeaderPresent, headersOrder,
+                outputWithHeaders, ctx, currentLocation, functionName);
+    }
+
+    private void throwErrorsIfIgnoredFieldFoundForRecordOutputs(String header, String customHeadersIfHeaderAbsent,
+            String headersRows, String customHeaders, boolean isCustomHeaderPresent, String headersOrder,
+            String outputWithHeaders, SyntaxNodeAnalysisContext ctx, Location currentLocation, String functionName) {
+        if (functionName.equals(Constants.PARSE_STRING) && header != null && !header.equals(Constants.FALSE)
+                && customHeadersIfHeaderAbsent != null && !customHeadersIfHeaderAbsent.equals(Constants.BAL_NULL)
+                && !customHeadersIfHeaderAbsent.equals(Constants.NULL)) {
+            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                    CsvDataDiagnosticCodes.IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        }
+        if (functionName.equals(Constants.PARSE_LISTS) && headersRows != null
+                && !headersRows.equals("0") && !headersRows.equals("1") &&
+                (!isCustomHeaderPresent || (customHeaders != null && (customHeaders.equals(Constants.BAL_NULL)
+                || customHeaders.equals(Constants.NULL))))) {
+            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                    CsvDataDiagnosticCodes.CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        }
+        if (functionName.equals(Constants.TRANSFORM) && headersOrder != null
+                && !headersOrder.equals(Constants.BAL_NULL) && !headersOrder.equals(Constants.NULL)) {
+            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                    CsvDataDiagnosticCodes.IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        }
+        if (outputWithHeaders != null) {
+            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                    CsvDataDiagnosticCodes.IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        }
+    }
+
+    private String getTheValueOfTheUserConfigOption(SpecificFieldNode specificFieldNode) {
+        Optional<ExpressionNode> optExpNode = specificFieldNode.valueExpr();
+        if (optExpNode.isPresent()) {
+            ExpressionNode expNode = optExpNode.get();
+            if (expNode instanceof BasicLiteralNode basicLiteralNode) {
+                return basicLiteralNode.literalToken().text();
+            }
+            if (expNode instanceof ListConstructorExpressionNode listConstructorExpressionNode) {
+                return listConstructorExpressionNode.expressions().toString();
+            }
+            if (expNode instanceof NilLiteralNode) {
+                return Constants.BAL_NULL;
+            }
+        }
+        return null;
     }
 
     private void validateExpectedType(TypeSymbol typeSymbol, Location currentLocation, SyntaxNodeAnalysisContext ctx) {
@@ -331,13 +510,20 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                                                       SyntaxNodeAnalysisContext ctx) {
         Optional<ExpressionNode> initializer = moduleVariableDeclarationNode.initializer();
         currentLocation = moduleVariableDeclarationNode.typedBindingPattern().typeDescriptor().location();
-        if (initializer.isEmpty() || !isParseFunctionOfStringSource(initializer.get())) {
+        if (initializer.isEmpty()) {
+            return;
+        }
+        ExpressionNode expressionNode = initializer.get();
+        if (!isParseFunctionOfStringSource(expressionNode)) {
             return;
         }
 
         Optional<Symbol> symbol = semanticModel.symbol(moduleVariableDeclarationNode.typedBindingPattern());
         symbol.map(s -> (VariableSymbol) s).map(VariableSymbol::typeDescriptor)
-                .ifPresent(s -> validateExpectedType(s, currentLocation, ctx));
+                .ifPresent(s -> {
+                    validateExpectedType(s, currentLocation, ctx);
+                    validateFunctionParameterTypes(expressionNode, s, expressionNode.location(), ctx);
+                });
     }
 
     private void processTypeDefinitionNode(TypeDefinitionNode typeDefinitionNode, SyntaxNodeAnalysisContext ctx) {

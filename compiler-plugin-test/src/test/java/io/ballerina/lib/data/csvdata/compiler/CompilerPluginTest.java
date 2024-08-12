@@ -43,6 +43,14 @@ public class CompilerPluginTest {
             "are supported for fields, and other types are not allowed.";
     static final String UNSUPPORTED_TUPLE_MEMBER_TYPE = "Unsupported type in the tuple member: " +
             "Tuple members can only be basic types, other types are not supported.";
+    static final String IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY = "The option 'outputWithHeaders' will be ignored" +
+            " since the expected type is a subtype record array.";
+    static final String IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY = "The option 'headersOrder' will be ignored" +
+            " since the expected type is a subtype record array.";
+    static final String IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT = "The option " +
+            "'customHeadersIfHeadersAbsent' will be ignored since the header is present.";
+    static final String CUSTOM_HEADERS_SHOULD_BE_PROVIDED = "customHeaders parameter should be provided since the" +
+            " headerRows larger than 1.";
 
     @Test
     public void testInvalidExpectedUnionType() {
@@ -147,5 +155,105 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
+    }
+
+    @Test
+    public void testIgnoredCustomHeaderIfAbsentOptions() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_7").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 3);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+    }
+
+    @Test
+    public void testIgnoredOutputHeaderOptions() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_8").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 8);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+    }
+
+    @Test
+    public void testIgnoredHeadersOrderOptions() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_9").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 7);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
+                .messageFormat(), IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo()
+                .messageFormat(), IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo()
+                .messageFormat(), IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+    }
+
+    @Test
+    public void testIgnoredCustomHeaderOptions() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_10").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 12);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
+        Assert.assertEquals(errorDiagnosticsList.get(10).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(11).diagnosticInfo()
+                .messageFormat(), IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY);
     }
 }

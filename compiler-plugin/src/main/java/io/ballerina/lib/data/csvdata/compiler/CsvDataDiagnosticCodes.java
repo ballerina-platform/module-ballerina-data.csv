@@ -33,7 +33,15 @@ public enum CsvDataDiagnosticCodes {
     UNSUPPORTED_FIELD_TYPE("CSV_ERROR_3", "Unsupported type in the field: Only basic types are supported for fields, " +
                               "and other types are not allowed.", ERROR),
     UNSUPPORTED_TUPLE_MEMBER_TYPE("CSV_ERROR_4", "Unsupported type in the tuple member: Tuple members can only " +
-                                          "be basic types, other types are not supported.", ERROR);
+                                          "be basic types, other types are not supported.", ERROR),
+    IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY("CSV_ERROR_5", "The option 'outputWithHeaders' will be ignored since the " +
+                                "expected type is a subtype record array.", ERROR),
+    IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY("CSV_ERROR_5", "The option 'headersOrder' will be ignored " +
+            "since the expected type is a subtype record array.", ERROR),
+    IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT("CSV_ERROR_6",
+            "The option 'customHeadersIfHeadersAbsent' will be ignored since the header is present.", ERROR),
+    CUSTOM_HEADERS_SHOULD_BE_PROVIDED("CSV_ERROR_7",
+            "customHeaders parameter should be provided since the headerRows larger than 1.", ERROR);
 
     private final String code;
     private final String message;
