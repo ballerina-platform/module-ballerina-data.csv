@@ -20,6 +20,7 @@ import ballerina/io;
 import ballerina/test;
 
 const string filepath = "tests/csv_content.txt";
+const string filepath2 = "tests/csv_content_2.txt";
 const string errorFilepath = "tests/csv_error_content.txt";
 
 @test:Config
@@ -215,6 +216,7 @@ function testSpaceBetweendData() {
 @test:Config
 function testParseBytes() returns error? {
     byte[] csvBytes = check io:fileReadBytes(filepath);
+    byte[] csvBytes2 = check io:fileReadBytes(filepath2);
 
     record{}[]|csv:Error rec = csv:parseBytes(csvBytes, {});
     test:assertEquals(rec, [
@@ -245,17 +247,17 @@ function testParseBytes() returns error? {
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);
 
-    rec2 = csv:parseBytes(csvBytes, {outputWithHeaders: true, header: 1});
+    rec2 = csv:parseBytes(csvBytes2, {outputWithHeaders: true, header: 1});
     test:assertEquals(rec2, [
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "21"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "22"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "23"]
     ]);
 
-    rec2 = csv:parseBytes(csvBytes, { header: 1});
+    rec2 = csv:parseBytes(csvBytes2, { header: 1});
     test:assertEquals(rec2, [
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "22"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "23"]
     ]);
 
     int[][]|csv:Error rec3 = csv:parseBytes(csvBytes, {});
@@ -270,6 +272,8 @@ function testParseBytes() returns error? {
 @test:Config
 function testParseStream() returns error? {
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    stream<byte[], io:Error?> csvByteStream2 = check io:fileReadBlocksAsStream(filepath2);
+
     record{}[]|csv:Error rec = csv:parseStream(csvByteStream, {});
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -293,12 +297,11 @@ function testParseStream() returns error? {
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);
 
-    csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    rec2 = csv:parseStream(csvByteStream, {header: 1, outputWithHeaders: true});
+    rec2 = csv:parseStream(csvByteStream2, {header: 1, outputWithHeaders: true});
     test:assertEquals(rec2, [
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "21"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "22"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "23"]
     ]);
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
@@ -310,11 +313,11 @@ function testParseStream() returns error? {
         ["Hello World", "\"Hello World\"", "Hello World", "2"]
     ]);
 
-    csvByteStream = check io:fileReadBlocksAsStream(filepath);
+    csvByteStream = check io:fileReadBlocksAsStream(filepath2);
     rec2 = csv:parseStream(csvByteStream, {header: 1});
     test:assertEquals(rec2, [
-        ["Hello World", "\"Hello World\"", "Hello World", "2"],
-        ["Hello World", "\"Hello World\"", "Hello World", "2"]
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "22"],
+        ["Hello World1", "\"Hello World2\"", "Hello World3", "23"]
     ]);
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);

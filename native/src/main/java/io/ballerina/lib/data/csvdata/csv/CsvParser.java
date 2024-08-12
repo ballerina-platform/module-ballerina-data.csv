@@ -145,6 +145,7 @@ public final class CsvParser {
         State prevState;
         int arraySize = 0;
         boolean addHeadersForOutput = false;
+        int currentCsvNodeLength = 0;
 
         StateMachine() {
             reset();
@@ -180,6 +181,7 @@ public final class CsvParser {
             prevState = null;
             arraySize = 0;
             addHeadersForOutput = false;
+            currentCsvNodeLength = 0;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -438,9 +440,7 @@ public final class CsvParser {
 
         private static void handleEndOfTheHeader(StateMachine sm, boolean trim) throws CsvParserException {
             sm.isValueStart = false;
-            if (!sm.peek().isBlank()) {
-                addHeader(sm, trim);
-            }
+            addHeader(sm, trim);
             finalizeHeaders(sm);
             sm.columnIndex = 0;
             sm.lineNumber++;
@@ -497,6 +497,9 @@ public final class CsvParser {
             if (trim) {
                 value = value.trim();
             }
+            if (value.isEmpty()) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.HEADER_CANNOT_BE_EMPTY);
+            }
             if (sm.expectedArrayElementType instanceof RecordType) {
                 String fieldName = CsvUtils.getUpdatedHeaders(
                         sm.updatedRecordFieldNames, value, sm.fields.contains(value));
@@ -505,6 +508,9 @@ public final class CsvParser {
                     sm.fieldNames.put(fieldName, field);
                     sm.fieldHierarchy.remove(fieldName);
                 }
+            }
+            if (sm.headers.contains(value)) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.DUPLICATE_HEADER, value);
             }
             sm.headers.add(value);
         }
@@ -631,7 +637,7 @@ public final class CsvParser {
             if (trim) {
                 value = value.trim();
             }
-            if (!value.isBlank()) {
+            if (!(value.isBlank() && sm.currentCsvNodeLength == 0)) {
                 addRowValue(sm, trim);
             }
             if (!sm.isCurrentCsvNodeEmpty) {
@@ -652,6 +658,7 @@ public final class CsvParser {
             sm.currentCsvNode = null;
             sm.isCurrentCsvNodeEmpty = true;
             sm.columnIndex = 0;
+            sm.clear();
         }
 
         private static boolean ignoreRow(long[] skipLines, int lineNumber) {
@@ -693,6 +700,7 @@ public final class CsvParser {
                 sm.rootCsvNode.add(sm.arraySize, sm.currentCsvNode);
             }
             sm.arraySize++;
+            sm.currentCsvNodeLength = 0;
         }
 
         private static void addRowValue(StateMachine sm) {
@@ -715,7 +723,7 @@ public final class CsvParser {
             }
 
             if (type != null) {
-                CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                CsvCreator.convertAndUpdateCurrentCsvNode(sm,
                         value, type, sm.config, exptype, currentField);
             }
             sm.columnIndex++;
@@ -731,7 +739,7 @@ public final class CsvParser {
             }
 
             if (type != null) {
-                CsvCreator.convertAndUpdateCurrentJsonNode(sm,
+                CsvCreator.convertAndUpdateCurrentCsvNode(sm,
                         value, type, sm.config, exptype, currentField);
             }
             sm.columnIndex++;
@@ -1023,7 +1031,6 @@ public final class CsvParser {
             private char extractUnicodeChar(StateMachine sm) {
                 return StringEscapeUtils.unescapeJava("\\u" + sm.hexBuilder.toString()).charAt(0);
             }
-
         }
 
         /**

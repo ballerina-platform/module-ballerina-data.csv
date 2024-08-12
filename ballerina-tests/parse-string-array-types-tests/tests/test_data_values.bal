@@ -60,3 +60,9 @@ string csvStringWithBooleanValues6 = string `b2,b3
 string csvStringWithBooleanValues7 = string `b1,b2,b3,b4
 ${b1},${b2},(),${b4}
 `;
+
+string csvStringWithBooleanValues8 = string `b1,b2,b3,b4
+true,false,true1,false1 
+true,false, true1,false1
+true,false,true1,false1
+`;

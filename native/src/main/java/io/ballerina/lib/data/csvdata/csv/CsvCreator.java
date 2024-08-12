@@ -66,9 +66,9 @@ public final class CsvCreator {
         };
     }
 
-    static void convertAndUpdateCurrentJsonNode(CsvParser.StateMachine sm,
-                                                String value, Type type, CsvConfig config, Type exptype,
-                                                Field currentField) {
+    static void convertAndUpdateCurrentCsvNode(CsvParser.StateMachine sm,
+                                               String value, Type type, CsvConfig config, Type exptype,
+                                               Field currentField) {
         Object currentCsv = sm.currentCsvNode;
         Object nilValue = config.nilValue;
         if (sm.config.nilAsOptionalField && !type.isNilable()
@@ -91,6 +91,7 @@ public final class CsvCreator {
             case TypeTags.RECORD_TYPE_TAG:
                 ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(getHeaderValueForColumnIndex(sm)),
                         convertedValue);
+                sm.currentCsvNodeLength++;
                 return;
             case TypeTags.ARRAY_TAG:
                 ArrayType arrayType = (ArrayType) currentCsvNodeType;
@@ -99,9 +100,11 @@ public final class CsvCreator {
                     return;
                 }
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
+                sm.currentCsvNodeLength++;
                 return;
             case TypeTags.TUPLE_TAG:
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
+                sm.currentCsvNodeLength++;
                 return;
             default:
         }
