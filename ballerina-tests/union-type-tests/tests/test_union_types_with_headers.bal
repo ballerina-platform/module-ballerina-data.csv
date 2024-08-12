@@ -9,12 +9,12 @@ csv:TransformOptions op4 = {headersOrder: ["a", "b"], outputWithHeaders: true};
 csv:ParseOptions op5 = {outputWithHeaders: true};
 
 csv:ParseListOptions op6 = {outputWithHeaders: true};
-csv:ParseListOptions op7 = {outputWithHeaders: true, headerRows: 1};
-csv:ParseListOptions op8 = {outputWithHeaders: true, headerRows: 2};
-csv:ParseListOptions op9 = {outputWithHeaders: true, headerRows: 2, customHeaders: ["a", "b", "c", "d"]};
-csv:ParseListOptions op10 = {outputWithHeaders: true, headerRows: 1, customHeaders: ["a", "b", "c", "d"]};
+csv:ParseListOptions op7 = {outputWithHeaders: true, headersRows: 1};
+csv:ParseListOptions op8 = {outputWithHeaders: true, headersRows: 2};
+csv:ParseListOptions op9 = {outputWithHeaders: true, headersRows: 2, customHeaders: ["a", "b", "c", "d"]};
+csv:ParseListOptions op10 = {outputWithHeaders: true, headersRows: 1, customHeaders: ["a", "b", "c", "d"]};
 csv:ParseListOptions op11 = {outputWithHeaders: true, customHeaders: ["a", "b", "c", "d"]};
-csv:ParseListOptions op12 = {headerRows: 1, customHeaders: ["a", "b", "c", "d"]};
+csv:ParseListOptions op12 = {headersRows: 1, customHeaders: ["a", "b", "c", "d"]};
 csv:ParseListOptions op13 = {customHeaders: ["a", "b", "c", "d"]};
 
 type UnionType1 boolean[][]|string[][];

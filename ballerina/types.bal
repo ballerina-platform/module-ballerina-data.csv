@@ -1,7 +1,20 @@
+// Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 # Represents an error.
-#
-# This type is used to capture error details that occur during the execution of a program.
-# It can hold an error message, an optional error cause, and an optional map of additional details.
 public type Error error;
 
 # Defines the name of the JSON Object key.
@@ -18,7 +31,8 @@ public const annotation NameConfig Name on record field;
 public type Options record {
     # Allows data projection with specific settings.
     #
-    # This field can be either a record or a boolean. If it's a record, it contains the following fields:
+    # This configuration can be either a record or a boolean. 
+    # If it's a record, it contains `nilAsOptionalField` and `absentAsNilableType` options.
     # If it's set to `false`, data projection is not allowed.
     record {
         # If `true`, nil values will be considered as optional fields in the projection.
@@ -30,8 +44,7 @@ public type Options record {
     int[]|string skipLines = [];
     # If `true`, enables validation of constraints during processing.
     boolean enableConstraintValidation = true;  
-    # If `true`, the resulted CSV contains the headers as the first row.
-    # This field is only considered if the expected type is a subset of `anydata[][]`
+    # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
 };
 
@@ -57,7 +70,7 @@ public type ParseOptions record {|
     # Specifies whether the header is present and, if so, the number of header lines.
     false|int:Unsigned32 header = 0;
     # Custom headers for the data, if headers are absent.
-    string[]? customHeadersIfHeaderAbsent = ();
+    string[]? customHeadersIfHeadersAbsent = ();
 |};
 
 # Represents options for treating a list as a record.
@@ -65,7 +78,7 @@ public type ParseListOptions record {|
     *Options;
     # If `0`, all the source data will treat as data rows.
     # Otherwise specify the header rows(Starts from 1) in the source data.
-    int:Unsigned32 headerRows = 0;
+    int:Unsigned32 headersRows = 0;
     # Specify the header names of the source data.
     # This field will overwrite the header values in the header rows.
     # This will be mandatory if the header row parameter is larger than one.
@@ -82,14 +95,20 @@ public type TransformOptions record {|
 
 # Enum representing possible line terminators.
 public enum LineTerminator {
+    # Line Feed (LF) line terminator: `\n`
     LF = "\n",
+    # Carriage Return and Line Feed (CRLF) line terminator: `\r\n`
     CRLF = "\r\n"
 };
 
 # Enum representing possible nil values.
 public enum NilValue {
+    # Represents a nil value as the string "null".
     NULL = "null",
+    # Represents a nil value as "N/A".
     NOT_APPLICABLE = "N/A",
+    # Represents an empty string as a nil value.
     EMPTY_STRING = "",
+    # Represents a nil value as Ballerina nil value `()`.
     BAL_NULL = "()"
 };

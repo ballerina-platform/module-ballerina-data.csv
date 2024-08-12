@@ -27,9 +27,9 @@ public final class Constants {
         public static final BString ENABLE_CONSTRAINT_VALIDATION = StringUtils.
                 fromString("enableConstraintValidation");
         public static final BString OUTPUT_WITH_HEADERS = StringUtils.fromString("outputWithHeaders");
-        public static final BString HEADER_ROWS = StringUtils.fromString("headerRows");
+        public static final BString HEADER_ROWS = StringUtils.fromString("headersRows");
         public static final BString CUSTOM_HEADERS_IF_HEADER_ABSENT =
-                StringUtils.fromString("customHeadersIfHeaderAbsent");
+                StringUtils.fromString("customHeadersIfHeadersAbsent");
         public static final BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
         public static final BString HEADERS_ORDER = StringUtils.fromString("headersOrder");
 

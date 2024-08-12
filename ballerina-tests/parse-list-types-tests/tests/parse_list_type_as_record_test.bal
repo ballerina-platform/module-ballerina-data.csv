@@ -551,20 +551,20 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType7() {
 
 @test:Config
 function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
-    record{string a; boolean b; int c;}[]|csv:Error ct1br4 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 0, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+    record{string a; boolean b; int c;}[]|csv:Error ct1br4 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 0, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct1br4, [
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1}
     ]);
 
-    record{string a; boolean b; int c;}[]|csv:Error ct1br4_2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 1, customHeaders: ["a", "c", "b"]});
+    record{string a; boolean b; int c;}[]|csv:Error ct1br4_2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, customHeaders: ["a", "c", "b"]});
     test:assertEquals(ct1br4_2, [
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1}
     ]);
 
-    record{string a; boolean b; int c;}[]|csv:Error ct1br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 1, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+    record{string a; boolean b; int c;}[]|csv:Error ct1br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct1br4_3, [
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1}
@@ -572,60 +572,60 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
 
 
     record{string a; boolean b; int c;}[]|csv:Error ct1br4_4 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct1br4_4, [
         {a: "a", b: true, c: 1}
     ]);
 
     record{string a; boolean b; int c;}[]|csv:Error ct1br4_5 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, outputWithHeaders: true});
     test:assertTrue(ct1br4_5 is csv:Error);
     test:assertEquals((<error>ct1br4_5).message(), "Custom headers should be provided");
 
     record{|string a; boolean b; int...;|}[]|csv:Error ct1br4_4_2 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct1br4_4_2, [
         {a: "a", b: true, c: 1}
     ]);
 
     record{|string a; boolean b; int...;|}[]|csv:Error ct1br4_5_2 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, outputWithHeaders: true});
     test:assertTrue(ct1br4_5_2 is csv:Error);
     test:assertEquals((<error>ct1br4_5).message(), "Custom headers should be provided");
 
-    map<int|string|boolean>[]|csv:Error ct2br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 1, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+    map<int|string|boolean>[]|csv:Error ct2br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct2br4_3, [
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1}
     ]);
 
-    map<int|string|boolean>[]|csv:Error ct2br4_3_2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 3, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+    map<int|string|boolean>[]|csv:Error ct2br4_3_2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 3, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct2br4_3_2, []);
 
     map<anydata>[]|csv:Error ct2br4_4 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct2br4_4, [
         {a: "a", b: true, c: 1}
     ]);
 
     map<string>[]|csv:Error ct2br4_5 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct2br4_5, [
         {a: "a", b: "true", c: "1"},
         {a: "a", b: "true", c: "1"}
     ]);
 
     map<string>[]|csv:Error ct2br4_7 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 4, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 4, customHeaders: ["a", "c", "b"], outputWithHeaders: true});
     test:assertEquals(ct2br4_7, []);
 
     map<string>[]|csv:Error ct2br4_6 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 2, outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 2, outputWithHeaders: true});
     test:assertTrue(ct2br4_6 is csv:Error);
     test:assertEquals((<error>ct1br4_5).message(), "Custom headers should be provided");
 
     map<string>[]|csv:Error ct2br4_8 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 1, outputWithHeaders: true});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, outputWithHeaders: true});
     test:assertEquals(ct2br4_8, [
         {"a": "a", "1": "1", "true": "true"},
         {"a": "a", "1": "1", "true": "true"},
@@ -633,7 +633,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     ]);
 
     map<string>[]|csv:Error ct2br4_8_2 = csv:parseList(
-        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headerRows: 1, outputWithHeaders: false});
+        [["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, outputWithHeaders: false});
     test:assertEquals(ct2br4_8_2, [
         {"a": "a", "1": "1", "true": "true"},
         {"a": "a", "1": "1", "true": "true"},
@@ -641,7 +641,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     ]);
 
     map<string>[]|csv:Error ct2br4_9 = csv:parseList(
-        [["a", "c", "b"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headerRows: 1, outputWithHeaders: true});
+        [["a", "c", "b"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headersRows: 1, outputWithHeaders: true});
     test:assertEquals(ct2br4_9, [
         {a: "a", b: "true", c: "2"},
         {a: "a", b: "true", c: "3"},
@@ -650,7 +650,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     ]);
 
     map<boolean|int|string>[]|csv:Error ct2br4_10 = csv:parseList(
-        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headerRows: 1, outputWithHeaders: true});
+        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headersRows: 1, outputWithHeaders: true});
     test:assertEquals(ct2br4_10, [
         {a: "a", c: true, b: 2},
         {a: "a", c: true, b: 3},
@@ -659,7 +659,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     ]);
 
      map<boolean|int|string>[]|csv:Error ct2br4_10_2 = csv:parseList(
-        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headerRows: 1, outputWithHeaders: false});
+        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headersRows: 1, outputWithHeaders: false});
     test:assertEquals(ct2br4_10_2, [
         {a: "a", c: true, b: 2},
         {a: "a", c: true, b: 3},
@@ -668,7 +668,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     ]);
 
     ct2br4_10_2 = csv:parseList(
-        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headerRows: 1, customHeaders: ["c", "d", "e"], outputWithHeaders: false});
+        [["a", "b", "c"], ["a", "2", "true"], ["a", "3", "true"], ["a", "4", "true"], ["a", "5", "true"]], {headersRows: 1, customHeaders: ["c", "d", "e"], outputWithHeaders: false});
     test:assertEquals(ct2br4_10_2, [
         {c: "a", e: true, d: 2},
         {c: "a", e: true, d: 3},

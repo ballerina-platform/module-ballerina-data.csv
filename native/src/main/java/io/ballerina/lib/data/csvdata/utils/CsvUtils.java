@@ -74,7 +74,7 @@ public class CsvUtils {
 
     public static String[] createHeadersForParseLists(BArray csvElement, String[] headers, CsvConfig config) {
         Object customHeaders = config.customHeaders;
-        long headerRows = config.headerRows;
+        long headersRows = config.headersRows;
 
         int length = headers.length;
         if (customHeaders instanceof BArray array) {
@@ -87,15 +87,15 @@ public class CsvUtils {
             return headers;
         }
 
-        if (headerRows == 1) {
+        if (headersRows == 1) {
             return csvElement.getStringArray();
         }
 
-        if (headerRows > 1) {
+        if (headersRows > 1) {
             throw DiagnosticLog.error(DiagnosticErrorCode.NO_CUSTOM_HEADER_PROVIDED);
         }
 
-        // when headerRows = 0 and customHeaders = null
+        // when headersRows = 0 and customHeaders = null
         for (int i = 0; i < length; i++) {
             headers[i] = String.valueOf(i + 1);
         }
