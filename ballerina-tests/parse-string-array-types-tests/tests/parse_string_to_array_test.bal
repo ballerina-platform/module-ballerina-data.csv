@@ -437,14 +437,12 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
     ]);
 
     string[][]|csv:Error cv1baa_5 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: 2});
-    test:assertEquals(cv1baa_5, [
-        ["true", "false", "true", "false"],
-        ["true", "false", "true", "false"]
-    ]);
+    test:assertTrue(cv1baa_5 is csv:Error);
+    test:assertEquals((<csv:Error>cv1baa_5).message(), "Duplicate header found: 'true'");
 
-    string[][]|csv:Error cv1baa_6 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: false, header: 2});
+    string[][]|csv:Error cv1baa_6 = csv:parseString(csvStringWithBooleanValues8, {outputWithHeaders: false, header: 2});
     test:assertEquals(cv1baa_6, [
-        ["true", "false", "true", "false"]
+        ["true", "false", "true1", "false1"]
     ]);
 
     [string, string, string, string, string][]|csv:Error cv2baa_7 = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});

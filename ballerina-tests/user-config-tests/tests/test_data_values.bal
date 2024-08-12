@@ -121,3 +121,28 @@ string csvStringData9 = string `
                         4@ string@ true@ 2.234@ ()@-3.21
 
                         5@ string@ true@ 2.234@ -3.21@ null`;                                             
+
+string csvStringData10 = string `
+                        hello, hello, (), 12, true, 12.34
+                        // comment
+                        
+                        a, b, c, d, e, f
+                        
+
+                        1, string1, true, 2.234, 2.234, ()
+                        2, string2, false, 0, 0, null
+                        3, string3, false, 1.23, 1.23, ()
+                        4, string4, true, -6.51, -6.52, ()
+                        5, string5, true, 3, 31, ()`;
+
+string csvStringData11 = string `
+                        a, b, c, d, e, f
+
+
+
+                        1, string1, true, 2.234, 2.234, ()
+                        2, string2, false, 0, 0, null
+                        3, string3, false, 1.23, 1.23, ()
+
+                        4, string4, true, -6.51, -6.52, ()
+                        5, string5, true, 3, 3, ()`;

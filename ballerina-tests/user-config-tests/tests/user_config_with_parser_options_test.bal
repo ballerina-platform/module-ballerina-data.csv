@@ -125,9 +125,9 @@ function testFromCsvStringWithParserOptions() {
                 {a: 5, b: "string5", c: true, d: 3, e: 3, f: "()"}
             ]);
 
-    record {}[]|csv:Error csv3op3_4 = csv:parseString(csvStringData3, {header: 9, skipLines: "2-10"});
+    record {}[]|csv:Error csv3op3_4 = csv:parseString(csvStringData11, {header: 9, skipLines: "2-10"});
     test:assertEquals(csv3op3_4, [
-                {'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": null}
+                {'4: 5, string4: "string5", "true": true, "-6.51": 3,  "-6.52": 3, "()": null}
             ]);
 }
 
@@ -203,15 +203,19 @@ function testHeaderOption() {
                 {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
             ]);
 
-    record {}[]|csv:Error csv2cop2 = csv:parseString(csvStringData2, {header: 100});
+    record {}[]|csv:Error csv2cop2 = csv:parseString(csvStringData10, {header: 100});
     test:assertTrue(csv2cop2 is csv:Error);
     test:assertEquals((<error>csv2cop2).message(), "The provided header row is empty");
 
-    record {}[]|csv:Error csv2cop3 = csv:parseString(csvStringData2, {header: 11});
+    record {}[]|csv:Error csv2cop3 = csv:parseString(csvStringData10, {header: 11});
     test:assertEquals(csv2cop3, []);
 
-    record {}[]|csv:Error csv2cop4 = csv:parseString(csvStringData2, {header: 10});
-    test:assertEquals(csv2cop4, [{'4: 5, string4: "string5", "true": true, "-6.51": 3, "()": ()}]);
+    record {}[]|csv:Error csv2cop3_2 = csv:parseString(csvStringData10, {header: 9});
+    test:assertTrue(csv2cop3_2 is csv:Error);
+    test:assertEquals((<error>csv2cop3_2).message(), "Duplicate header found: '1.23'");
+
+    record {}[]|csv:Error csv2cop4 = csv:parseString(csvStringData10, {header: 10});
+    test:assertEquals(csv2cop4, [{'4: 5, string4: "string5", "true": true, "-6.51": 3, "-6.52": 31, "()": ()}]);
 
     record {}[]|csv:Error csv1cop5 = csv:parseString(csvStringData1, {});
     test:assertTrue(csv1cop5 is csv:Error);
@@ -313,6 +317,9 @@ function testCommentConfigOption() {
     string csvValue9 = string `a,# b
                                 1 ,#2 # comment
                                 # comment`;
+    string csvValue10 = string `a# b
+                                1 ,#2 # comment
+                                # comment`;
 
     record {int a;}[]|csv:Error cn;
 
@@ -345,8 +352,13 @@ function testCommentConfigOption() {
     // TODO:Fix the error message
     // test:assertEquals((<error> cn).message(), common:generateErrorMessageForInvalidCast("1, 2", "int"));
 
+    cn = csv:parseString(csvValue10);
+    test:assertTrue(cn is csv:Error);
+    test:assertEquals((<error> cn).message(), "Invalid length for the headers");
+
     cn = csv:parseString(csvValue9);
-    test:assertEquals(cn, [{a: 1}]);
+    test:assertTrue(cn is csv:Error);
+    test:assertEquals((<error> cn).message(), "The provided header row is empty");
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
@@ -371,6 +383,20 @@ function testCommentConfigOption2() {
     string csvValue6 = string `
 
     a,& b
+                                1 ,&2 & comment
+
+                                & comment`;
+
+    string csvValue7 = string `
+
+    a& b
+                                1 ,&2 & comment
+
+                                & comment`;
+
+    string csvValue8 = string `
+
+    a,e& b
                                 1 ,&2 & comment
 
                                 & comment`;
@@ -401,7 +427,15 @@ function testCommentConfigOption2() {
 
     cn = csv:parseString(csvValue6, {comment: "&", header: 2});
     test:assertTrue(cn is csv:Error);
+    test:assertEquals((<error>cn).message(), "The provided header row is empty");
+
+    cn = csv:parseString(csvValue8, {comment: "&", header: 2});
+    test:assertTrue(cn is csv:Error);
     test:assertEquals((<error>cn).message(), common:generateErrorMessageForMissingRequiredField("b"));
+
+    cn = csv:parseString(csvValue7, {comment: "&", header: 2});
+    test:assertTrue(cn is csv:Error);
+    test:assertEquals((<error>cn).message(), "Invalid length for the headers");
 
     cn2 = csv:parseString(csvValue1, {comment: "&"});
     test:assertTrue(cn2 is csv:Error);
@@ -426,7 +460,7 @@ function testCommentConfigOption2() {
 
     cn2 = csv:parseString(csvValue6, {header: 2, comment: "&"});
     test:assertTrue(cn2 is csv:Error);
-    test:assertEquals((<error>cn2).message(), common:generateErrorMessageForMissingRequiredField("c"));
+    test:assertEquals((<error>cn2).message(), "The provided header row is empty");
 }
 
 @test:Config {dependsOn: [testCSVLocale]}
