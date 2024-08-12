@@ -26,8 +26,8 @@ public class CsvConfig {
     public boolean stringConversion = false;
     public boolean enableConstraintValidation = false;
     public boolean outputWithHeaders = false;
-    public Object customHeadersIfHeaderAbsent = null;
-    public long headerRows = 0;
+    public Object customHeadersIfHeadersAbsent = null;
+    public long headersRows = 0;
     public Object customHeaders = null;
 
     private CsvConfig(CsvConfig config) {
@@ -58,14 +58,14 @@ public class CsvConfig {
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     long headerRows, Object headers) {
+                     long headersRows, Object headers) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.skipLines = skipLines;
         this.enableConstraintValidation = enableConstraintValidation;
         this.outputWithHeaders = outputWithHeaders;
-        this.headerRows = headerRows;
+        this.headersRows = headersRows;
         this.customHeaders = headers;
     }
 
@@ -118,7 +118,7 @@ public class CsvConfig {
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders, char delimiter,
                      String locale, char textEnclosure, char escapeChar, Object lineTerminator,
-                     Object nilValue, char comment, Object header, Object customHeadersIfHeaderAbsent) {
+                     Object nilValue, char comment, Object header, Object customHeadersIfHeadersAbsent) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -133,7 +133,7 @@ public class CsvConfig {
         this.nilValue = nilValue;
         this.comment = comment;
         this.header = header;
-        this.customHeadersIfHeaderAbsent = customHeadersIfHeaderAbsent;
+        this.customHeadersIfHeadersAbsent = customHeadersIfHeadersAbsent;
     }
 
     public static CsvConfig createConfigOptionsForUnion(CsvConfig config) {

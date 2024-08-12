@@ -273,17 +273,17 @@ public final class CsvParser {
                             expectedArrayElementType);
                 case TypeTags.UNION_TAG:
                     boolean outputHeaders = config.outputWithHeaders;
-                    Object customHeaders = config.customHeadersIfHeaderAbsent;
+                    Object customHeaders = config.customHeadersIfHeadersAbsent;
                     Object mapValue = execute(reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                     ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                     config.stringConversion = true;
                     config.outputWithHeaders = outputHeaders;
                     if (config.outputWithHeaders && customHeaders == null) {
-                        config.customHeadersIfHeaderAbsent = this.headers;
+                        config.customHeadersIfHeadersAbsent = this.headers;
                     }
                     if (customHeaders != null) {
-                        config.customHeadersIfHeaderAbsent = customHeaders;
+                        config.customHeadersIfHeadersAbsent = customHeaders;
                     }
                     return CsvTraversal.traverse((BArray) mapValue, config, bTypedesc);
                 default:
@@ -295,9 +295,9 @@ public final class CsvParser {
             if (config.header != Boolean.FALSE) {
                 currentState = HEADER_START_STATE;
             } else {
-                Object customHeadersIfHeaderAbsent = config.customHeadersIfHeaderAbsent;
-                if (customHeadersIfHeaderAbsent != null) {
-                    CsvCreator.addCustomHeadersIfNotNull(this, customHeadersIfHeaderAbsent);
+                Object customHeadersIfHeadersAbsent = config.customHeadersIfHeadersAbsent;
+                if (customHeadersIfHeadersAbsent != null) {
+                    CsvCreator.addCustomHeadersIfNotNull(this, customHeadersIfHeadersAbsent);
                 }
                 currentState = ROW_START_STATE;
                 addFieldNamesForNonHeaderState();
