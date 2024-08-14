@@ -110,7 +110,7 @@ function testSingletonExpectedTypes2() returns error? {
     test:assertEquals((<error>a8).message(), common:generateErrorMessageForInvalidCast("c", "(\"a\"|\"d\")"));
 }
 
-type SubType byte|int:Signed8|int:Signed16|int:Signed32|string:Char|int:Unsigned8|int:Unsigned16|int:Unsigned32;
+type SubType byte|int:Signed8|int:Signed16|int:Signed32|int:Unsigned8|int:Unsigned16|int:Unsigned32|string:Char;
 
 type SubtypeRecord record {
     byte a; int:Signed8 c; int:Signed16 d; int:Signed32 e; 
@@ -142,6 +142,14 @@ function testSubtypeExpectedTypes() returns error? {
                   ["1", "1", "1", "1", "a", "1", "1", "1"]];
     var value3 = [[1, 1, 1, 1, "a", 1, 1, 1],
                   [1, 1, 1, 1, "a", 1, 1, 1]];
+    var value4 = [[1, 1, 1, 1, "a", 1, 1, 1],
+                  [1, 1, 1, 1, "a", 1, 1, 1]];
+    var value5 = [{a: 1, c: 1, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1},
+                  {a: 1, c: 1, d: 1, e: 1, f: "a", g: 1, h: 1, i: 1}];
+    var value6 = [[1, 1, 1, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 1, 1, 1]];
+    var value7 = [{a: 1, c: 1, d: 1, e: 1, g: 1, h: 1, i: 1},
+                {a: 1, c: 1, d: 1, e: 1, g: 1, h: 1, i: 1}];
 
     SubtypeRecord[]|csv:Error a = csv:parseString(string `a, c, d, e, f, g, h, i
                                                        1, 1, 1, 1, a, 1, 1, 1
@@ -154,10 +162,15 @@ function testSubtypeExpectedTypes() returns error? {
 
     test:assertEquals(a2, [{a: 1, c: 1}, {a: 1, c: 1}]);
 
-    SubtypeRecord3[]|csv:Error a3 = csv:parseString(string `a, c, d, e, f, g, h, i
+    SubtypeRecord3[]|csv:Error a3 = csv:parseString(string `a, c, d, e, g, h, i
+                                                       1, 1, 1, 1, 1, 1, 1
+                                                       1, 1, 1, 1, 1, 1, 1  `);
+    test:assertEquals(a3, value7); 
+
+    SubtypeRecord3[]|csv:Error a3_2 = csv:parseString(string `a, c, d, e, f, g, h, i
                                                        1, 1, 1, 1, a, 1, 1, 1
                                                        1, 1, 1, 1, a, 1, 1, 1  `);
-    test:assertEquals(a3, value1); 
+    test:assertEquals(a3_2, value5); 
 
     SubtypeTuple[]|csv:Error a4 = csv:parseString(string `a, c, d, e, f, g, h, i
                                                        1, 1, 1, 1, a, 1, 1, 1
@@ -172,7 +185,12 @@ function testSubtypeExpectedTypes() returns error? {
     SubtypeTuple3[]|csv:Error a6 = csv:parseString(string `a, c, d, e, f, g, h, i
                                                        1, 1, 1, 1, a, 1, 1, 1
                                                        1, 1, 1, 1, a, 1, 1, 1  `);
-    test:assertEquals(a6, value3);
+    test:assertEquals(a6, value4);
+
+    SubtypeTuple3[]|csv:Error a6_2 = csv:parseString(string `a, c, d, e, g, h, i
+                                                       1, 1, 1, 1, 1, 1, 1
+                                                       1, 1, 1, 1, 1, 1, 1  `);
+    test:assertEquals(a6_2, value6);
 
     SubtypeRecord[]|csv:Error a7 = csv:transform(value1, {});
     test:assertEquals(a7, value1);
