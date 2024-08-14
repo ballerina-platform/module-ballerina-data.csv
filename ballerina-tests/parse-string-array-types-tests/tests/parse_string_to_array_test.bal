@@ -340,7 +340,7 @@ function testArrayIndexes() {
                             5, 6, 7
                             7, 8, 9`;
 
-    record {}[2]|csv:Error rec = csv:parseString(csv);
+    record{}[2]|csv:Error rec = csv:parseString(csv);
     test:assertEquals(rec, [
                 {a: 1, b: 2},
                 {a: 3, b: 4}

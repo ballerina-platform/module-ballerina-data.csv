@@ -97,7 +97,7 @@ public final class CsvCreator {
                 ArrayType arrayType = (ArrayType) currentCsvNodeType;
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < sm.columnIndex) {
-                    sm.earlyReturn = true;
+                    sm.isColumnMaxSizeReached = true;
                     return;
                 }
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);

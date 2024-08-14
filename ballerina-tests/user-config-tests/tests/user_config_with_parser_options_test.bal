@@ -354,7 +354,7 @@ function testCommentConfigOption() {
 
     cn = csv:parseString(csvValue10);
     test:assertTrue(cn is csv:Error);
-    test:assertEquals((<error> cn).message(), "Invalid length for the headers");
+    test:assertEquals((<error> cn).message(), "Invalid number of headers");
 
     cn = csv:parseString(csvValue9);
     test:assertTrue(cn is csv:Error);
@@ -435,7 +435,7 @@ function testCommentConfigOption2() {
 
     cn = csv:parseString(csvValue7, {comment: "&", header: 2});
     test:assertTrue(cn is csv:Error);
-    test:assertEquals((<error>cn).message(), "Invalid length for the headers");
+    test:assertEquals((<error>cn).message(), "Invalid number of headers");
 
     cn2 = csv:parseString(csvValue1, {comment: "&"});
     test:assertTrue(cn2 is csv:Error);
@@ -600,19 +600,19 @@ function testCustomHeaderOption() {
 
     record {}[]|csv:Error ct1br = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "b"]});
     test:assertTrue(ct1br is csv:Error);
-    test:assertEquals((<error>ct1br).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br).message(), "Invalid number of headers");
 
     record {}[]|csv:Error ct1br2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "b", "c", "d"]});
     test:assertTrue(ct1br2 is csv:Error);
-    test:assertEquals((<error>ct1br2).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br2).message(), "Invalid number of headers");
 
     record {}[]|csv:Error ct1br2_2 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "c", "b", "d"]});
     test:assertTrue(ct1br2_2 is csv:Error);
-    test:assertEquals((<error>ct1br2_2).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br2_2).message(), "Invalid number of headers");
 
     record {}[]|csv:Error ct1br3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: []});
     test:assertTrue(ct1br3 is csv:Error);
-    test:assertEquals((<error>ct1br3).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br3).message(), "Invalid number of headers");
 
     record {|string a; string b; string c;|}[]|csv:Error ct1br5 = csv:parseList([["a", "1", "true"], ["a", "1", "true"]], {customHeaders: ["a", "e", "b"]});
     test:assertTrue(ct1br5 is csv:Error);
@@ -686,11 +686,11 @@ function testCustomHeaderParserOption2() {
 
     record {}[]|csv:Error ct1br2 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeadersAbsent: []});
     test:assertTrue(ct1br2 is csv:Error);
-    test:assertEquals((<error>ct1br2).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br2).message(), "Invalid number of headers");
 
     record {int a; string b; boolean c; decimal d; float e; () f;}[]|csv:Error ct1br3 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeadersAbsent: ["a", "b"]});
     test:assertTrue(ct1br3 is csv:Error);
-    test:assertEquals((<error>ct1br3).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br3).message(), "Invalid number of headers");
 
     record {int a; string b; boolean c; decimal d; float e; () f;}[]|csv:Error ct1br4 = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"]});
     test:assertEquals(ct1br4, [
@@ -761,7 +761,7 @@ function testCustomHeaderParserOption2() {
 
     record {|boolean d1; string e1;|}[]|csv:Error ct1br11 = csv:parseString(csvStringData1, {header: false, customHeadersIfHeadersAbsent: ["f1", "e1"]});
     test:assertTrue(ct1br11 is csv:Error);
-    test:assertEquals((<error>ct1br11).message(), "Invalid length for the headers");
+    test:assertEquals((<error>ct1br11).message(), "Invalid number of headers");
 
     record {|string d1; string e1;|}[]|csv:Error ct1br12 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeadersAbsent: ["f1", "e1", "d1", "c1", "b1", "a1"]});
     test:assertEquals(ct1br12, [
@@ -837,12 +837,12 @@ function testTextQuotesWithParserOptions() {
 
     record {}[]|csv:Error cn6 = csv:parseString(csvValue6, {});
     test:assertTrue(cn6 is csv:Error);
-    test:assertEquals((<error>cn6).message(), "Invalid length for the headers");
+    test:assertEquals((<error>cn6).message(), "Invalid number of headers");
 
     cn6 = csv:parseString(string `a,b,c,d
                                     1,1,1,1,1`, {});
     test:assertTrue(cn6 is csv:Error);
-    test:assertEquals((<error>cn6).message(), "Invalid length for the headers");
+    test:assertEquals((<error>cn6).message(), "Invalid number of headers");
 }
 
 @test:Config

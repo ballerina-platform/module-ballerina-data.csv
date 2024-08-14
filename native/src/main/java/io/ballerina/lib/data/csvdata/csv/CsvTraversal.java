@@ -475,7 +475,7 @@ public final class CsvTraversal {
             if (this.headers == null) {
                 this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
                 if (!this.isFirstRowInserted && config.headersRows >= 1) {
-                    // To skip the row at the position [config.headersRows - 1] from being added to the result.
+                    // To skip the row at the position [config.headersRows - 1] from being aded to the result.
                     this.isFirstRowIsHeader = true;
                     this.isFirstRowInserted = true;
                     return;
