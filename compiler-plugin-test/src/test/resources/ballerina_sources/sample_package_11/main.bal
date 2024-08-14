@@ -7,10 +7,20 @@ type A record {
 };
 
 public function main() returns error? {
-    record {}[] a = check csv:parseString(string `a,b`, {});
-    record {}[] b = test({headerRows: 2, outputWithHeaders: false});
+    record {}[] _ = check csv:parseString(string `a,b`, {});
+    record {}[] _ = test1({headerRows: 2, outputWithHeaders: false});
+    [int...][] _ = test2({headerRows: 2, outputWithHeaders: false});
+    record {} _ = test3({headerRows: 2, outputWithHeaders: false});
 }
 
-function test(A a) returns record{}[] {
+function test1(A a) returns record{}[] {
     return [{}];
+}
+
+function test2(A a) returns [int...][] {
+    return [];
+}
+
+function test3(A a) returns record{} {
+    return {};
 }

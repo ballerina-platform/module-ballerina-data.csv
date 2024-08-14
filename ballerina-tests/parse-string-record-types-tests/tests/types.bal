@@ -96,6 +96,12 @@ type BooleanRecord12 record {|
 type BooleanRecord13 record {|
     string defaultableField = "";
     string? nillableField = ();
+    boolean|string...;
+|};
+
+type BooleanRecord13_2 record {|
+    string defaultableField = "";
+    string? nillableField = ();
     string|boolean...;
 |};
 

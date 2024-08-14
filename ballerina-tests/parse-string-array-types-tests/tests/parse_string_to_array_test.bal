@@ -340,7 +340,7 @@ function testArrayIndexes() {
                             5, 6, 7
                             7, 8, 9`;
 
-    record {}[2]|csv:Error rec = csv:parseString(csv);
+    record{}[2]|csv:Error rec = csv:parseString(csv);
     test:assertEquals(rec, [
                 {a: 1, b: 2},
                 {a: 3, b: 4}
@@ -407,15 +407,22 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
         ["true", "false", "true", "false"]
     ]);
 
-    (string|boolean)[][]|csv:Error cv2baa = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
+    (boolean|string)[][]|csv:Error cv2baa = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
     test:assertEquals(cv2baa, [
         ["b1", "b2", "b3", "b4", "b5"],
         [true, false, true, false, true],
         [true, false, true, false, true]
     ]);
 
-    [string...][]|csv:Error cv2baa_2 = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
+    (string|boolean)[][]|csv:Error cv2baa_2 = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
     test:assertEquals(cv2baa_2, [
+        ["b1", "b2", "b3", "b4", "b5"],
+        ["true", "false", "true", "false", "true"],
+        ["true", "false", "true", "false", "true"]
+    ]);
+
+    [string...][]|csv:Error cv2baa_2_2 = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
+    test:assertEquals(cv2baa_2_2, [
         ["b1", "b2", "b3", "b4", "b5"],
         ["true", "false", "true", "false", "true"],
         ["true", "false", "true", "false", "true"]

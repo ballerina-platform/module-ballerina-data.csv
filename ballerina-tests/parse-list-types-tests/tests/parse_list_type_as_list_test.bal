@@ -472,7 +472,7 @@ function testParseListsWithOutputHeaders() {
     ct1bt1 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 21});
     test:assertEquals(ct1bt1, []);
 
-    (string|boolean|int)[][]|csv:Error ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1});
+    (boolean|int|string)[][]|csv:Error ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1});
     test:assertEquals(ct1bt1_2, [
                 ["a", true, 1]
             ]);
