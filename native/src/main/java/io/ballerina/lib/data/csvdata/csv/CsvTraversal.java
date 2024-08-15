@@ -67,6 +67,7 @@ public final class CsvTraversal {
     public static Object traverse(BArray csv, CsvConfig config, BTypedesc type) {
         CsvTree csvTree = tlCsvTree.get();
         try {
+            CsvUtils.validateConfigs(config);
             Object convertedValue = csvTree.traverseCsv(csv, config, type.getDescribingType());
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } catch (BError e) {

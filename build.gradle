@@ -92,5 +92,9 @@ release {
 }
 
 task build {
-    dependsOn('data.csv-ballerina:build')
+    dependsOn(':data.csv-compiler-plugin:build')
+    dependsOn(':data.csv-native:build')
+    dependsOn(':data.csv-ballerina:build')
+    dependsOn(':data.csv-compiler-plugin-tests:test')
+    dependsOn(':data.csv-ballerina-tests:test')
 }

@@ -105,4 +105,8 @@ jacocoTestReport {
     sourceSets project(':data.csv-compiler-plugin').sourceSets.main
 }
 
+build {
+    dependsOn(test)
+}
+
 test.dependsOn ":data.csv-ballerina:build"

@@ -59,7 +59,7 @@ public class CompilerPluginTest {
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnosticsList.size(), 20);
+        Assert.assertEquals(errorDiagnosticsList.size(), 21);
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
@@ -70,19 +70,20 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
-        Assert.assertEquals(errorDiagnosticsList.get(10).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(10).diagnosticInfo().messageFormat(), UNSUPPORTED_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(11).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(12).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(13).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(14).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(15).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
-        Assert.assertEquals(errorDiagnosticsList.get(16).
-                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(16).diagnosticInfo().messageFormat(), UNSUPPORTED_FIELD_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(17).
                 diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(18).
                 diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
         Assert.assertEquals(errorDiagnosticsList.get(19).
+                diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
+        Assert.assertEquals(errorDiagnosticsList.get(20).
                 diagnosticInfo().messageFormat(), UNSUPPORTED_TUPLE_MEMBER_TYPE);
     }
 
@@ -93,8 +94,11 @@ public class CompilerPluginTest {
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnosticsList.size(), 1);
+        Assert.assertEquals(errorDiagnosticsList.size(), 4);
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo().messageFormat(), DUPLICATE_FIELD);
     }
 
     @Test
@@ -164,12 +168,30 @@ public class CompilerPluginTest {
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnosticsList.size(), 3);
+        Assert.assertEquals(errorDiagnosticsList.size(), 12);
         Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
                 .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
         Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
                 .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
         Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(9).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(10).diagnosticInfo()
+                .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+        Assert.assertEquals(errorDiagnosticsList.get(11).diagnosticInfo()
                 .messageFormat(), IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
     }
 
@@ -265,5 +287,33 @@ public class CompilerPluginTest {
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
         Assert.assertEquals(errorDiagnosticsList.size(), 0);
+    }
+
+    @Test
+    public void testIgnoredCustomHeaderOptions2() {
+        DiagnosticResult diagnosticResult =
+                CompilerPluginTestUtils.loadPackage("sample_package_12").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 9);
+        Assert.assertEquals(errorDiagnosticsList.get(0).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(1).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(2).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(3).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(4).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(5).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(6).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(7).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+        Assert.assertEquals(errorDiagnosticsList.get(8).diagnosticInfo()
+                .messageFormat(), CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
     }
 }

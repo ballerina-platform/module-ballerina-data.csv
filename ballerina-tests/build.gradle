@@ -16,6 +16,7 @@
  */
 plugins {
     id 'jacoco'
+    id 'groovy'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -49,7 +50,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
     }
 }
 
-task clean {
+clean {
     delete "${project.projectDir}/${testCommonPackage}/target"
 
     testPackages.each { testPackage ->
@@ -162,13 +163,25 @@ task publishTestCommonPackageToLocal {
     }
 }
 
+task commitTomlFiles {
+    doLast {
+        project.exec {
+            ignoreExitValue true
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+            } else {
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+            }
+        }
+    }
+}
+
 task ballerinaTest {
-    inputs.dir file(project.projectDir)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlVersions)
     dependsOn(initializeVariables)
     dependsOn(publishTestCommonPackageToLocal)
-    dependsOn(deleteDependencyTomlFile)
+    finalizedBy(commitTomlFiles)
 
     doLast {
         testPackages.each { testPackage ->
@@ -214,10 +227,16 @@ publishing {
     }
 }
 
-task test {
+test {
     dependsOn(ballerinaTest)
 }
 
-task build {
-    dependsOn(test)
-}
+build.dependsOn ":${packageName}-ballerina:build"
+build.dependsOn ":${packageName}-compiler-plugin:build"
+
+test.dependsOn ":${packageName}-ballerina:build"
+test.dependsOn ":${packageName}-compiler-plugin:build"
+test.dependsOn ":${packageName}-compiler-plugin-tests:test"
+
+publishToMavenLocal.dependsOn build
+publish.dependsOn build

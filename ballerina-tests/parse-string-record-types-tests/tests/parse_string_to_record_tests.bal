@@ -20,7 +20,7 @@ import ballerina/test;
 
 @test:Config
 function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
-    BooleanRecord1Array|csv:Error csvb1br1 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true});
+    BooleanRecord1Array|csv:Error csvb1br1 = csv:parseString(csvStringWithBooleanValues1);
     test:assertEquals(csvb1br1, [
         {b1: true, b2: false, b3: true, b4: false},
         {b1: true, b2: false, b3: true, b4: false},
@@ -69,11 +69,11 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType() {
         {b1: true, b2: false, b3: true, b4: false}
     ]);
 
-    BooleanRecord2Array|csv:Error csvb3br2 = csv:parseString(csvStringWithBooleanValues3, {outputWithHeaders: true});
+    BooleanRecord2Array|csv:Error csvb3br2 = csv:parseString(csvStringWithBooleanValues3);
     test:assertTrue(csvb3br2 is csv:Error);
     test:assertEquals((<csv:Error>csvb3br2).message(), common:generateErrorMessageForMissingRequiredField("b4"));
 
-    BooleanRecord2Array|csv:Error csvb4br2 = csv:parseString(csvStringWithBooleanValues4, {outputWithHeaders: true});
+    BooleanRecord2Array|csv:Error csvb4br2 = csv:parseString(csvStringWithBooleanValues4);
     test:assertEquals(csvb4br2, [
         {b1: true, b2: "()", b3: (), b4: false},
         {b1: true, b2: "()", b3: (), b4: false}
@@ -343,7 +343,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType3() {
 
 @test:Config
 function testFromCsvStringWithTypeForStringAndRecordAsExpectedType4() {
-    BooleanRecord11Array|csv:Error csvb2br11 = csv:parseString(csvStringWithBooleanValues2, {outputWithHeaders: true});
+    BooleanRecord11Array|csv:Error csvb2br11 = csv:parseString(csvStringWithBooleanValues2);
     test:assertEquals(csvb2br11, [
         {b1: true, b2: false, b3: true, b4: false, b5: true, defaultableField: "", nillableField: ()},
         {b1: true, b2: false, b3: true, b4: false, b5: true, defaultableField: "", nillableField: ()}
@@ -362,7 +362,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType4() {
         {b1: true, b2: (), b3: (), b4: false, defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord11Array|csv:Error csvb5br11 = csv:parseString(csvStringWithBooleanValues5, {outputWithHeaders: false});
+    BooleanRecord11Array|csv:Error csvb5br11 = csv:parseString(csvStringWithBooleanValues5);
     test:assertEquals(csvb5br11, [
         {b1: true, b2: false, b3: true, b4: "2", defaultableField: "", nillableField: ()},
         {b1: true, b2: false, b3: true, b4: "3", defaultableField: "", nillableField: ()}
@@ -377,7 +377,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType4() {
         {b1, b2, b3, b4, defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord12Array|csv:Error csvb1br12 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true});
+    BooleanRecord12Array|csv:Error csvb1br12 = csv:parseString(csvStringWithBooleanValues1);
     test:assertTrue(csvb1br12 is csv:Error);
     test:assertEquals((<csv:Error>csvb1br12).message(), common:generateErrorMessageForMissingRequiredField("requiredField"));
 
@@ -401,7 +401,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType4() {
         {b1: true, b2: true, b3: false, defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord13Array|csv:Error csvb4br13 = csv:parseString(csvStringWithBooleanValues4, {outputWithHeaders: true});
+    BooleanRecord13Array|csv:Error csvb4br13 = csv:parseString(csvStringWithBooleanValues4);
     test:assertEquals(csvb4br13, [
         {b1: true, b2: "()", b3: "()", b4: false, defaultableField: "", nillableField: ()},
         {b1: true, b2: "()", b3: "null", b4: false, defaultableField: "", nillableField: ()}
@@ -418,7 +418,7 @@ function testFromCsvStringWithTypeForStringAndRecordAsExpectedType4() {
         {b2: "()", b3: "()", defaultableField: "", nillableField: ()}
     ]);
 
-    BooleanRecord13Array|csv:Error csvb7br13 = csv:parseString(csvStringWithBooleanValues7, {outputWithHeaders: true});
+    BooleanRecord13Array|csv:Error csvb7br13 = csv:parseString(csvStringWithBooleanValues7);
     test:assertEquals(csvb7br13, [
         {b1, b2, b3: "()", b4, defaultableField: "", nillableField: ()}
     ]);
