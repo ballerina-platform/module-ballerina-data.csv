@@ -452,6 +452,9 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
         }
+        if (typeSymbol.typeKind() == TypeDescKind.INTERSECTION) {
+            typeSymbol = getRawType(typeSymbol);
+        }
         TypeDescKind kind = typeSymbol.typeKind();
         if (kind == TypeDescKind.TYPE_REFERENCE) {
             kind = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor().typeKind();

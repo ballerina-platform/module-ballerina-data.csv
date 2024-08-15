@@ -147,6 +147,8 @@ public final class CsvParser {
         int arraySize = 0;
         boolean addHeadersForOutput = false;
         int currentCsvNodeLength = 0;
+        boolean isColumnMaxSizeReached = false;
+        boolean isRowMaxSizeReached = false;
 
         StateMachine() {
             reset();
@@ -183,6 +185,8 @@ public final class CsvParser {
             arraySize = 0;
             addHeadersForOutput = false;
             currentCsvNodeLength = 0;
+            isColumnMaxSizeReached = false;
+            isRowMaxSizeReached = false;
         }
 
         private static boolean isWhitespace(char ch, Object lineTerminator) {
@@ -543,6 +547,13 @@ public final class CsvParser {
                 for (; i < count; i++) {
                     ch = buff[i];
                     sm.processLocation(ch);
+                    if (sm.isRowMaxSizeReached) {
+                        if (ch == EOF) {
+                            state = ROW_END_STATE;
+                            break;
+                        }
+                        continue;
+                    }
                     if (ch == Constants.LineTerminator.CR) {
                         CsvUtils.setCarriageTokenPresent(true);
                         continue;
@@ -638,7 +649,8 @@ public final class CsvParser {
             if (trim) {
                 value = value.trim();
             }
-            if (!(value.isBlank() && sm.currentCsvNodeLength == 0)) {
+            if (!(value.isBlank() && sm.currentCsvNodeLength == 0)
+                    && !sm.isColumnMaxSizeReached && !sm.isRowMaxSizeReached) {
                 addRowValue(sm, trim);
             }
             if (!sm.isCurrentCsvNodeEmpty) {
@@ -659,6 +671,7 @@ public final class CsvParser {
             sm.currentCsvNode = null;
             sm.isCurrentCsvNodeEmpty = true;
             sm.columnIndex = 0;
+            sm.isColumnMaxSizeReached = false;
             sm.clear();
         }
 
@@ -702,6 +715,9 @@ public final class CsvParser {
             }
             sm.arraySize++;
             sm.currentCsvNodeLength = 0;
+            if (sm.arraySize == rootArraySize) {
+                sm.isRowMaxSizeReached = true;
+            }
         }
 
         private static void addRowValue(StateMachine sm) {
@@ -709,6 +725,9 @@ public final class CsvParser {
         }
 
         private static void addRowValue(StateMachine sm, boolean trim) {
+            if (sm.isColumnMaxSizeReached || sm.isRowMaxSizeReached) {
+                return;
+            }
             Field currentField = null;
             sm.isValueStart = false;
             Type exptype = sm.expectedArrayElementType;
@@ -770,6 +789,7 @@ public final class CsvParser {
                 } else {
                     sm.charBuffIndex = 0;
                     if (sm.config.allowDataProjection) {
+                        sm.isColumnMaxSizeReached = true;
                         return null;
                     }
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TUPLE_SIZE, tupleTypes.size());
@@ -781,6 +801,7 @@ public final class CsvParser {
             if (arrayType.getSize() != -1 && arrayType.getSize() <= sm.columnIndex) {
                 sm.charBuffIndex = 0;
                 if (sm.config.allowDataProjection) {
+                    sm.isColumnMaxSizeReached = true;
                     return null;
                 }
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_ARRAY_SIZE, arrayType.getSize());

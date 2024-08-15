@@ -109,9 +109,9 @@ public final class FromString {
                 case TypeTags.BOOLEAN_TAG -> stringToBoolean(value);
                 case TypeTags.NULL_TAG -> stringToNull(value, config);
                 case TypeTags.FINITE_TYPE_TAG -> stringToFiniteType(value, (FiniteType) expType, config);
-                case TypeTags.UNION_TAG -> stringToUnion(string, (UnionType) expType, config);
+                case TypeTags.UNION_TAG -> stringToUnion(string, (UnionType) expType, config, false);
                 case TypeTags.JSON_TAG, TypeTags.ANYDATA_TAG ->
-                        stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config);
+                        stringToUnion(string, JSON_TYPE_WITH_BASIC_TYPES, config, true);
                 case TypeTags.TYPE_REFERENCED_TYPE_TAG ->
                         fromStringWithType(string, ((ReferenceType) expType).getReferredType(), config);
                 case TypeTags.INTERSECTION_TAG ->
@@ -275,13 +275,20 @@ public final class FromString {
         return returnError(value, nullValue == null ? Constants.Values.BALLERINA_NULL : nullValue.toString());
     }
 
-    private static Object stringToUnion(BString string, UnionType expType, CsvConfig config)
+    private static Object stringToUnion(BString string, UnionType expType, CsvConfig config, boolean isJsonOrAnydata)
             throws NumberFormatException {
         List<Type> memberTypes = new ArrayList<>(expType.getMemberTypes());
-        memberTypes.sort(Comparator.comparingInt(t -> {
-            int index = TYPE_PRIORITY_ORDER.indexOf(TypeUtils.getReferredType(t).getTag());
-            return index == -1 ? Integer.MAX_VALUE : index;
-        }));
+        if (isJsonOrAnydata) {
+            memberTypes.sort(Comparator.comparingInt(t -> {
+                int index = TYPE_PRIORITY_ORDER.indexOf(TypeUtils.getReferredType(t).getTag());
+                return index == -1 ? Integer.MAX_VALUE : index;
+            }));
+        } else {
+            memberTypes.sort(Comparator.comparingInt(t -> {
+                int tag = TypeUtils.getReferredType(t).getTag();
+                return tag == TypeTags.NULL_TAG ? Integer.MIN_VALUE : memberTypes.indexOf(t);
+            }));
+        }
         for (Type memberType : memberTypes) {
             try {
                 Object result = fromStringWithType(string, memberType, config);

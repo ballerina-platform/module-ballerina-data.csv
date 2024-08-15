@@ -544,6 +544,14 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedType7() {
         [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
         {customHeaders: ["f", "e", "d", "c", "b", "a"]});
     test:assertEquals(ct1br9_2, [
+        {a: (), b: <float>2.23, c: <decimal>0, d: "true", e: 1, f: "a"},
+        {a: (), b: <float>0, c: <decimal>2.23, d: "true", e: 1, f: "a"}
+    ]);
+
+    record{|int|() a; float b; decimal? c; boolean|string d; int|string e; string f; string...;|}[]|csv:Error ct1br9_3 = csv:parseList(
+        [["a", "1", "true", "0", "2.23", "null"], ["a", "1", "true", "2.23", "0", "()"]], 
+        {customHeaders: ["f", "e", "d", "c", "b", "a"]});
+    test:assertEquals(ct1br9_3, [
         {a: (), b: <float>2.23, c: <decimal>0, d: true, e: 1, f: "a"},
         {a: (), b: <float>0, c: <decimal>2.23, d: true, e: 1, f: "a"}
     ]);
@@ -593,7 +601,7 @@ function testFromCsvWithTypeForTupleAndRecordAsExpectedTypeWithHeaders() {
     test:assertTrue(ct1br4_5_2 is csv:Error);
     test:assertEquals((<error>ct1br4_5).message(), "Custom headers should be provided");
 
-    map<int|string|boolean>[]|csv:Error ct2br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, customHeaders: ["a", "c", "b"]});
+    map<int|boolean|string>[]|csv:Error ct2br4_3 = csv:parseList([["a", "1", "true"], ["a", "1", "true"], ["a", "1", "true"]], {headersRows: 1, customHeaders: ["a", "c", "b"]});
     test:assertEquals(ct2br4_3, [
         {a: "a", b: true, c: 1},
         {a: "a", b: true, c: 1}

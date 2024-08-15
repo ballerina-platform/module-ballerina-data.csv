@@ -119,30 +119,30 @@ function testParseToStringWithUnionExpectedTypes() returns error? {
                                                                                                                         1, 2
                                                                                                                         a, b`, {header: 1});
     test:assertEquals(csv1op12, [
-        {a: 1, b: 2},
+        {a: "1", b: "2"},
         {a: "a", b: "b"}
     ]);
 
-    ([int, int]|[string, string])[]|csv:Error csv1op13 = csv:parseString(string `
+    ([int, int]|[string|int, string|int])[]|csv:Error csv1op13 = csv:parseString(string `
                                                                                                                         a,b
                                                                                                                         1, 2
                                                                                                                         a, b`, {header: 1});
     test:assertEquals(csv1op13, [
-        [1, 2],
+        ["1", "2"],
         ["a", "b"]
     ]);
 }
 
+record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
+    {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
+    {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
+    {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
+    {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
+    {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
+];
+
 @test:Config
 function testParseToStringWithUnionExpectedTypes2() returns error? {
-    record{int a; string b; boolean c; decimal d; float e; () f;}[] value = [
-        {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
-        {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
-        {a: 3, b: "string3", c: false, d: <decimal>1.23, e: <float>1.23, f: ()},
-        {a: 4, b: "string4", c: true, d: <decimal>-6.51, e: <float>-6.51, f: ()},
-        {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3.0, f: ()}
-    ];
-
     (RecA|RecC)[]|csv:Error csv1op1 = csv:transform(value, {});
     test:assertEquals(csv1op1, [
         {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
@@ -233,13 +233,17 @@ function testParseToStringWithUnionExpectedTypes2() returns error? {
 
     (record{|string a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op12 = csv:transform(value, {});
     test:assertTrue(csv1op12 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '(union_type_tests:record {| string a; int...; |}|union_type_tests:record {| string a; string...; |})[]'");
+    test:assertEquals((<csv:Error>csv1op12).message(), "The CSV cannot be converted into any of the uniform union types in '(union_type_tests:record {| string a; int...; |}|union_type_tests:record {| string a; string...; |})[]'");
 
-    (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {});
+    (record{|int a; int...;|}|record{|int|string a; int|string...;|})[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {});
     test:assertEquals(csv1op13, [
         {a: 1, b: 2},
         {a: "a", b: "b"}
     ]);
+
+    (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op14 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {});
+    test:assertTrue(csv1op14 is csv:Error);
+    test:assertEquals((<csv:Error>csv1op14).message(), "The CSV cannot be converted into any of the uniform union types in '(union_type_tests:record {| int a; int...; |}|union_type_tests:record {| string a; string...; |})[]'");
 }
 
 @test:Config
@@ -338,7 +342,7 @@ function testParseToStringWithUnionExpectedTypes3() returns error? {
 
     (record{|int a; int...;|}|record{|string a; string...;|})[]|csv:Error csv1op13 = csv:parseList([["1", "2"], ["a", "b"]], {customHeaders: ["a", "b"]});
     test:assertEquals(csv1op13, [
-        {a: 1, b: 2},
+        {a: "1", b: "2"},
         {a: "a", b: "b"}
     ]);
 }
@@ -387,7 +391,7 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
 
     (TupB|[boolean])[]|csv:Error csv1op4_2 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op4_2).message(), "The source value cannot convert in to the '(union_type_tests:TupB|[boolean])[]'");
+    test:assertEquals((<csv:Error>csv1op4_2).message(), "The CSV cannot be converted into any of the uniform union types in '(union_type_tests:TupB|[boolean])[]'");
 
     (TupA|TupB)[]|csv:Error csv1op5 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"], skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
@@ -412,29 +416,33 @@ function testParseToStringWithUnionExpectedTypes4() returns error? {
 
     ([string...]|[int...])[]|csv:Error csv1op8 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op8 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op8).message(), "The source value cannot convert in to the '([string...]|[int...])[]'");
+    test:assertEquals((<csv:Error>csv1op8).message(), "The CSV cannot be converted into any of the uniform union types in '([string...]|[int...])[]'");
 
     ([int...]|[string...])[]|csv:Error csv1op9 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op9 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op9).message(), "The source value cannot convert in to the '([int...]|[string...])[]'");
+    test:assertEquals((<csv:Error>csv1op9).message(), "The CSV cannot be converted into any of the uniform union types in '([int...]|[string...])[]'");
 
     ([int, string...]|[string, int...])[]|csv:Error csv1op10 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op10 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op10).message(), "The source value cannot convert in to the '([int,string...]|[string,int...])[]'");
+    test:assertEquals((<csv:Error>csv1op10).message(), "The CSV cannot be converted into any of the uniform union types in '([int,string...]|[string,int...])[]'");
 
     ([string, int...]|[int, string...])[]|csv:Error csv1op11 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op11 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op11).message(), "The source value cannot convert in to the '([string,int...]|[int,string...])[]'");
+    test:assertEquals((<csv:Error>csv1op11).message(), "The CSV cannot be converted into any of the uniform union types in '([string,int...]|[int,string...])[]'");
 
     ([string, int...]|[string, string...])[]|csv:Error csv1op12 = csv:transform(value, {headersOrder: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(csv1op12 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op12).message(), "The source value cannot convert in to the '([string,int...]|[string,string...])[]'");
+    test:assertEquals((<csv:Error>csv1op12).message(), "The CSV cannot be converted into any of the uniform union types in '([string,int...]|[string,string...])[]'");
 
-    ([int, int...]|[string, string...])[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
+    ([string, string...]|[int|string, int|string...])[]|csv:Error csv1op13 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
     test:assertEquals(csv1op13, [
         [1, 2],
         ["a", "b"]
     ]);
+
+    ([int, int...]|[string, string...])[]|csv:Error csv1op14 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
+    test:assertTrue(csv1op14 is csv:Error);
+    test:assertEquals((<csv:Error>csv1op14).message(), "The CSV cannot be converted into any of the uniform union types in '([int,int...]|[string,string...])[]'");
 }
 
 @test:Config
@@ -480,7 +488,7 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
 
     (TupB|[boolean])[]|csv:Error csv1op4_2 = csv:parseList(value, {skipLines: [2, 4]});
     test:assertTrue(csv1op4_2 is csv:Error);
-    test:assertEquals((<csv:Error>csv1op4_2).message(), "The source value cannot convert in to the '(union_type_tests:TupB|[boolean])[]'");
+    test:assertEquals((<csv:Error>csv1op4_2).message(), "The CSV cannot be converted into any of the uniform union types in '(union_type_tests:TupB|[boolean])[]'");
 
     (TupA|TupB)[]|csv:Error csv1op5 = csv:parseList(value, {skipLines: [2, 4]});
     test:assertEquals(csv1op5, [
@@ -532,7 +540,7 @@ function testParseToStringWithUnionExpectedTypes5() returns error? {
 
     ([int, int...]|[string, string...])[]|csv:Error csv1op13 = csv:parseList([["1", "2"], ["a", "b"]], {});
     test:assertEquals(csv1op13, [
-        [1, 2],
+        ["1", "2"],
         ["a", "b"]
     ]);
 }
@@ -1021,4 +1029,266 @@ function testParseToStringWithUnionExpectedTypes10() returns error? {
 
     [string, int...][]|[string, string...][]|csv:Error csv1op12 = csv:parseList(value, {});
     test:assertEquals(csv1op12, value);
+}
+
+@test:Config
+function testUnionTypeWithOrdering() returns error? {
+    string[][] value1 = [["1", "1.0", "true", "a"], ["2", "2.0", "false", "b"]];
+    string value2 = string `a,b, c, d
+                            1, 1.0, true, a
+                            2, 2.0, false, b`;
+    record{}[] value3 = [{"a": 1, "b": 1.0, "c": true, "d": "a"}, {"a": 2, "b": 2.0, "c": false, "d":"b"}];
+
+    string[][]|anydata[][]|error csv1op1 = csv:parseList(value1);
+    test:assertEquals(csv1op1, [
+        ["1", "1.0", "true", "a"],
+        ["2", "2.0", "false", "b"]
+    ]);
+
+    anydata[][]|string[][]|error csv1op2 = csv:parseList(value1);
+    test:assertEquals(csv1op2, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    string[][2]|float[][2]|error csv1op1_2 = csv:parseList(value1);
+    test:assertEquals(csv1op1_2, [
+        ["1", "1.0"],
+        ["2", "2.0"]
+    ]);
+
+    float[][2]|string[][2]|error csv1op2_2 = csv:parseList(value1);
+    test:assertEquals(csv1op2_2, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    (string|anydata)[][]|error csv1op1_3 = csv:parseList(value1);
+    test:assertEquals(csv1op1_3, [
+        ["1", "1.0", "true", "a"],
+        ["2", "2.0", "false", "b"]
+    ]);
+
+    (anydata|string)[][]|error csv1op2_3 = csv:parseList(value1);
+    test:assertEquals(csv1op2_3, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    (string|float)[][2]|error csv1op1_4 = csv:parseList(value1);
+    test:assertEquals(csv1op1_4, [
+        ["1", "1.0"],
+        ["2", "2.0"]
+    ]);
+
+    (float|string)[][2]|error csv1op2_4 = csv:parseList(value1);
+    test:assertEquals(csv1op2_4, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    string[][]|anydata[][]|error recCsv1op1 = csv:transform(value3);
+    test:assertEquals(recCsv1op1, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    anydata[][]|string[][]|error recCsv1op2 = csv:transform(value3);
+    test:assertEquals(recCsv1op2, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    string[][2]|float[][2]|error recCsv1op1_2 = csv:transform(value3);
+    test:assertEquals(recCsv1op1_2, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    float[][2]|string[][2]|error recCsv1op2_2 = csv:transform(value3);
+    test:assertEquals(recCsv1op2_2, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    (string|anydata)[][]|error recCsv1op1_3 = csv:transform(value3);
+    test:assertEquals(recCsv1op1_3, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    (anydata|string)[][]|error recCsv1op2_3 = csv:transform(value3);
+    test:assertEquals(recCsv1op2_3, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    (string|float)[][2]|error recCsv1op1_4 = csv:transform(value3);
+    test:assertEquals(recCsv1op1_4, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    (float|string)[][2]|error recCsv1op2_4 = csv:transform(value3);
+    test:assertEquals(recCsv1op2_4, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+    
+    string[][]|anydata[][]|error parseStrCsv1op1 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op1, [
+        ["1", "1.0", "true", "a"],
+        ["2", "2.0", "false", "b"]
+    ]);
+
+    anydata[][]|string[][]|error parseStrCsv1op2 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op2, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    string[][2]|float[][2]|error parseStrCsv1op1_2 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op1_2, [
+        ["1", "1.0"],
+        ["2", "2.0"]
+    ]);
+
+    float[][2]|string[][2]|error parseStrCsv1op2_2 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op2_2, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+
+    (string|anydata)[][]|error parseStrCsv1op1_3 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op1_3, [
+        ["1", "1.0", "true", "a"],
+        ["2", "2.0", "false", "b"]
+    ]);
+
+    (anydata|string)[][]|error parseStrCsv1op2_3 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op2_3, [
+        [1, 1.0, true, "a"],
+        [2, 2.0, false, "b"]
+    ]);
+
+    (string|float)[][2]|error parseStrCsv1op1_4 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op1_4, [
+        ["1", "1.0"],
+        ["2", "2.0"]
+    ]);
+
+    (float|string)[][2]|error parseStrCsv1op2_4 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op2_4, [
+        [1f, 1.0],
+        [2f, 2.0]
+    ]);
+}
+
+@test:Config
+function testUnionTypeWithNull() returns error? {
+    string[][] value1 = [["1", "()", "true", "a"], ["2", "()", "false", "b"]];
+    string value2 = string `a,b, c, d
+                            1, (), true, a
+                            2, (), false, b`;
+    record{}[] value3 = [{"a": 1, "b": (), "c": true, "d": "a"}, {"a": 2, "b": (), "c": false, "d":"b"}];
+    string value4 = string `a,b, c, d
+                            1, , true, a
+                            2, , false, b`;
+    string value5 = string `a,b, c, d
+                            1, null, true, a
+                            2, null, false, b`;
+    string value6 = string `a,b, c, d
+                            1, N/A, true, a
+                            2, N/A, false, b`;
+    string[][] value7 = [["1", "null", "true", "a"], ["2", "null", "false", "b"]];
+
+    string?[][2]|float[][2]|error csv1op1_2 = csv:parseList(value1);
+    test:assertEquals(csv1op1_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    csv1op1_2 = csv:parseList(value7);
+    test:assertEquals(csv1op1_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    float[][2]|string?[][2]|error csv1op2_2 = csv:parseList(value1);
+    test:assertEquals(csv1op2_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    csv1op2_2 = csv:parseList(value7);
+    test:assertEquals(csv1op2_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    (string|float?)[][2]|error csv1op1_4 = csv:parseList(value1);
+    test:assertEquals(csv1op1_4, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    csv1op1_4 = csv:parseList(value7);
+    test:assertEquals(csv1op1_4, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    (float|string?)[][2]|error csv1op2_4 = csv:parseList(value1);
+    test:assertEquals(csv1op2_4, [
+        [1f, ()],
+        [2f, ()]
+    ]);
+
+    csv1op2_4 = csv:parseList(value7);
+    test:assertEquals(csv1op2_4, [
+        [1f, ()],
+        [2f, ()]
+    ]);
+
+    int?[][2]|float[][2]|error recCsv1op1_2 = csv:transform(value3);
+    test:assertEquals(recCsv1op1_2, [
+        [1, ()],
+        [2, ()]
+    ]);
+
+    float?[][2]|int?[][2]|error recCsv1op2_2 = csv:transform(value3);
+    test:assertEquals(recCsv1op2_2, [
+        [1f, ()],
+        [2f, ()]
+    ]);
+
+    (float|string?)[][2]|error recCsv1op2_4 = csv:transform(value3);
+    test:assertEquals(recCsv1op2_4, [
+        [1f, ()],
+        [2f, ()]
+    ]);
+
+    string?[][2]|float[][2]|error parseStrCsv1op1_2 = csv:parseString(value2);
+    test:assertEquals(parseStrCsv1op1_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    float[][2]|string?[][2]|error parseStrCsv1op2_2 = csv:parseString(value4, {nilValue: ""});
+    test:assertEquals(parseStrCsv1op2_2, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    (string|float?)[][2]|error parseStrCsv1op1_4 = csv:parseString(value5, {nilValue: "null"});
+    test:assertEquals(parseStrCsv1op1_4, [
+        ["1", ()],
+        ["2", ()]
+    ]);
+
+    (float|string)?[][2]|error parseStrCsv1op2_4 = csv:parseString(value6, {nilValue: "N/A"});
+    test:assertEquals(parseStrCsv1op2_4, [
+        [1f, ()],
+        [2f, ()]
+    ]);
 }

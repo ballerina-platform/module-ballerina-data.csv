@@ -70,7 +70,7 @@ function testIntersectionExpectedTypes() returns error? {
                                                                             1,2
                                                                             a,a`);
     test:assertTrue(a9 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
-    test:assertEquals(a9, [[1, 2], ["a", "a"]]);
+    test:assertEquals(a9, [["1", "2"], ["a", "a"]]);
 
     ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
                                     & readonly|csv:Error a10 = csv:parseString(string `a,b
@@ -115,13 +115,22 @@ function testIntersectionExpectedTypes2() returns error? {
     test:assertEquals(a8, [{a: "a", b: "a"}, {a: "c", b: "c"}]);
 
     (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
-    test:assertTrue(a9 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
-    test:assertEquals(a9, [[1, 2], ["a", "b"]]);
+    test:assertTrue(a9 is error);
+    test:assertEquals((<error> a9).message(), "The CSV cannot be converted into any of the uniform union types in '((int[] & readonly)|([string,string] & readonly))[]'");
+
+    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9_2 = csv:transform([{"a": "1", "b": "2"}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
+    test:assertTrue(a9_2 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
+    test:assertEquals(a9_2, [["1", "2"], ["a", "b"]]);
 
     ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
-                                    & readonly|csv:Error a10 = csv:transform([{"a": "a", "b": "a"}, {"a": 1, "b": 2}], {});
+                                    & readonly|csv:Error a10 = csv:transform([{"a": "a", "b": "a"}, {"a": "1", "b": "2"}], {});
     test:assertTrue(a10 is ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[] & readonly);
-    test:assertEquals(a10, [{a: "a", b: "a"}, {a: 1, b: 2}]);
+    test:assertEquals(a10, [{a: "a", b: "a"}, {a: "1", b: "2"}]);
+
+    ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
+                                    & readonly|csv:Error a10_2 = csv:transform([{"a": "a", "b": "a"}, {"a": 1, "b": 2}], {});
+    test:assertTrue(a10_2 is error);
+    test:assertEquals((<error> a10_2).message(), "The CSV cannot be converted into any of the uniform union types in '((union_type_tests:record {| string a; string b; anydata...; |} & readonly)|(union_type_tests:record {| int a; int b; anydata...; |} & readonly))[]'");
 }
 
 @test:Config
@@ -160,7 +169,7 @@ function testIntersectionExpectedTypes3() returns error? {
 
     (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:parseList([["1", "2"], ["a", "b"]], {});
     test:assertTrue(a9 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
-    test:assertEquals(a9, [[1, 2], ["a", "b"]]);
+    test:assertEquals(a9, [["1", "2"], ["a", "b"]]);
 
     ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
                                     & readonly|csv:Error a10 = csv:parseList([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
@@ -170,5 +179,5 @@ function testIntersectionExpectedTypes3() returns error? {
     ((record {int a; int b;} & readonly)|(record {string a; string b;} & readonly))[]
                                     & readonly|csv:Error a11 = csv:parseList([["a", "a"], ["1", "2"]], {customHeaders: ["a", "b"]});
     test:assertTrue(a11 is ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[] & readonly);
-    test:assertEquals(a11, [{a: "a", b: "a"}, {a: 1, b: 2}]);
+    test:assertEquals(a11, [{a: "a", b: "a"}, {a: "1", b: "2"}]);
 }
