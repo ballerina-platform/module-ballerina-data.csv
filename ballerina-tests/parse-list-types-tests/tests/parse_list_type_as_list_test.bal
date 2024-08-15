@@ -455,8 +455,9 @@ function testParseListsWithOutputHeaders() {
                 ["a", true, 1]
             ]);
 
-    ct1bt1 = csv:parseList([["a", "b", "c"], ["a", "b", "c"]], {headersRows: 2});
-    test:assertEquals(ct1bt1, []);
+    [string, boolean, int][]|[anydata...][]|csv:Error ct1bt1_union = csv:parseList([["a", "b", "c"], ["a", "b", "c"]], {headersRows: 2});
+    test:assertTrue(ct1bt1_union is csv:Error);
+    test:assertEquals((<error>ct1bt1_union).message(), "Custom headers should be provided");
 
     ct1bt1 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1, customHeaders: ["h1", "h2", "h3"]});
     test:assertEquals(ct1bt1, [
@@ -469,16 +470,13 @@ function testParseListsWithOutputHeaders() {
                 ["a", true, 1]
             ]);
 
-    ct1bt1 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 21});
+    ct1bt1 = csv:parseList([["a", "true", "1"]], {headersRows: 1});
     test:assertEquals(ct1bt1, []);
 
     (boolean|int|string)[][]|csv:Error ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1});
     test:assertEquals(ct1bt1_2, [
                 ["a", true, 1]
             ]);
-
-    ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "b", "c"]], {headersRows: 2});
-    test:assertEquals(ct1bt1_2, []);
 
     ct1bt1_2 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1, customHeaders: ["h1", "h2", "h3"]});
     test:assertEquals(ct1bt1_2, [
@@ -491,22 +489,11 @@ function testParseListsWithOutputHeaders() {
                 ["a", true, 1]
             ]);
 
-    ct1bt1_2 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 21});
-    test:assertEquals(ct1bt1_2, []);
-
     [string, boolean, int][]|csv:Error ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 1, outputWithHeaders: true});
     test:assertEquals(ct1bt1_3, [
                 ["a", true, 1],
                 ["a", true, 1]
             ]);
-
-    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 2, outputWithHeaders: true});
-    test:assertTrue(ct1bt1_3 is csv:Error);
-    test:assertEquals((<error>ct1bt1_3).message(), "Custom headers should be provided");
-
-    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"], ["a", "true", "1"]], {headersRows: 2, outputWithHeaders: true});
-    test:assertTrue(ct1bt1_3 is csv:Error);
-    test:assertEquals((<error>ct1bt1_3).message(), "Custom headers should be provided");
 
     ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 1, customHeaders: ["h1", "h2", "h3"], outputWithHeaders: true});
     test:assertTrue(ct1bt1_3 is csv:Error);
@@ -516,8 +503,9 @@ function testParseListsWithOutputHeaders() {
     test:assertTrue(ct1bt1_3 is csv:Error);
     test:assertEquals((<error>ct1bt1_3).message(), common:generateErrorMessageForInvalidValueForArrayType("h2", "1", "boolean"));
 
-    ct1bt1_3 = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 21, outputWithHeaders: true});
-    test:assertEquals(ct1bt1_3, []);
+    [string, boolean, int|string][]|[anydata...][]|csv:Error ct1bt1_3_with_union = csv:parseList([["a", "true", "1"], ["a", "true", "1"]], {headersRows: 21, outputWithHeaders: true});
+    test:assertTrue(ct1bt1_3_with_union is csv:Error);
+    test:assertEquals((<error>ct1bt1_3_with_union).message(), "Custom headers should be provided");
 
     string[][]|csv:Error ct1bt1_4 = csv:parseList([["a", "b", "c"], ["a", "true", "1"]], {headersRows: 1, outputWithHeaders: true});
     test:assertEquals(ct1bt1_4, [

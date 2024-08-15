@@ -1,5 +1,5 @@
 [plugin]
-id = "constraint-compiler-plugin"
+id = "data.csv-compiler-plugin"
 class = "io.ballerina.lib.data.csvdata.compiler.CsvDataCompilerPlugin"
 
 [[dependency]]

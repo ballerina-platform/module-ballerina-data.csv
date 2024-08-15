@@ -657,7 +657,7 @@ function testCustomHeaderOption() {
 
 @test:Config
 function testCustomHeaderParserOption2() {
-    record {}[]|csv:Error ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeadersAbsent: ["a", "b"]});
+    record {}[]|csv:Error ct1br = csv:parseString(csvStringData1, {header: 1});
     test:assertEquals(ct1br, [
                 {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
                 {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
@@ -666,7 +666,7 @@ function testCustomHeaderParserOption2() {
                 {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
             ]);
 
-    ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeadersAbsent: ["f", "e", "d", "c", "b", "a"]});
+    ct1br = csv:parseString(csvStringData1, {header: 1});
     test:assertEquals(ct1br, [
                 {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
                 {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
@@ -675,7 +675,7 @@ function testCustomHeaderParserOption2() {
                 {a: 5, b: "string5", c: true, d: 3, e: 3, f: ()}
             ]);
 
-    ct1br = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeadersAbsent: ["b", "a"]});
+    ct1br = csv:parseString(csvStringData1, {header: 1});
     test:assertEquals(ct1br, [
                 {a: 1, b: "string1", c: true, d: 2.234, e: 2.234, f: ()},
                 {a: 2, b: "string2", c: false, d: 0, e: 0, f: ()},
@@ -692,7 +692,7 @@ function testCustomHeaderParserOption2() {
     test:assertTrue(ct1br3 is csv:Error);
     test:assertEquals((<error>ct1br3).message(), "Invalid number of headers");
 
-    record {int a; string b; boolean c; decimal d; float e; () f;}[]|csv:Error ct1br4 = csv:parseString(csvStringData1, {header: 1, customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"]});
+    record {int a; string b; boolean c; decimal d; float e; () f;}[]|csv:Error ct1br4 = csv:parseString(csvStringData1, {header: 1});
     test:assertEquals(ct1br4, [
                 {a: 1, b: "string1", c: true, d: <decimal>2.234, e: <float>2.234, f: ()},
                 {a: 2, b: "string2", c: false, d: <decimal>0, e: <float>0, f: ()},
@@ -701,7 +701,7 @@ function testCustomHeaderParserOption2() {
                 {a: 5, b: "string5", c: true, d: <decimal>3, e: <float>3, f: ()}
             ]);
 
-    record {() a; float b; decimal c; boolean d; string e; int f;}[]|csv:Error ct1br5 = csv:parseString(csvStringData4, {header: 1, customHeadersIfHeadersAbsent: ["f", "e", "d", "c", "b", "a"]});
+    record {() a; float b; decimal c; boolean d; string e; int f;}[]|csv:Error ct1br5 = csv:parseString(csvStringData4, {header: 1});
     test:assertTrue(ct1br5 is csv:Error);
 
     ct1br5 = csv:parseString(csvStringData4, {header: false, customHeadersIfHeadersAbsent: ["f", "e", "d", "c", "b", "a"]});
@@ -983,37 +983,37 @@ function testSkipLineParameterWithOutputHeaderConfig() {
                         3,4
                         4,5`;
 
-    record {}[]|csv:Error result = csv:parseString(csv3, {outputWithHeaders: true, skipLines: "2-3"});
+    record {}[]|csv:Error result = csv:parseString(csv3, {skipLines: "2-3"});
     test:assertEquals(result, [{a: 1, b: 2}, {a: 4, b: 5}]);
 
     anydata[][]|csv:Error result2 = csv:parseString(csv3, {outputWithHeaders: true, skipLines: "2-3"});
     test:assertEquals(result2, [["a", "b"], [1, 2], [4, 5]]);
 
-    result = csv:transform(csv1, {outputWithHeaders: true, skipLines: "2-3"});
+    result = csv:transform(csv1, {skipLines: "2-3"});
     test:assertEquals(result, [{a: 1, b: 2}, {a: 4, b: 5}]);
 
     result2 = csv:transform(csv1, {outputWithHeaders: true, skipLines: "2-3"});
     test:assertEquals(result2, [["a", "b"], [1, 2], [4, 5]]);
 
-    result = csv:parseList(csv2, {outputWithHeaders: true, skipLines: "2-3", customHeaders: ["a", "b"]});
+    result = csv:parseList(csv2, {skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result, [{a: 1, b: 2}, {a: 4, b: 5}]);
 
     result2 = csv:parseList(csv2, {outputWithHeaders: true, skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result2, [["a", "b"], [1, 2], [4, 5]]);
 
-    result = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 1, skipLines: "2-3", customHeaders: ["a", "b"]});
+    result = csv:parseList(csv2, {headersRows: 1, skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result, [{a: 2, b: 3}]);
 
     result2 = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 1, skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result2, [["a", "b"], [2, 3]]);
 
-    result = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 2, skipLines: "2-3", customHeaders: ["a", "b"]});
+    result = csv:parseList(csv2, {headersRows: 2, skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result, [{a: 3, b: 4}]);
 
     result2 = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 2, skipLines: "2-3", customHeaders: ["a", "b"]});
     test:assertEquals(result2, [["a", "b"], [3, 4]]);
 
-    result = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 1, skipLines: "2-3"});
+    result = csv:parseList(csv2, {headersRows: 1, skipLines: "2-3"});
     test:assertEquals(result, [{'1: 2, '2: 3}]);
 
     result2 = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 1, skipLines: "2-3"});
@@ -1022,7 +1022,7 @@ function testSkipLineParameterWithOutputHeaderConfig() {
     result2 = csv:parseList(csv2, {outputWithHeaders: false, headersRows: 1, skipLines: "2-3"});
     test:assertEquals(result2, [[2, 3]]);
 
-    result = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 2, customHeaders: ["a", "b"], skipLines: "2-3"});
+    result = csv:parseList(csv2, {headersRows: 2, customHeaders: ["a", "b"], skipLines: "2-3"});
     test:assertEquals(result, [{a: 3, b: 4}]);
 
     result2 = csv:parseList(csv2, {outputWithHeaders: true, headersRows: 2, customHeaders: ["a", "b"], skipLines: "2-3"});

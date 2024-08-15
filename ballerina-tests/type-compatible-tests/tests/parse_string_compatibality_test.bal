@@ -225,7 +225,7 @@ function testParseBytes() returns error? {
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2}]
     );
 
-    rec = csv:parseBytes(csvBytes, {outputWithHeaders: true});
+    rec = csv:parseBytes(csvBytes);
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -282,7 +282,7 @@ function testParseStream() returns error? {
     );
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    rec = csv:parseStream(csvByteStream, {outputWithHeaders: true});
+    rec = csv:parseStream(csvByteStream);
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -348,7 +348,6 @@ function testErrorParseBytes() returns error? {
 
 @test:Config
 function testErrorParseStream() returns error? {
-    byte[] csvBytes = check io:fileReadBytes(errorFilepath);
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(errorFilepath);
 
     record{int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});

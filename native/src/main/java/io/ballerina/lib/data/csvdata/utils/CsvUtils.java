@@ -378,4 +378,10 @@ public class CsvUtils {
             return new Locale(parts[0]); // Only language
         }
     }
+
+    public static void validateConfigs(CsvConfig config) {
+        if (config.headersRows > 1 && config.customHeaders == null) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.NO_CUSTOM_HEADER_PROVIDED);
+        }
+    }
 }

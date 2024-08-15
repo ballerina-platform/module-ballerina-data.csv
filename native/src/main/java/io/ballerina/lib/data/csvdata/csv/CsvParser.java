@@ -88,6 +88,7 @@ public final class CsvParser {
             throws BError {
         StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
         try {
+            CsvUtils.validateConfigs(config);
             Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
