@@ -52,15 +52,6 @@ public class CsvUtils {
         };
     }
 
-    public static boolean isExpectedTypeIsMap(Type expectedType) {
-        expectedType = TypeUtils.getReferredType(expectedType);
-
-        return switch (expectedType.getTag()) {
-            case TypeTags.MAP_TAG, TypeTags.RECORD_TYPE_TAG -> true;
-            default -> false;
-        };
-    }
-
     public static boolean isBasicType(Type type) {
         return switch (type.getTag()) {
             case TypeTags.INT_TAG, TypeTags.STRING_TAG, TypeTags.BOOLEAN_TAG, TypeTags.DECIMAL_TAG, TypeTags.FLOAT_TAG,

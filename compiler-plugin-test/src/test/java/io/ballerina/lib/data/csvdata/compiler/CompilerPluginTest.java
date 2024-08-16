@@ -43,12 +43,12 @@ public class CompilerPluginTest {
             "are supported for fields, and other types are not allowed.";
     static final String UNSUPPORTED_TUPLE_MEMBER_TYPE = "Unsupported type in the tuple member: " +
             "Tuple members can only be basic types, other types are not supported.";
-    static final String IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY = "The option 'outputWithHeaders' will be ignored" +
+    static final String IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY = "The option 'outputWithHeaders' will be not allowed" +
             " since the expected type is a subtype record array.";
-    static final String IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY = "The option 'headersOrder' will be ignored" +
+    static final String IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY = "The option 'headersOrder' will be not allowed" +
             " since the expected type is a subtype record array.";
     static final String IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT = "The option " +
-            "'customHeadersIfHeadersAbsent' will be ignored since the header is present.";
+            "'customHeadersIfHeadersAbsent' will be not allowed since the header is present.";
     static final String CUSTOM_HEADERS_SHOULD_BE_PROVIDED = "customHeaders parameter should be provided since the" +
             " headerRows larger than 1.";
 

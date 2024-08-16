@@ -253,8 +253,8 @@ public final class CsvTraversal {
                             expectedArrayElementType, isIntersection);
                     break;
                 case TypeTags.UNION_TAG:
-                    traverseCsvWithUnionExpectedType(sourceArraySize, csv,
-                            (UnionType) expectedArrayElementType, type, isIntersection);
+                    traverseCsvWithUnionExpectedType(csv,
+                            (UnionType) expectedArrayElementType, type);
                     break;
                 default:
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
@@ -336,16 +336,14 @@ public final class CsvTraversal {
             }
         }
 
-        public void traverseCsvWithUnionExpectedType(long length, BArray csv,
-                                                     UnionType expectedArrayType, Type type, boolean isIntersection) {
+        public void traverseCsvWithUnionExpectedType(BArray csv,
+                                                     UnionType expectedArrayType, Type type) {
 
             for (Type memberType: expectedArrayType.getMemberTypes()) {
                 try {
                     memberType = TypeCreator.createArrayType(TypeUtils.getReferredType(memberType));
-                    if (CsvUtils.isExpectedTypeIsMap(memberType) || CsvUtils.isExpectedTypeIsArray(memberType)) {
-                        traverseCsv(csv, config, memberType);
-                        return;
-                    }
+                    traverseCsv(csv, config, memberType);
+                    return;
                 } catch (Exception ex) {
                     resetForUnionTypes();
                 }

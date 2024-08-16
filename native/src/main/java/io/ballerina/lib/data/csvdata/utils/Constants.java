@@ -9,7 +9,7 @@ import io.ballerina.runtime.api.values.BString;
  * @since 0.1.0
  */
 public final class Constants {
-    public final class ConfigConstants {
+    public static final class ConfigConstants {
         public static final BString DELIMITER = StringUtils.fromString("delimiter");
         public static final BString TEXT_ENCLOSURE = StringUtils.fromString("textEnclosure");
         public static final BString HEADER = StringUtils.fromString("header");
@@ -37,7 +37,7 @@ public final class Constants {
         }
     }
 
-    public final class Values {
+    public static final class Values {
         public static final String NULL = "null";
         public static final String BALLERINA_NULL = "()";
 
@@ -45,7 +45,7 @@ public final class Constants {
         }
     }
 
-    public final class LineTerminator {
+    public static final class LineTerminator {
         public static final char LF = '\n';
         public static final char CR = '\r';
         public static final String CRLF = "\r\n";
@@ -54,7 +54,7 @@ public final class Constants {
         }
     }
 
-    public final class EscapeChar {
+    public static final class EscapeChar {
         public static final char DOUBLE_QUOTES_CHAR = '"';
         public static final char BACKSLASH_CHAR = '\\';
         public static final char SLASH_CHAR = '/';
