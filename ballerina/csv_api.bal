@@ -37,6 +37,7 @@ public isolated function parseString(string csvString, ParseOptions options = {}
 # Converts byte[] to subtype of `record{}[]` or `anydata[][]`.
 # ```ballerina
 # byte[] csvBytes = check io:fileReadBytes("example.csv");
+# 
 # record{int id; string name;}[] csv1 = check csv:parseBytes(csvBytes);
 # [int, string][] csv2 = check csv:parseBytes(csvBytes);
 # record{|int id;|}[] csv3 = check csv:parseBytes(csvBytes);
@@ -54,10 +55,13 @@ public isolated function parseBytes(byte[] csvBytes, ParseOptions options = {}, 
 # ```ballerina
 # stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("example.csv");
 # record{int id; string name;}[] csv1 = check csv:parseStream(csvByteStream);
+# 
 # stream<byte[], io:Error?> csvByteStream2 = check io:fileReadBlocksAsStream("example.csv");
 # [int, string][] csv2 = check csv:parseStream(csvByteStream2);
+# 
 # stream<byte[], io:Error?> csvByteStream3 = check io:fileReadBlocksAsStream("example.csv");
 # record{|int id;|}[] csv3 = check csv:parseStream(csvByteStream3);
+# 
 # stream<byte[], io:Error?> csvByteStream4 = check io:fileReadBlocksAsStream("example.csv");
 # record{int id;}[] csv4 = check csv:parseStream(csvByteStream4, {skipLines: [1]});
 # ```
