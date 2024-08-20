@@ -34,7 +34,7 @@ target
 bin/
 
 # IDEA Files
-.idea2/
+.idea/
 *.iml
 *.ipr
 *.iws
