@@ -35,5 +35,5 @@ public function generateErrorMessageForInvalidHeaders(string value, string 'type
 }
 
 public function generateErrorMessageForInvalidCustomHeader(string header) returns string {
-    return string `Header '${header}' cannot be find in data rows`;
+    return string `Header '${header}' cannot be found in data rows`;
 }

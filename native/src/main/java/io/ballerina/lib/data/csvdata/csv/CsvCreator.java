@@ -87,27 +87,24 @@ public final class CsvCreator {
 
         Type currentCsvNodeType = TypeUtils.getType(currentCsv);
         switch (currentCsvNodeType.getTag()) {
-            case TypeTags.MAP_TAG:
-            case TypeTags.RECORD_TYPE_TAG:
+            case TypeTags.MAP_TAG, TypeTags.RECORD_TYPE_TAG -> {
                 ((BMap<BString, Object>) currentCsv).put(StringUtils.fromString(getHeaderValueForColumnIndex(sm)),
                         convertedValue);
                 sm.currentCsvNodeLength++;
-                return;
-            case TypeTags.ARRAY_TAG:
+            }
+            case TypeTags.ARRAY_TAG -> {
                 ArrayType arrayType = (ArrayType) currentCsvNodeType;
                 if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
                         arrayType.getSize() - 1 < sm.columnIndex) {
                     sm.isColumnMaxSizeReached = true;
-                    return;
                 }
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
                 sm.currentCsvNodeLength++;
-                return;
-            case TypeTags.TUPLE_TAG:
+            }
+            case TypeTags.TUPLE_TAG -> {
                 ((BArray) currentCsv).add(sm.columnIndex, convertedValue);
                 sm.currentCsvNodeLength++;
-                return;
-            default:
+            }
         }
     }
 

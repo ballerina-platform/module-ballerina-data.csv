@@ -38,7 +38,7 @@ public function main() returns error? {
 
 ### Converting external CSV document to a record value
 
-For transforming CSV content from an external source into a record value, the `parseString`, `parseBytes` and `parseStream` functions can be used. This external source can be in the form of a string or a byte array/byte-block-stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
+For transforming CSV content from an external source into a record value, the `parseString`, `parseBytes` and `parseStream` functions can be used. This external source can be in the form of a string or a byte array/byte block stream that houses the CSV data. This is commonly extracted from files or network sockets. The example below demonstrates the conversion of an CSV value from an external source into a record value.
 
 ```ballerina
 import ballerina/data.csv;
@@ -111,7 +111,7 @@ type Book record {|
 |};
 
 public function main() returns error? {
-    record{}[] csvContent = [{
+    record {}[] csvContent = [{
         "name": "Clean Code",
         "author": "Robert C. Martin",
         "year": 2008,

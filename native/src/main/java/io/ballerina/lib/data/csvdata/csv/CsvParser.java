@@ -150,6 +150,8 @@ public final class CsvParser {
         boolean isColumnMaxSizeReached = false;
         boolean isRowMaxSizeReached = false;
 
+        boolean isCarriageTokenPresent = false;
+
         StateMachine() {
             reset();
         }
@@ -187,11 +189,12 @@ public final class CsvParser {
             currentCsvNodeLength = 0;
             isColumnMaxSizeReached = false;
             isRowMaxSizeReached = false;
+            isCarriageTokenPresent = false;
         }
 
-        private static boolean isWhitespace(char ch, Object lineTerminator) {
+        private boolean isWhitespace(char ch, Object lineTerminator) {
             return ch == SPACE || ch == HZ_TAB || ch == CR
-                    || CsvUtils.isCharContainsInLineTerminatorUserConfig(ch, lineTerminator);
+                    || CsvUtils.isCharContainsInLineTerminatorUserConfig(ch, lineTerminator, isCarriageTokenPresent);
         }
 
         private static void throwExpected(String... chars) throws CsvParserException {
@@ -344,7 +347,8 @@ public final class CsvParser {
         }
 
         private boolean isNewLineOrEof(char ch) {
-            return ch == EOF || CsvUtils.isCharContainsInLineTerminatorUserConfig(ch, config.lineTerminator);
+            return ch == EOF || CsvUtils.isCharContainsInLineTerminatorUserConfig(ch,
+                    config.lineTerminator, isCarriageTokenPresent);
         }
 
         private void growCharBuff() {
@@ -380,10 +384,10 @@ public final class CsvParser {
                         return HEADER_END_STATE;
                     }
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
+                        sm.isCarriageTokenPresent = true;
                         continue;
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = true;
                     }
 
                     if (sm.lineNumber < headerStartRowNumber) {
@@ -418,7 +422,7 @@ public final class CsvParser {
                     } else if (!sm.insideComment && isEndOfTheHeaderRow(sm, ch)) {
                         handleEndOfTheHeader(sm);
                         state = HEADER_END_STATE;
-                    } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
+                    } else if (sm.isWhitespace(ch, sm.config.lineTerminator)) {
                         if (sm.isValueStart) {
                             sm.append(ch);
                         }
@@ -555,10 +559,10 @@ public final class CsvParser {
                         continue;
                     }
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
+                        sm.isCarriageTokenPresent = true;
                         continue;
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = false;
                     }
 
                     if (sm.skipTheRow) {
@@ -612,7 +616,7 @@ public final class CsvParser {
                             state = ROW_END_STATE;
                             break;
                         }
-                    } else if (StateMachine.isWhitespace(ch, sm.config.lineTerminator)) {
+                    } else if (sm.isWhitespace(ch, sm.config.lineTerminator)) {
                         if (sm.isValueStart) {
                             sm.append(ch);
                         }
@@ -865,10 +869,10 @@ public final class CsvParser {
                         return ROW_END_STATE;
                     }
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
+                        sm.isCarriageTokenPresent = true;
                         continue;
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = false;
                     }
 
                     if (ch == sm.config.textEnclosure) {
@@ -931,10 +935,10 @@ public final class CsvParser {
                         return ROW_END_STATE;
                     }
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
+                        sm.isCarriageTokenPresent = true;
                         continue;
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = false;
                     }
 
                     if (ch == sm.config.textEnclosure) {
@@ -1016,10 +1020,10 @@ public final class CsvParser {
                         return ROW_END_STATE;
                     }
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
+                        sm.isCarriageTokenPresent = true;
                         continue;
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = false;
                     }
 
                     if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f')) {
@@ -1096,9 +1100,9 @@ public final class CsvParser {
                     ch = buff[i];
                     sm.processLocation(ch);
                     if (ch == Constants.LineTerminator.CR) {
-                        CsvUtils.setCarriageTokenPresent(true);
-                    } else if (!(CsvUtils.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        CsvUtils.setCarriageTokenPresent(false);
+                        sm.isCarriageTokenPresent = true;
+                    } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
+                        sm.isCarriageTokenPresent = false;
                     }
                     if (ch == EOF) {
                         handleEndOfTheRow(sm);

@@ -199,11 +199,9 @@ public final class CsvTraversal {
             if (referredType.getTag() == TypeTags.ARRAY_TAG) {
                 Type arrayElementType = TypeUtils.getReferredType(((ArrayType) referredType).getElementType());
                 if (arrayElementType.getTag() == TypeTags.INTERSECTION_TAG) {
-                    Optional<Type> mutableType = CsvUtils.getMutableType((IntersectionType) arrayElementType);
-                    if (mutableType.isPresent()) {
-                        return Optional.of(CsvCreator.constructReadOnlyValue(traverseCsv(csv,
-                                config, TypeCreator.createArrayType(mutableType.get()))));
-                    }
+                    return CsvUtils.getMutableType((IntersectionType) arrayElementType)
+                            .map(mutableType -> CsvCreator.constructReadOnlyValue(
+                                    traverseCsv(csv, config, TypeCreator.createArrayType(mutableType))));
                 }
             }
             return Optional.empty();
@@ -273,11 +271,11 @@ public final class CsvTraversal {
                 }
                 Object o = csv.get(i);
 
-                if (i < config.headersRows && i != config.headersRows - 1) {
+                if (i < config.headerRows && i != config.headerRows - 1) {
                     continue;
                 }
 
-                if (i >= config.headersRows && ignoreRow(rowNumber + 1, config.skipLines)) {
+                if (i >= config.headerRows && ignoreRow(rowNumber + 1, config.skipLines)) {
                     rowNumber++;
                     continue;
                 }
@@ -291,7 +289,7 @@ public final class CsvTraversal {
                     rootCsvNode.add(this.arraySize, rowValue);
                     this.arraySize++;
                 }
-                if (i >= config.headersRows) {
+                if (i >= config.headerRows) {
                     rowNumber++;
                 }
             }
@@ -311,11 +309,11 @@ public final class CsvTraversal {
 
                 Object o = csv.get(i);
                 if (!addHeadersForOutput && config.outputWithHeaders
-                        && (o instanceof BMap || (config.customHeaders != null || i == config.headersRows - 1))) {
+                        && (o instanceof BMap || (config.customHeaders != null || i == config.headerRows - 1))) {
                     // Headers will add to the list only in the first iteration
                     insertHeaderValuesForTheCsvIfApplicable(o, expectedArrayType);
                 }
-                if (i < config.headersRows) {
+                if (i < config.headerRows) {
                     continue;
                 }
 
@@ -348,7 +346,7 @@ public final class CsvTraversal {
                     resetForUnionTypes();
                 }
             }
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_UNION_CONVERSION, type);
+            throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
         }
 
         private static boolean ignoreRow(int index, Object skipLinesConfig) {
@@ -417,7 +415,7 @@ public final class CsvTraversal {
 
         private void constructCsvArrayFromMapping(BMap<BString, Object> map, Type type, int expectedSize) {
             int index = 0;
-            BString[] keys = generateCsvHeadersForMappingRow(map, config.headersOrder, map.size());
+            BString[] keys = generateCsvHeadersForMappingRow(map, config.headerOrder, map.size());
             for (BString key: keys) {
                 if (!map.containsKey(key)) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED, key);
@@ -473,8 +471,8 @@ public final class CsvTraversal {
             String[] headers = new String[csvElement.size()];
             if (this.headers == null) {
                 this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
-                if (!this.isFirstRowInserted && config.headersRows >= 1) {
-                    // To skip the row at the position [config.headersRows - 1] from being aded to the result.
+                if (!this.isFirstRowInserted && config.headerRows >= 1) {
+                    // To skip the row at the position [config.headerRows - 1] from being aded to the result.
                     this.isFirstRowIsHeader = true;
                     this.isFirstRowInserted = true;
                     return;
@@ -485,7 +483,7 @@ public final class CsvTraversal {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONVERSION_FOR_ARRAY_TO_MAP,
                         csvElement, expectedType);
             }
-            constructCsvMappingRow(csvElement, arraySize, mappingType, expectedType);
+            insertCsvMappingRow(csvElement, arraySize, mappingType, expectedType);
         }
 
         private void constructCsvMapFromMapping(
@@ -517,7 +515,7 @@ public final class CsvTraversal {
                 if (this.headers == null && obj instanceof BMap<?, ?>) {
                     BMap<BString, Object> map = (BMap<BString, Object>) obj;
                     int size = map.size();
-                    BString[] headerArray = generateCsvHeadersForMappingRow(map, config.headersOrder, size);
+                    BString[] headerArray = generateCsvHeadersForMappingRow(map, config.headerOrder, size);
                     this.headers = new String[size];
                     for (int i = 0; i < headerArray.length; i++) {
                         this.headers[i] = StringUtils.getStringValue(headerArray[i]);
@@ -550,10 +548,10 @@ public final class CsvTraversal {
             }
         }
 
-        private BString[] generateCsvHeadersForMappingRow(BMap<BString, Object> map, Object headersOrder, int size) {
+        private BString[] generateCsvHeadersForMappingRow(BMap<BString, Object> map, Object headerOrder, int size) {
             BString[] keys = new BString[size];
-            if (headersOrder != null) {
-                String[] order = ((BArray) headersOrder).getStringArray();
+            if (headerOrder != null) {
+                String[] order = ((BArray) headerOrder).getStringArray();
                 if (order.length != size) {
                     throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_HEADER_NAMES_LENGTH);
                 }
@@ -670,7 +668,7 @@ public final class CsvTraversal {
             return false;
         }
 
-        private void constructCsvMappingRow(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
+        private void insertCsvMappingRow(BArray csvElement, int arraySize, boolean mappingType, Type expectedType) {
             Type fieldType;
             BString key;
             if (arraySize != this.headers.length) {

@@ -34,7 +34,7 @@ public final class Constants {
     static final String BALLERINA = "ballerina";
     static final String DATA_CSVDATA = "data.csv";
     static final String FALSE = "false";
-    static final String BAL_NULL = "()";
+    static final String NIL = "()";
     static final String NULL = "null";
 
     static class UserConfigurations {
@@ -42,10 +42,10 @@ public final class Constants {
         }
 
         static final String OUTPUT_WITH_HEADERS = "outputWithHeaders";
-        static final String HEADERS_ORDER = "headersOrder";
+        static final String HEADERS_ORDER = "headerOrder";
         static final String HEADER = "header";
         static final String CUSTOM_HEADERS = "customHeaders";
-        static final String HEADERS_ROWS = "headersRows";
+        static final String HEADERS_ROWS = "headerRows";
         static final String CUSTOM_HEADERS_IF_ABSENT = "customHeadersIfHeadersAbsent";
     }
 

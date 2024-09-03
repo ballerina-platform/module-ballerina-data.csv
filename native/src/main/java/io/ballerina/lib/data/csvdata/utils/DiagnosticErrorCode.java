@@ -55,8 +55,7 @@ public enum DiagnosticErrorCode {
     HEADERS_WITH_VARYING_LENGTH_NOT_SUPPORTED("BDE_0027",
             "headers.with.varying.length.not.supported"),
     HEADER_VALUE_CANNOT_BE_EMPTY("BDE_0028", "header.value.cannot.be.empty"),
-    DUPLICATE_HEADER("BDE_0029", "duplicate.header"),
-    INVALID_UNION_CONVERSION("BDE_0029", "invalid.union.conversion");
+    DUPLICATE_HEADER("BDE_0029", "duplicate.header");
 
     String diagnosticId;
     String messageKey;

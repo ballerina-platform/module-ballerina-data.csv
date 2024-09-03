@@ -49,12 +49,12 @@ function testCustomNameAnnotation() returns error? {
     RecordWithCustomAnnotation2[]|csv:Error cn7 = csv:parseString(string `a,b
                                           3,1`, {});
     test:assertTrue(cn7 is csv:Error);
-    test:assertEquals((<error>cn7).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn7).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation2[]|csv:Error cn8 = csv:parseString(string ` c,d,a,b
                                           3,1,4,5`, {});
     test:assertTrue(cn8 is csv:Error);
-    test:assertEquals((<error>cn8).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn8).message(), "duplicate field found in record fields: 'a'");
     
     RecordWithCustomAnnotation3[]|csv:Error cn9 = csv:parseString(string `d,c
                                                            1,3`, {});
@@ -72,12 +72,12 @@ function testCustomNameAnnotation() returns error? {
     RecordWithCustomAnnotation3[]|csv:Error cn12 = csv:parseString(string `a,b
                                           3,1`, {});
     test:assertTrue(cn12 is csv:Error);
-    test:assertEquals((<error>cn12).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn12).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation3[]|csv:Error cn13 = csv:parseString(string ` c,d,a,b
                                           3,1,4,5`, {});
     test:assertTrue(cn13 is csv:Error);
-    test:assertEquals((<error>cn13).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn13).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation4[]|csv:Error cn14 = csv:parseString(string `d,c,z
                                                            1,3,true`, {});
@@ -95,17 +95,17 @@ function testCustomNameAnnotation() returns error? {
     RecordWithCustomAnnotation4[]|csv:Error cn17 = csv:parseString(string `a,b
                                           3,1`, {});
     test:assertTrue(cn17 is csv:Error);
-    test:assertEquals((<error>cn17).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn17).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation4[]|csv:Error cn18 = csv:parseString(string ` c,d,a,b
                                           3,1,4,5`, {});
     test:assertTrue(cn18 is csv:Error);
-    test:assertEquals((<error>cn18).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn18).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation5[]|csv:Error cn19 = csv:parseString(string ` c,d,a,b
                                           3,1,4,5`, {});
     test:assertTrue(cn19 is csv:Error);
-    test:assertEquals((<error>cn19).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cn19).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation5[]|csv:Error cn20 = csv:parseString(string ` c,d,e
                                           3,1,4
@@ -139,11 +139,11 @@ function testCustomNameAnnotation() returns error? {
 
     RecordWithCustomAnnotation2[]|csv:Error cnrr7 = csv:transform([{"a":3, "b": 1}], {});
     test:assertTrue(cnrr7 is csv:Error);
-    test:assertEquals((<error>cnrr7).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cnrr7).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation2[]|csv:Error cnrr8 = csv:transform([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
     test:assertTrue(cnrr8 is csv:Error);
-    test:assertEquals((<error>cnrr8).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cnrr8).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation3[]|csv:Error cnrr9 = csv:transform([{"d": 1, "c": 3}], {});
     test:assertEquals(cnrr9, [{b: 1, a: 3}]);
@@ -157,11 +157,11 @@ function testCustomNameAnnotation() returns error? {
 
     RecordWithCustomAnnotation3[]|csv:Error cnrr12 = csv:transform([{"a": 3, "b": 1}], {});
     test:assertTrue(cnrr12 is csv:Error);
-    test:assertEquals((<error>cnrr12).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cnrr12).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation3[]|csv:Error cnrr13 = csv:transform([{"c": 3, "d": 1, "a": 4, "b": 5}], {});
     test:assertTrue(cnrr13 is csv:Error);
-    test:assertEquals((<error>cnrr13).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cnrr13).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation4[]|csv:Error cnrr14 = csv:transform([{"d": 1, "c": 3, "z": true}], {});
     test:assertEquals(cnrr14, [{b: 1, a: 3, z: true}]);
@@ -206,11 +206,11 @@ function testCustomNameAnnotation2() returns error? {
 
     RecordWithCustomAnnotation2[]|csv:Error cntr7 = csv:parseList([["3", "1"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cntr7 is csv:Error);
-    test:assertEquals((<error>cntr7).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr7).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation2[]|csv:Error cntr8 = csv:parseList([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr8 is csv:Error);
-    test:assertEquals((<error>cntr8).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr8).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation3[]|csv:Error cntr9 = csv:parseList([["1", "3"]], {customHeaders: ["d", "c"]});
     test:assertEquals(cntr9, [{b: 1, a: 3}]);
@@ -228,7 +228,7 @@ function testCustomNameAnnotation2() returns error? {
 
     RecordWithCustomAnnotation3[]|csv:Error cntr13 = csv:parseList([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr13 is csv:Error);
-    test:assertEquals((<error>cntr13).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr13).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation4[]|csv:Error cntr14 = csv:parseList([["1", "3", "true"]], {customHeaders: ["d", "c", "z"]});
     test:assertEquals(cntr14, [{b: 1, a: 3, z: true}]);
@@ -242,15 +242,15 @@ function testCustomNameAnnotation2() returns error? {
 
     RecordWithCustomAnnotation4[]|csv:Error cntr17 = csv:parseList([["3", "1"]], {customHeaders: ["a", "b"]});
     test:assertTrue(cntr17 is csv:Error);
-    test:assertEquals((<error>cntr17).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr17).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation4[]|csv:Error cntr18 = csv:parseList([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr18 is csv:Error);
-    test:assertEquals((<error>cntr18).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr18).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation5[]|csv:Error cntr19 = csv:parseList([["3", "1", "4", "5"]], {customHeaders: ["c", "d", "a", "b"]});
     test:assertTrue(cntr19 is csv:Error);
-    test:assertEquals((<error>cntr19).message(), "Duplicate field found in record fields: 'a'");
+    test:assertEquals((<error>cntr19).message(), "duplicate field found in record fields: 'a'");
 
     RecordWithCustomAnnotation5[]|csv:Error cntr20 = csv:parseList(
                                                 [["3", "1", "4"], ["3", "1", "4"]], {customHeaders: ["c", "d", "e"]});
@@ -485,45 +485,45 @@ function testDataProjectionConfig() returns error? {
     string csvValue1 = string `a,b
                              "a",2
                              b,4`;
-    record{}[] csvValue2 = [{"a": "a", "b": 2}, {"a": "b", "b": 4}];
+    record {}[] csvValue2 = [{"a": "a", "b": 2}, {"a": "b", "b": 4}];
 
-    record{}[]|csv:Error cn = csv:parseString(csvValue1, {
+    record {}[]|csv:Error cn = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertEquals(cn, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string a; int b;|}[]|csv:Error cn_2 = csv:parseString(csvValue1, {
+    record {|string a; int b;|}[]|csv:Error cn_2 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertEquals(cn_2, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string a;|}[]|csv:Error cn2 = csv:parseString(csvValue1, {
+    record {|string a;|}[]|csv:Error cn2 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertTrue(cn2 is csv:Error);
-    test:assertEquals((<error>cn2).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn2).message(), "no mapping field in the expected type for header 'b'");
 
-    record{|string a; int...;|}[]|csv:Error cn3 = csv:parseString(csvValue1, {
+    record {|string a; int...;|}[]|csv:Error cn3 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertEquals(cn3, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string...;|}[]|csv:Error cn4 = csv:parseString(csvValue1, {
+    record {|string...;|}[]|csv:Error cn4 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertEquals(cn4, [{"a": "a", "b": "2"}, {"a": "b", "b": "4"}]);
 
-    record{|string a?;|}[]|csv:Error cn5 = csv:parseString(csvValue1, {
+    record {|string a?;|}[]|csv:Error cn5 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertTrue(cn5 is csv:Error);
-    test:assertEquals((<error>cn5).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn5).message(), "no mapping field in the expected type for header 'b'");
 
-    record{|string? a;|}[]|csv:Error cn6 = csv:parseString(csvValue1, {
+    record {|string? a;|}[]|csv:Error cn6 = csv:parseString(csvValue1, {
         allowDataProjection: false
     });
     test:assertTrue(cn6 is csv:Error);
-    test:assertEquals((<error>cn6).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn6).message(), "no mapping field in the expected type for header 'b'");
 
     anydata[][]|csv:Error c7 = csv:parseString(csvValue1, {
         allowDataProjection: false
@@ -579,95 +579,95 @@ function testDataProjectionConfig() returns error? {
     test:assertTrue(cn13 is csv:Error);
     test:assertEquals((<error>cn13).message(), "invalid array size for expected array type, cannot be greater than '1'");
 
-    record{}[]|csv:Error cn14 = csv:transform(csvValue2, {
+    record {}[]|csv:Error cn14 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertEquals(cn14, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string a; int b;|}[]|csv:Error cn14_2 = csv:transform(csvValue2, {
+    record {|string a; int b;|}[]|csv:Error cn14_2 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertEquals(cn14_2, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string a;|}[]|csv:Error cn15 = csv:transform(csvValue2, {
+    record {|string a;|}[]|csv:Error cn15 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertTrue(cn15 is csv:Error);
-    test:assertEquals((<error>cn15).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn15).message(), "no mapping field in the expected type for header 'b'");
 
-    record{|string a; int...;|}[]|csv:Error cn16 = csv:transform(csvValue2, {
+    record {|string a; int...;|}[]|csv:Error cn16 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertEquals(cn16, [{"a": "a", "b": 2}, {"a": "b", "b": 4}]);
 
-    record{|string...;|}[]|csv:Error cn17 = csv:transform(csvValue2, {
+    record {|string...;|}[]|csv:Error cn17 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertEquals(cn17, [{"a": "a"}, {"a": "b"}]);
 
-    record{|string a?;|}[]|csv:Error cn18 = csv:transform(csvValue2, {
+    record {|string a?;|}[]|csv:Error cn18 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertTrue(cn18 is csv:Error);
-    test:assertEquals((<error>cn18).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn18).message(), "no mapping field in the expected type for header 'b'");
 
-    record{|string? a;|}[]|csv:Error cn19 = csv:transform(csvValue2, {
+    record {|string? a;|}[]|csv:Error cn19 = csv:transform(csvValue2, {
         allowDataProjection: false
     });
     test:assertTrue(cn19 is csv:Error);
-    test:assertEquals((<error>cn19).message(), "No mapping field in the expected type for header 'b'");
+    test:assertEquals((<error>cn19).message(), "no mapping field in the expected type for header 'b'");
 
-    anydata[][]|csv:Error c20 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    anydata[][]|csv:Error c20 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(c20, [["a", 2], ["b", 4]]);
 
-    [string, int][]|csv:Error cn20_2 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string, int][]|csv:Error cn20_2 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(cn20_2, [["a", 2], ["b", 4]]);
 
-    [string][]|csv:Error cn21 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string][]|csv:Error cn21 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn21 is csv:Error);
     test:assertEquals((<error>cn21).message(), "invalid array size for expected tuple type, cannot be greater than '1'");
 
-    [string][]|csv:Error cn21_2 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string][]|csv:Error cn21_2 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: {}
     });
     test:assertEquals(cn21_2, [["a"], ["b"]]);
 
-    [int][]|csv:Error cn21_3 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [int][]|csv:Error cn21_3 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: {}
     });
     test:assertTrue(cn21_3 is csv:Error);
     test:assertEquals((<error>cn21_3).message(), common:generateErrorMessageForInvalidValueForArrayType("a", "0", "int"));
 
-    [string, int...][]|csv:Error cn22 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string, int...][]|csv:Error cn22 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertEquals(cn22, [["a", 2], ["b", 4]]);
 
-    [string...][]|csv:Error cn23 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string...][]|csv:Error cn23 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false 
     });
     test:assertTrue(cn23 is csv:Error);
     test:assertEquals((<error> cn23).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
 
-    [string, ()][]|csv:Error cn24 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    [string, ()][]|csv:Error cn24 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn24 is csv:Error);
     test:assertEquals((<error>cn24).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "()"));
 
-    string[][]|csv:Error cn25 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    string[][]|csv:Error cn25 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn25 is csv:Error);
     test:assertEquals((<error> cn25).message(), common:generateErrorMessageForInvalidValueForArrayType("2", "1", "string"));
 
-    string[][1]|csv:Error cn26 = csv:transform(csvValue2, {headersOrder: ["a", "b"],
+    string[][1]|csv:Error cn26 = csv:transform(csvValue2, {headerOrder: ["a", "b"],
         allowDataProjection: false
     });
     test:assertTrue(cn26 is csv:Error);

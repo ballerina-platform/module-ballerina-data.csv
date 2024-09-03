@@ -208,7 +208,7 @@ function testSpaceBetweendData() {
     string csv = string `a b, b  d  e, f
                          "Hello world", "  Hi I am ", \"  Hi I am \"`;
 
-    record{|string...;|}[]|csv:Error rec = csv:parseString(csv);
+    record {|string...;|}[]|csv:Error rec = csv:parseString(csv);
     test:assertEquals(rec, [
         {"a b":"Hello world","b  d  e":"  Hi I am ","f":"\"Hi I am \""}]);
 }
@@ -218,7 +218,7 @@ function testParseBytes() returns error? {
     byte[] csvBytes = check io:fileReadBytes(filepath);
     byte[] csvBytes2 = check io:fileReadBytes(filepath2);
 
-    record{}[]|csv:Error rec = csv:parseBytes(csvBytes, {});
+    record {}[]|csv:Error rec = csv:parseBytes(csvBytes, {});
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -264,7 +264,7 @@ function testParseBytes() returns error? {
     test:assertTrue(rec3 is csv:Error);
     test:assertEquals((<error> rec3).message(), common:generateErrorMessageForInvalidCast("Hello World", "int"));
 
-    record{int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
+    record {int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertEquals((<error> rec4).message(), common:generateErrorMessageForInvalidCast("Hello World", "int"));
 }
@@ -274,7 +274,7 @@ function testParseStream() returns error? {
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(filepath);
     stream<byte[], io:Error?> csvByteStream2 = check io:fileReadBlocksAsStream(filepath2);
 
-    record{}[]|csv:Error rec = csv:parseStream(csvByteStream, {});
+    record {}[]|csv:Error rec = csv:parseStream(csvByteStream, {});
     test:assertEquals(rec, [
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
         {"a":"Hello World","b":"\"Hello World\"","c d":"Hello World","e":2},
@@ -321,7 +321,7 @@ function testParseStream() returns error? {
     ]);
 
     csvByteStream = check io:fileReadBlocksAsStream(filepath);
-    record{int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
+    record {int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertEquals((<error> rec3).message(), "Error occurred while reading the stream: " 
                     + common:generateErrorMessageForInvalidCast("Hello World", "int"));
@@ -341,7 +341,7 @@ function testErrorParseBytes() returns error? {
     test:assertTrue(rec3 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 
-    record{int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
+    record {int a;}[]|csv:Error rec4 = csv:parseBytes(csvBytes, {});
     test:assertTrue(rec4 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 }
@@ -350,7 +350,7 @@ function testErrorParseBytes() returns error? {
 function testErrorParseStream() returns error? {
     stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream(errorFilepath);
 
-    record{int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
+    record {int a;}[]|csv:Error rec3 = csv:parseStream(csvByteStream, {});
     test:assertTrue(rec3 is csv:Error);
     test:assertTrue((<error> rec3).message().includes("cannot be cast into"));
 

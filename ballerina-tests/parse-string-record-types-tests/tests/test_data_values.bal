@@ -14,22 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-boolean b1 = true;
-false b2 = false;
-boolean? b3 = ();
-boolean|int b4 = false;
+final boolean b1 = true;
+final false b2 = false;
+final boolean? b3 = ();
+final boolean|int b4 = false;
 
-string csvStringWithBooleanValues1 = string `b1,b2,b3,b4
+final string csvStringWithBooleanValues1 = string `b1,b2,b3,b4
 true,false,true,false 
 true,false, true,false
 true,false,true,false
 `;
 
-string csvStringWithBooleanValues2 = string `b1,b2,b3,b4,b5
+final string csvStringWithBooleanValues2 = string `b1,b2,b3,b4,b5
 true,false, true,false,true
 true,false, true,false,true`;
 
-string csvStringWithBooleanValues3 = string `b1,b2,b3
+final string csvStringWithBooleanValues3 = string `b1,b2,b3
 ${" "}${"\t"}
 true, false,true
 ${" "}
@@ -40,24 +40,24 @@ true, true,FALSE
  
 `;
 
-string csvStringWithBooleanValues4 = string `b1,b2,b3,b4
+final string csvStringWithBooleanValues4 = string `b1,b2,b3,b4
     true,(), (),false
  true,(), null,false
 
 `;
 
-string csvStringWithBooleanValues5 = string `b1,b2,b3,b4
+final string csvStringWithBooleanValues5 = string `b1,b2,b3,b4
 
 true,false,true,2
 
 true,false,true,3
 `;
 
-string csvStringWithBooleanValues6 = string `b2,b3
+final string csvStringWithBooleanValues6 = string `b2,b3
 (),()
 
 `;
 
-string csvStringWithBooleanValues7 = string `b1,b2,b3,b4
+final string csvStringWithBooleanValues7 = string `b1,b2,b3,b4
 ${b1},${b2},(),${b4}
 `;

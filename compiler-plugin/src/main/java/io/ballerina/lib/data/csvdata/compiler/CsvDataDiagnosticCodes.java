@@ -36,7 +36,7 @@ public enum CsvDataDiagnosticCodes {
                                           "be basic types, other types are not supported.", ERROR),
     IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY("CSV_ERROR_5", "The option 'outputWithHeaders' will " +
             "be not allowed since the expected type is a subtype record array.", ERROR),
-    IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY("CSV_ERROR_5", "The option 'headersOrder' will " +
+    IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY("CSV_ERROR_5", "The option 'headerOrder' will " +
             "be not allowed since the expected type is a subtype record array.", ERROR),
     IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT("CSV_ERROR_6",
             "The option 'customHeadersIfHeadersAbsent' will be not " +

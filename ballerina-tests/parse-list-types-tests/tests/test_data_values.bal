@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-string s1 = "string";
-string s2 = "";
-string:Char s3 = "a";
+final string s1 = "string";
+final string s2 = "";
+final string:Char s3 = "a";
 
-[string, string] st1 = [s1, s2];
-[string, string, string, string] st2 = [s1, s2, s3, s2];
-[string...] st3 = [s1, s2];
-[string, string, string...] st4 = [s1, s2, s3, s2];                                     
+final [string, string] st1 = [s1, s2];
+final [string, string, string, string] st2 = [s1, s2, s3, s2];
+final [string...] st3 = [s1, s2];
+final [string, string, string...] st4 = [s1, s2, s3, s2];                                     

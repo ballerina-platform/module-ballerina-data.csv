@@ -257,11 +257,11 @@ public final class FromString {
     }
 
     private static Object stringToBoolean(String value) throws NumberFormatException {
-        if ("true".equalsIgnoreCase(value) || "TRUE".equalsIgnoreCase(value)) {
+        if ("true".equals(value) || "TRUE".equals(value)) {
             return true;
         }
 
-        if ("false".equalsIgnoreCase(value)  || "FALSE".equalsIgnoreCase(value)) {
+        if ("false".equals(value)  || "FALSE".equals(value)) {
             return false;
         }
         return returnError(value, "boolean");

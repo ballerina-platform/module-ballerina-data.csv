@@ -26,11 +26,11 @@ public final class DataUtils {
     }
 
     private static String getPrintableErrorMsg(BError err) {
-        String errorMsg = err.getMessage() != null ? err.getMessage() : "";
+        StringBuilder errorBuilder = new StringBuilder(err.getMessage() != null ? err.getMessage() : "");
         Object details = err.getDetails();
         if (details != null && !details.toString().equals("{}")) {
-            errorMsg += !errorMsg.isBlank() ? ", " : "" + details;
+            errorBuilder.append(!errorBuilder.isEmpty() ? ", " : "" + details);
         }
-        return errorMsg;
+        return errorBuilder.toString();
     }
 }
