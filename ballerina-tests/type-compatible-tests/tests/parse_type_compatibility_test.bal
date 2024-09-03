@@ -286,7 +286,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
                 {"a": 1, "b": "string", "c": true},
                 {"a": 2, "b": "string2", "c": false},
                 {"a": 3, "b": "string3", "c": true}
-            ], {headersOrder: ["a", "b", "c"]});
+            ], {headerOrder: ["a", "b", "c"]});
 
     test:assertEquals(rt6a, [
                 [1, "string", true],
@@ -296,7 +296,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
 
     [A, B, C][]|csv:Error rt7a = csv:transform(
             [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]
-            , {headersOrder: ["a", "b", "c"]});
+            , {headerOrder: ["a", "b", "c"]});
 
     test:assertEquals(rt7a, [
                 [1d, "string", true],
@@ -306,7 +306,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
 
     [A2, B2, C2][]|csv:Error rt8a = csv:transform(
             [{"a": 1, "b": "string", "c": true}, {"a": 2, "b": "string2", "c": false}, {"a": 3, "b": "string3", "c": true}]
-            , {headersOrder: ["a", "b", "c"]});
+            , {headerOrder: ["a", "b", "c"]});
 
     test:assertEquals(rt8a, [
                 [<int>1, "string", true],
@@ -316,7 +316,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
 
     [A2, B2, C2...][]|csv:Error rt9a = csv:transform(
             [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]
-            , {headersOrder: ["a", "b", "c", "d"]});
+            , {headerOrder: ["a", "b", "c", "d"]});
 
     test:assertEquals(rt9a, [
                 [<int>1, "string", true, "string"],
@@ -326,7 +326,7 @@ function testFromCsvWithIntersectionTypeCompatibility2() {
 
     [C2...][]|csv:Error rt10a = csv:transform(
             [{"a": 1, "b": "string", "c": true, "d": "string"}, {"a": 2, "b": "string2", "c": false, "d": "string2"}, {"a": 3, "b": "string3", "c": true, "d": "string3"}]
-            , {headersOrder: ["a", "b", "c", "d"]});
+            , {headerOrder: ["a", "b", "c", "d"]});
 
     test:assertTrue(rt10a is csv:Error);
     test:assertEquals((<csv:Error>rt10a).message(), common:generateErrorMessageForInvalidValueForArrayType("1", "0", "type_compatible_tests:C2"));
@@ -463,19 +463,19 @@ function testSliceOperation() {
     int[2][]|error c = csv:parseList(v);
     test:assertEquals(c, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c2 = csv:parseList(v, {customHeaders: ["a", "b"]});
+    record {|int...;|}[2]|error c2 = csv:parseList(v, {customHeaders: ["a", "b"]});
     test:assertEquals(c2, [{a: 1, b: 2}, {a: 3, b: 4}]);
 
-    int[2][]|error c3 = csv:transform(v2, {headersOrder: ["a", "b"]});
+    int[2][]|error c3 = csv:transform(v2, {headerOrder: ["a", "b"]});
     test:assertEquals(c3, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c4 = csv:transform(v2);
+    record {|int...;|}[2]|error c4 = csv:transform(v2);
     test:assertEquals(c4, [{a: 1, b: 2}, {a: 3, b: 4}]);
 
     int[2][]|error c5 = csv:parseString(v3);
     test:assertEquals(c5, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c6 = csv:parseString(v3);
+    record {|int...;|}[2]|error c6 = csv:parseString(v3);
     test:assertEquals(c6, [{a: 1, b: 2}, {a: 3, b: 4}]);
 }
 
@@ -493,18 +493,18 @@ function testSliceOperation2() {
     int[2][2]|error c = csv:parseList(v, {skipLines: [1, 3]});
     test:assertEquals(c, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c2 = csv:parseList(v, {customHeaders: ["a", "b", "c"], skipLines: [1, 3]});
+    record {|int...;|}[2]|error c2 = csv:parseList(v, {customHeaders: ["a", "b", "c"], skipLines: [1, 3]});
     test:assertEquals(c2, [{a: 1, b: 2}, {a: 3, b: 4}]);
 
-    int[2][2]|error c3 = csv:transform(v2, {headersOrder: ["a", "b", "c"], skipLines: [1, 3]});
+    int[2][2]|error c3 = csv:transform(v2, {headerOrder: ["a", "b", "c"], skipLines: [1, 3]});
     test:assertEquals(c3, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c4 = csv:transform(v2, {skipLines: [1, 3]});
+    record {|int...;|}[2]|error c4 = csv:transform(v2, {skipLines: [1, 3]});
     test:assertEquals(c4, [{a: 1, b: 2}, {a: 3, b: 4}]);
 
     int[2][2]|error c5 = csv:parseString(v3, {skipLines: [1, 3]});
     test:assertEquals(c5, [[1, 2], [3, 4]]);
 
-    record{|int...;|}[2]|error c6 = csv:parseString(v3, {skipLines: [1, 3]});
+    record {|int...;|}[2]|error c6 = csv:parseString(v3, {skipLines: [1, 3]});
     test:assertEquals(c6, [{a: 1, b: 2}, {a: 3, b: 4}]);
 }

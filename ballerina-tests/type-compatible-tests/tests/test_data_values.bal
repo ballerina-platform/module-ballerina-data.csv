@@ -14,41 +14,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-boolean b1 = true;
-false b2 = false;
-boolean? b3 = ();
-boolean|int b4 = false;
+final boolean b1 = true;
+final false b2 = false;
+final boolean? b3 = ();
+final boolean|int b4 = false;
 
-() n1 = ();
-int? n2 = ();
-() n3 = null;
+final () n1 = ();
+final int? n2 = ();
+final () n3 = null;
 
-int i1 = 1;
-int i2 = -2;
-int i3 = int:MAX_VALUE;
-int i4 = int:MIN_VALUE;
-int i5 = 0;
-2 i6 = 2;
-int? i7 = ();
-int|string i8 = 100;
+final int i1 = 1;
+final int i2 = -2;
+final int i3 = int:MAX_VALUE;
+final int i4 = int:MIN_VALUE;
+final int i5 = 0;
+final 2 i6 = 2;
+final int? i7 = ();
+final int|string i8 = 100;
 
-float f1 = 2.234;
-float f2 = -3.21f;
-float f3 = 0;
-float f4 = float:Infinity;
-float f5 = -float:Infinity;
-float f6 = float:NaN;
-2.3f f7 = 2.3;
-float? f8 = ();
-float|decimal f9 = 1.21;
+final float f1 = 2.234;
+final float f2 = -3.21f;
+final float f3 = 0;
+final float f4 = float:Infinity;
+final float f5 = -float:Infinity;
+final float f6 = float:NaN;
+final 2.3f f7 = 2.3;
+final float? f8 = ();
+final float|decimal f9 = 1.21;
 
-decimal d1 = 2.234;
-decimal d2 = -3.21d;
-decimal d3 = 0;
-2.3d d4 = 2.3;
-decimal? d5 = ();
-decimal|int d6 = 1.21;
+final decimal d1 = 2.234;
+final decimal d2 = -3.21d;
+final decimal d3 = 0;
+final 2.3d d4 = 2.3;
+final decimal? d5 = ();
+final decimal|int d6 = 1.21;
 
-string s1 = "string";
-string s2 = "";
-string:Char s3 = "a";
+final string s1 = "string";
+final string s2 = "";
+final string:Char s3 = "a";

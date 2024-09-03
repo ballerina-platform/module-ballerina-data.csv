@@ -31,11 +31,6 @@ import static io.ballerina.lib.data.csvdata.utils.Constants.SKIP_LINE_RANGE_SEP;
  */
 public class CsvUtils {
     private static final long[] EMPTY_LONG_ARRAY =  new long[]{};
-    public static boolean isCarriageTokenPresent = false;
-
-    public static void setCarriageTokenPresent(boolean isCarriageTokenPresent) {
-        CsvUtils.isCarriageTokenPresent = isCarriageTokenPresent;
-    }
 
     public static void validateExpectedArraySize(int size, int currentSize) {
         if (size != -1 && size > currentSize) {
@@ -65,7 +60,7 @@ public class CsvUtils {
 
     public static String[] createHeadersForParseLists(BArray csvElement, String[] headers, CsvConfig config) {
         Object customHeaders = config.customHeaders;
-        long headersRows = config.headersRows;
+        long headerRows = config.headerRows;
 
         int length = headers.length;
         if (customHeaders instanceof BArray array) {
@@ -78,15 +73,15 @@ public class CsvUtils {
             return headers;
         }
 
-        if (headersRows == 1) {
+        if (headerRows == 1) {
             return csvElement.getStringArray();
         }
 
-        if (headersRows > 1) {
+        if (headerRows > 1) {
             throw DiagnosticLog.error(DiagnosticErrorCode.NO_CUSTOM_HEADER_PROVIDED);
         }
 
-        // when headersRows = 0 and customHeaders = null
+        // when headerRows = 0 and customHeaders = null
         for (int i = 0; i < length; i++) {
             headers[i] = String.valueOf(i + 1);
         }
@@ -133,37 +128,36 @@ public class CsvUtils {
     public static boolean checkTypeCompatibility(Type constraintType, Object csv, boolean stringConversion) {
         int tag = constraintType.getTag();
         if (csv instanceof BString) {
-            if (stringConversion || tag == TypeTags.STRING_TAG
-                    || tag == TypeTags.CHAR_STRING_TAG || isJsonOrAnyDataOrAny(tag)) {
+            if (stringConversion || TypeTags.isStringTypeTag(tag) || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
+            return false;
         }
         if (csv instanceof Long) {
-            if (tag == TypeTags.INT_TAG
-                    || tag == TypeTags.FLOAT_TAG || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.BYTE_TAG
-                    || tag == TypeTags.SIGNED8_INT_TAG || tag == TypeTags.SIGNED16_INT_TAG
-                    || tag == TypeTags.SIGNED32_INT_TAG || tag == TypeTags.UNSIGNED8_INT_TAG
-                    || tag == TypeTags.UNSIGNED16_INT_TAG || tag == TypeTags.UNSIGNED32_INT_TAG
-                    || isJsonOrAnyDataOrAny(tag)) {
+            if (TypeTags.isIntegerTypeTag(tag) || tag == TypeTags.FLOAT_TAG || tag == TypeTags.DECIMAL_TAG
+                    || tag == TypeTags.BYTE_TAG || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
+            return false;
         }
         if (csv instanceof BDecimal) {
             if ((tag == TypeTags.DECIMAL_TAG
-                    || tag == TypeTags.FLOAT_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)) {
+                    || tag == TypeTags.FLOAT_TAG || TypeTags.isIntegerTypeTag(tag)) || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
         }
         if (csv instanceof Double) {
             if ((tag == TypeTags.FLOAT_TAG
-                    || tag == TypeTags.DECIMAL_TAG || tag == TypeTags.INT_TAG) || isJsonOrAnyDataOrAny(tag)) {
+                    || tag == TypeTags.DECIMAL_TAG || TypeTags.isIntegerTypeTag(tag)) || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
+            return false;
         }
         if (csv instanceof Boolean) {
             if (tag == TypeTags.BOOLEAN_TAG || isJsonOrAnyDataOrAny(tag)) {
                 return true;
             }
+            return false;
         }
         if (csv == null) {
             return tag == TypeTags.NULL_TAG || isJsonOrAnyDataOrAny(tag);
@@ -262,20 +256,18 @@ public class CsvUtils {
     }
 
     public static long[] getSkipDataRows(Object skipLines) {
-        long[] skipDataRows;
         if (skipLines == null) {
             return EMPTY_LONG_ARRAY;
         }
+
         if (skipLines instanceof BArray skipLinesArray) {
             if (skipLinesArray.getLength() == 0) {
                 return EMPTY_LONG_ARRAY;
             }
-            skipDataRows = skipLinesArray.getIntArray();
-            return skipDataRows;
+            return skipLinesArray.getIntArray();
         }
 
-        skipDataRows = getSkipLinesFromStringConfigValue(StringUtils.getStringValue(skipLines));
-        return skipDataRows;
+        return getSkipLinesFromStringConfigValue(StringUtils.getStringValue(skipLines));
     }
 
     public static boolean isNullValue(Object nullValue, Object value) {
@@ -299,11 +291,12 @@ public class CsvUtils {
         return nullValue != null && value.equals(StringUtils.getStringValue(nullValue));
     }
 
-    public static boolean isCharContainsInLineTerminatorUserConfig(char c, Object lineTerminatorObj) {
+    public static boolean isCharContainsInLineTerminatorUserConfig(char c,
+                   Object lineTerminatorObj, boolean isCarriageTokenPresent) {
         if (lineTerminatorObj instanceof BArray array) {
             Object[] lineTerminators = array.getValues();
             for (Object lineTerminator: lineTerminators) {
-                Optional<Boolean> value = handleLineTerminator(lineTerminator, c);
+                Optional<Boolean> value = handleLineTerminator(lineTerminator, c, isCarriageTokenPresent);
                 if (value.isEmpty()) {
                     continue;
                 }
@@ -324,18 +317,19 @@ public class CsvUtils {
         return false;
     }
 
-    private static Optional<Boolean> handleLineTerminator(Object lineTerminator, char c) {
-        if (lineTerminator != null && c == Constants.LineTerminator.LF) {
-            String lineTerminatorString = lineTerminator.toString();
-            if (isCarriageTokenPresent) {
-                if (lineTerminatorString.equals(Constants.LineTerminator.CRLF)) {
-                    return Optional.of(true);
-                }
-                return Optional.empty();
-            }
-            return Optional.of(true);
+    private static Optional<Boolean> handleLineTerminator(Object lineTerminator,
+              char c, boolean isCarriageTokenPresent) {
+        if (lineTerminator == null || c != Constants.LineTerminator.LF) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        String lineTerminatorString = lineTerminator.toString();
+        if (isCarriageTokenPresent) {
+            if (lineTerminatorString.equals(Constants.LineTerminator.CRLF)) {
+                return Optional.of(true);
+            }
+            return Optional.empty();
+        }
+        return Optional.of(true);
     }
 
     public static class UnMappedValue {
@@ -361,9 +355,10 @@ public class CsvUtils {
     public static Locale createLocaleFromString(String localeString) {
         // Split the string into language, country, and variant
         String[] parts = localeString.split(Constants.UNDERSCORE);
-        if (parts.length == 3) {
+        int length = parts.length;
+        if (length == 3) {
             return new Locale(parts[0], parts[1], parts[2]);
-        } else if (parts.length == 2) {
+        } else if (length == 2) {
             return new Locale(parts[0], parts[1]);
         } else {
             return new Locale(parts[0]); // Only language
@@ -371,7 +366,7 @@ public class CsvUtils {
     }
 
     public static void validateConfigs(CsvConfig config) {
-        if (config.headersRows > 1 && config.customHeaders == null) {
+        if (config.headerRows > 1 && config.customHeaders == null) {
             throw DiagnosticLog.error(DiagnosticErrorCode.NO_CUSTOM_HEADER_PROVIDED);
         }
     }

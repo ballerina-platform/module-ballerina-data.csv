@@ -22,12 +22,12 @@ public class CsvConfig {
     public boolean nilAsOptionalField = false;
     public boolean absentAsNilableType = false;
     public boolean allowDataProjection = true;
-    public Object headersOrder = null;
+    public Object headerOrder = null;
     public boolean stringConversion = false;
     public boolean enableConstraintValidation = false;
     public boolean outputWithHeaders = false;
     public Object customHeadersIfHeadersAbsent = null;
-    public long headersRows = 0;
+    public long headerRows = 0;
     public Object customHeaders = null;
 
     private CsvConfig(CsvConfig config) {
@@ -58,14 +58,14 @@ public class CsvConfig {
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     long headersRows, Object headers) {
+                     long headerRows, Object headers) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.skipLines = skipLines;
         this.enableConstraintValidation = enableConstraintValidation;
         this.outputWithHeaders = outputWithHeaders;
-        this.headersRows = headersRows;
+        this.headerRows = headerRows;
         this.customHeaders = headers;
     }
 
@@ -84,14 +84,14 @@ public class CsvConfig {
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     Object headersOrder) {
+                     Object headerOrder) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
         this.skipLines = skipLines;
         this.enableConstraintValidation = enableConstraintValidation;
         this.outputWithHeaders = outputWithHeaders;
-        this.headersOrder = headersOrder;
+        this.headerOrder = headerOrder;
     }
 
     public static CsvConfig createParseOptions(BMap<BString, Object> options) {

@@ -13,7 +13,7 @@ public function main() returns error? {
     record {} _ = test3({headerRows: 2, outputWithHeaders: false});
 }
 
-function test1(A a) returns record{}[] {
+function test1(A a) returns record {}[] {
     return [{}];
 }
 
@@ -21,6 +21,6 @@ function test2(A a) returns [int...][] {
     return [];
 }
 
-function test3(A a) returns record{} {
+function test3(A a) returns record {} {
     return {};
 }

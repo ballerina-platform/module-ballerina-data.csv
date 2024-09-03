@@ -14,24 +14,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-boolean b1 = true;
-false b2 = false;
-boolean? b3 = ();
-boolean|int b4 = false;
+final boolean b1 = true;
+final false b2 = false;
+final boolean? b3 = ();
+final boolean|int b4 = false;
 
-() n1 = ();
-int? n2 = ();
-() n3 = null;
+final () n1 = ();
+final int? n2 = ();
+final () n3 = null;
 
-int i1 = 1;
+final int i1 = 1;
 
-map<boolean> bm1 = {b1, b2};
-map<boolean?> bm2 = {b1, b2, b3, n1, n3};
-map<boolean|int?> bm3 = {b1, b2, b3, b4, i1};
-map<()> bm4 = {n1, n3};
-map<boolean?> bm5 = {b1, b2, b3, b4:true};
+final map<boolean> bm1 = {b1, b2};
+final map<boolean?> bm2 = {b1, b2, b3, n1, n3};
+final map<boolean|int?> bm3 = {b1, b2, b3, b4, i1};
+final map<()> bm4 = {n1, n3};
+final map<boolean?> bm5 = {b1, b2, b3, b4:true};
 
-string csvStringData1 = string `
+final string csvStringData1 = string `
                         a, b, c, d, e, f
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
@@ -39,7 +39,7 @@ string csvStringData1 = string `
                         4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
-string csvStringData2 = string `
+final string csvStringData2 = string `
                         hello, hello, (), 12, true, 12.34
                         // comment
                         
@@ -52,7 +52,7 @@ string csvStringData2 = string `
                         4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
-string csvStringData3 = string `
+final string csvStringData3 = string `
                         a, b, c, d, e, f
 
 
@@ -64,14 +64,14 @@ string csvStringData3 = string `
                         4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;
 
-string csvStringData4 = string `
+final string csvStringData4 = string `
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
                         3, string3, false, 1.23, 1.23, ()
                         4, string4, true, -6.51, -6.51, ()
                         5, string5, true, 3, 3, ()`;  
 
-string csvStringData5 = string `
+final string csvStringData5 = string `
 
 
 
@@ -83,7 +83,7 @@ string csvStringData5 = string `
 
                         5, string5, true, 3, 3, ()`;   
 
-string csvStringData6 = string `
+final string csvStringData6 = string `
 
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null
@@ -93,14 +93,14 @@ string csvStringData6 = string `
 
                         5, string5, true, 3, 3, ()`;
 
-string csvStringData7 = string `
+final string csvStringData7 = string `
                         a@ b@ c@ d@ e@ f
                         1@ string@ true@ 2.234@ -3.21@ ()
                         2@ s,tring@ true@ 2.234@ -3.21@ null
                         3@ stri,ng@ true@ 2.234@ -3.21@ ()
                         4@ string@ true@ 2.234@ -3.21@ ()
                         5@ string@ true@ 2.234@ -3.21@ ()`;
-string csvStringData8 = string `
+final string csvStringData8 = string `
                         a@ b@ c@ d@ e@ f
 
 
@@ -112,7 +112,7 @@ string csvStringData8 = string `
                         4@ s,tring@ true@ 2.234@ -3.21@ ()
                         5@ string@ true@ 2.234@ -3.21@ ()`;  
 
-string csvStringData9 = string `
+final string csvStringData9 = string `
 
                         1@ string@ true@ 2.234@ -3.21@ ()
                         2@ string@ true@ 2.234@ -3.21@ null
@@ -122,7 +122,7 @@ string csvStringData9 = string `
 
                         5@ string@ true@ 2.234@ -3.21@ null`;                                             
 
-string csvStringData10 = string `
+final string csvStringData10 = string `
                         hello, hello, (), 12, true, 12.34
                         // comment
                         
@@ -135,7 +135,7 @@ string csvStringData10 = string `
                         4, string4, true, -6.51, -6.52, ()
                         5, string5, true, 3, 31, ()`;
 
-string csvStringData11 = string `
+final string csvStringData11 = string `
                         a, b, c, d, e, f
 
 

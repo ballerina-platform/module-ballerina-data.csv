@@ -71,12 +71,13 @@ import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * CsvData Record Field Validator.
@@ -203,14 +204,12 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private FunctionCallExpressionNode getFunctionCallExpressionNodeIfPresent(ExpressionNode expressionNode) {
-        if (expressionNode.kind() == SyntaxKind.CHECK_EXPRESSION) {
-            expressionNode = ((CheckExpressionNode) expressionNode).expression();
-        }
-
-        if (expressionNode.kind() != SyntaxKind.FUNCTION_CALL) {
-            return null;
-        }
-        return ((FunctionCallExpressionNode) expressionNode);
+        return switch(expressionNode.kind()) {
+            case CHECK_EXPRESSION -> getFunctionCallExpressionNodeIfPresent(
+                    ((CheckExpressionNode) expressionNode).expression());
+            case FUNCTION_CALL -> (FunctionCallExpressionNode) expressionNode;
+            default -> null;
+        };
     }
 
     private String getFunctionName(FunctionCallExpressionNode node) {
@@ -265,8 +264,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 List<TypeSymbol> memberTypes = ((UnionTypeSymbol) expType).memberTypeDescriptors();
 
                 // only handles the A|error scenarios
-                if (isUnionContainsError(memberTypes)) {
-                    if (memberTypes.size() == 2) {
+                if (memberTypes.size() == 2) {
+                    if (isUnionContainsError(memberTypes)) {
                         TypeSymbol nonErrorTypeSymbol = ignoreErrorTypeFromUnionTypeSymbolAndReturn(memberTypes);
                         if (nonErrorTypeSymbol != null) {
                             validateFunctionParameterTypesWithExpType(nonErrorTypeSymbol, currentLocation,
@@ -307,7 +306,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private void validateFunctionParameterTypesWithArrayType(ArrayTypeSymbol expType, Location currentLocation,
                                                              SyntaxNodeAnalysisContext ctx, String functionName,
-            SeparatedNodeList<FunctionArgumentNode> args) {
+                                                             SeparatedNodeList<FunctionArgumentNode> args) {
         TypeSymbol memberTypeSymbol = expType.memberTypeDescriptor();
         if (memberTypeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             memberTypeSymbol = ((TypeReferenceTypeSymbol) memberTypeSymbol).typeDescriptor();
@@ -324,10 +323,11 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                    String functionName, SeparatedNodeList<FunctionArgumentNode> args, boolean isRecord) {
         ExpressionNode expression;
         SeparatedNodeList<MappingFieldNode> fields;
-        String header = null, headersRows = null, customHeaders = null,
-                customHeadersIfHeaderAbsent = null, outputWithHeaders = null, headersOrder = null;
+        String header = null, headerRows = null, customHeaders = null,
+                customHeadersIfHeaderAbsent = null, outputWithHeaders = null, headerOrder = null;
         boolean isCustomHeaderPresent = false;
         for (FunctionArgumentNode arg : args) {
+            int mappingConstructorExprNodeCount = 0;
             if (arg instanceof PositionalArgumentNode positionalArgumentNode) {
                 expression = positionalArgumentNode.expression();
             } else if (arg instanceof NamedArgumentNode namedArgumentNode) {
@@ -336,6 +336,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 continue;
             }
             if (expression instanceof MappingConstructorExpressionNode mappingConstructorExpressionNode) {
+                checkAndAssertMappingConstructorArguments(mappingConstructorExprNodeCount);
                 fields = mappingConstructorExpressionNode.fields();
                 for (MappingFieldNode field : fields) {
                     if (field instanceof SpecificFieldNode specificFieldNode) {
@@ -349,14 +350,14 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                                 customHeadersIfHeaderAbsent = getTheValueOfTheUserConfigOption(specificFieldNode);
                             }
                             if (fieldName.equals(Constants.UserConfigurations.HEADERS_ROWS)) {
-                                headersRows = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                headerRows = getTheValueOfTheUserConfigOption(specificFieldNode);
                             }
                             if (fieldName.equals(Constants.UserConfigurations.CUSTOM_HEADERS)) {
                                 customHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
                                 isCustomHeaderPresent = true;
                             }
                             if (isRecord && fieldName.equals(Constants.UserConfigurations.HEADERS_ORDER)) {
-                                headersOrder = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                headerOrder = getTheValueOfTheUserConfigOption(specificFieldNode);
                             }
                             if (isRecord && fieldName.equals(Constants.UserConfigurations.OUTPUT_WITH_HEADERS)) {
                                 outputWithHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
@@ -366,30 +367,37 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 }
             }
         }
-        throwErrorsIfIgnoredFieldFoundForOutputs(header, customHeadersIfHeaderAbsent, headersRows,
-                customHeaders, isCustomHeaderPresent, headersOrder,
+        throwErrorsIfIgnoredFieldFoundForOutputs(header, customHeadersIfHeaderAbsent, headerRows,
+                customHeaders, isCustomHeaderPresent, headerOrder,
                 outputWithHeaders, ctx, currentLocation, functionName, isRecord);
     }
 
+    private void checkAndAssertMappingConstructorArguments(int mappingConstructorExprNodeCount) {
+        if (mappingConstructorExprNodeCount > 1) {
+            assert false : "MappingConstructorExpressionNode count in the function " +
+                    "arguments should be less than or equal to 1";
+        }
+    }
+
     private void throwErrorsIfIgnoredFieldFoundForOutputs(String header, String customHeadersIfHeaderAbsent,
-            String headersRows, String customHeaders, boolean isCustomHeaderPresent, String headersOrder,
+            String headerRows, String customHeaders, boolean isCustomHeaderPresent, String headerOrder,
             String outputWithHeaders, SyntaxNodeAnalysisContext ctx, Location currentLocation,
             String functionName, boolean isRecord) {
         if (functionName.equals(Constants.PARSE_STRING) && header != null && !header.equals(Constants.FALSE)
-                && customHeadersIfHeaderAbsent != null && !customHeadersIfHeaderAbsent.equals(Constants.BAL_NULL)
+                && customHeadersIfHeaderAbsent != null && !customHeadersIfHeaderAbsent.equals(Constants.NIL)
                 && !customHeadersIfHeaderAbsent.equals(Constants.NULL)) {
             reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
                     CsvDataDiagnosticCodes.IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
         }
-        if (functionName.equals(Constants.PARSE_LISTS) && headersRows != null
-                && !headersRows.equals("0") && !headersRows.equals("1") &&
-                (!isCustomHeaderPresent || (customHeaders != null && (customHeaders.equals(Constants.BAL_NULL)
+        if (functionName.equals(Constants.PARSE_LISTS) && headerRows != null
+                && !headerRows.equals("0") && !headerRows.equals("1") &&
+                (!isCustomHeaderPresent || (customHeaders != null && (customHeaders.equals(Constants.NIL)
                 || customHeaders.equals(Constants.NULL))))) {
             reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
                     CsvDataDiagnosticCodes.CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
         }
-        if (isRecord && functionName.equals(Constants.TRANSFORM) && headersOrder != null
-                && !headersOrder.equals(Constants.BAL_NULL) && !headersOrder.equals(Constants.NULL)) {
+        if (isRecord && functionName.equals(Constants.TRANSFORM) && headerOrder != null
+                && !headerOrder.equals(Constants.NIL) && !headerOrder.equals(Constants.NULL)) {
             reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
                     CsvDataDiagnosticCodes.IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
         }
@@ -410,7 +418,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 return listConstructorExpressionNode.expressions().toString();
             }
             if (expNode instanceof NilLiteralNode) {
-                return Constants.BAL_NULL;
+                return Constants.NIL;
             }
         }
         return null;
@@ -432,8 +440,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
     }
 
-    private void validateArrayType(ArrayTypeSymbol typeSymbol, Location currentLocation
-            , SyntaxNodeAnalysisContext ctx) {
+    private void validateArrayType(ArrayTypeSymbol typeSymbol,
+                                   Location currentLocation, SyntaxNodeAnalysisContext ctx) {
         if (!isSupportedArrayMemberType(ctx, currentLocation, typeSymbol.memberTypeDescriptor())) {
             reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation), CsvDataDiagnosticCodes.UNSUPPORTED_TYPE);
         }
@@ -592,7 +600,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private void detectDuplicateFields(RecordTypeSymbol recordTypeSymbol, SyntaxNodeAnalysisContext ctx) {
-        List<String> fieldMembers = new ArrayList<>();
+        Set<String> fieldMembers = new HashSet<>();
         for (Map.Entry<String, RecordFieldSymbol> entry : recordTypeSymbol.fieldDescriptors().entrySet()) {
             RecordFieldSymbol fieldSymbol = entry.getValue();
             String name = getNameFromAnnotation(entry.getKey(), fieldSymbol.annotAttachments());

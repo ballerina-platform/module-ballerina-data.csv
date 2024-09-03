@@ -202,13 +202,13 @@ function testSubtypeExpectedTypes() returns error? {
     SubtypeRecord3[]|csv:Error a9 = csv:transform(value1, {});
     test:assertEquals(a9, value1); 
 
-    SubtypeTuple[]|csv:Error a10 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeTuple[]|csv:Error a10 = csv:transform(value1, {headerOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a10, value3);
 
-    SubtypeTuple2[]|csv:Error a11 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeTuple2[]|csv:Error a11 = csv:transform(value1, {headerOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a11, [[1, 1], [1, 1]]);
 
-    SubtypeTuple3[]|csv:Error a12 = csv:transform(value1, {headersOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
+    SubtypeTuple3[]|csv:Error a12 = csv:transform(value1, {headerOrder: ["a", "c", "d", "e", "f", "g", "h", "i"]});
     test:assertEquals(a12, value3); 
 
     SubtypeRecord[]|csv:Error a13 = csv:parseList(value2, {customHeaders: ["a", "c", "d", "e", "f", "g", "h", "i"]});

@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-string csvStringData1 = string `
+final string csvStringData1 = string `
                         a, b, c, d, e, f
                         1, string1, true, 2.234, 2.234, ()
                         2, string2, false, 0, 0, null

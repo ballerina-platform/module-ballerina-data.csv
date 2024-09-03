@@ -45,7 +45,7 @@ public class CompilerPluginTest {
             "Tuple members can only be basic types, other types are not supported.";
     static final String IGNORE_OUTPUT_HEADERS_FOR_RECORD_ARRAY = "The option 'outputWithHeaders' will be not allowed" +
             " since the expected type is a subtype record array.";
-    static final String IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY = "The option 'headersOrder' will be not allowed" +
+    static final String IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY = "The option 'headerOrder' will be not allowed" +
             " since the expected type is a subtype record array.";
     static final String IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT = "The option " +
             "'customHeadersIfHeadersAbsent' will be not allowed since the header is present.";
@@ -222,7 +222,7 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testIgnoredHeadersOrderOptions() {
+    public void testIgnoredheaderOrderOptions() {
         DiagnosticResult diagnosticResult =
                 CompilerPluginTestUtils.loadPackage("sample_package_9").getCompilation().diagnosticResult();
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()

@@ -7,13 +7,13 @@ type Book1 record {
     ()|string year;
 };
 
-string csvString1 = string `name,author,year
-                            ,b,c
-                            a,,c
-                            a,b,`;
-
-@test:Config{}
+@test:Config
 function testEmptyStringWithNilConfig() {
+    string csvString1 = string `name,author,year
+                                ,b,c
+                                a,,c
+                                a,b,`;
+
     Book1[]|error books1 = csv:parseString(csvString1, {nilValue: ""});
     test:assertEquals(books1, [
         {name: null, author: "b", year: "c"},

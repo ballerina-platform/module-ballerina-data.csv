@@ -340,7 +340,7 @@ function testArrayIndexes() {
                             5, 6, 7
                             7, 8, 9`;
 
-    record{}[2]|csv:Error rec = csv:parseString(csv);
+    record {}[2]|csv:Error rec = csv:parseString(csv);
     test:assertEquals(rec, [
                 {a: 1, b: 2},
                 {a: 3, b: 4}
@@ -445,7 +445,7 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
 
     string[][]|csv:Error cv1baa_5 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: 2});
     test:assertTrue(cv1baa_5 is csv:Error);
-    test:assertEquals((<csv:Error>cv1baa_5).message(), "Duplicate header found: 'true'");
+    test:assertEquals((<csv:Error>cv1baa_5).message(), "duplicate header found: 'true'");
 
     string[][]|csv:Error cv1baa_6 = csv:parseString(csvStringWithBooleanValues8, {outputWithHeaders: false, header: 2});
     test:assertEquals(cv1baa_6, [

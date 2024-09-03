@@ -82,11 +82,11 @@ function testIntersectionExpectedTypes() returns error? {
 
 @test:Config
 function testIntersectionExpectedTypes2() returns error? {
-    (int[] & readonly)[]|csv:Error a = csv:transform([{"a": 1, "b": 2}, {"a": 4, "b": 5}], {headersOrder: ["a", "b"]});
+    (int[] & readonly)[]|csv:Error a = csv:transform([{"a": 1, "b": 2}, {"a": 4, "b": 5}], {headerOrder: ["a", "b"]});
     test:assertTrue(a is (int[] & readonly)[]);
     test:assertEquals(a, [[1, 2], [4, 5]]);
 
-    ([string, string])[] & readonly|csv:Error a2 = csv:transform([{"a": "a", "b": "a"}, {"a": "c", "b": "c"}], {headersOrder: ["a", "b"]});
+    ([string, string])[] & readonly|csv:Error a2 = csv:transform([{"a": "a", "b": "a"}, {"a": "c", "b": "c"}], {headerOrder: ["a", "b"]});
     test:assertTrue(a2 is [string, string][] & readonly);
     test:assertEquals(a2, [["a", "a"], ["c", "c"]]);
 
@@ -98,11 +98,11 @@ function testIntersectionExpectedTypes2() returns error? {
     test:assertTrue(a4 is record {|string...;|}[] & readonly);
     test:assertEquals(a4, [{a: "a", b: "a"}, {a: "c", b: "c"}]);
 
-    ([int] & readonly)[]|csv:Error a5 = csv:transform([{"a": 1, "b": 2}, {"a": 4, "b": 5}], {headersOrder: ["a", "b"]});
+    ([int] & readonly)[]|csv:Error a5 = csv:transform([{"a": 1, "b": 2}, {"a": 4, "b": 5}], {headerOrder: ["a", "b"]});
     test:assertTrue(a5 is ([int] & readonly)[]);
     test:assertEquals(a5, [[1], [4]]);
 
-    ([string, string])[] & readonly|csv:Error a6 = csv:transform([{"a": "a", "b": "a"}, {"a": "c", "b": "c"}], {headersOrder: ["a", "b"]});
+    ([string, string])[] & readonly|csv:Error a6 = csv:transform([{"a": "a", "b": "a"}, {"a": "c", "b": "c"}], {headerOrder: ["a", "b"]});
     test:assertTrue(a6 is [string, string][] & readonly);
     test:assertEquals(a6, [["a", "a"], ["c", "c"]]);
 
@@ -114,11 +114,11 @@ function testIntersectionExpectedTypes2() returns error? {
     test:assertTrue(a8 is map<string>[] & readonly);
     test:assertEquals(a8, [{a: "a", b: "a"}, {a: "c", b: "c"}]);
 
-    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
+    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9 = csv:transform([{"a": 1, "b": 2}, {"a": "a", "b": "b"}], {headerOrder: ["a", "b"]});
     test:assertTrue(a9 is error);
-    test:assertEquals((<error> a9).message(), "The CSV cannot be converted into any of the uniform union types in '((int[] & readonly)|([string,string] & readonly))[]'");
+    test:assertEquals((<error> a9).message(), "source value cannot converted in to the '((int[] & readonly)|([string,string] & readonly))[]'");
 
-    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9_2 = csv:transform([{"a": "1", "b": "2"}, {"a": "a", "b": "b"}], {headersOrder: ["a", "b"]});
+    (((int[] & readonly)|([string, string] & readonly)) & readonly)[]|csv:Error a9_2 = csv:transform([{"a": "1", "b": "2"}, {"a": "a", "b": "b"}], {headerOrder: ["a", "b"]});
     test:assertTrue(a9_2 is (((int[] & readonly)|([string, string] & readonly)) & readonly)[]);
     test:assertEquals(a9_2, [["1", "2"], ["a", "b"]]);
 
@@ -130,7 +130,7 @@ function testIntersectionExpectedTypes2() returns error? {
     ((record {string a; string b;} & readonly)|(record {int a; int b;} & readonly))[]
                                     & readonly|csv:Error a10_2 = csv:transform([{"a": "a", "b": "a"}, {"a": 1, "b": 2}], {});
     test:assertTrue(a10_2 is error);
-    test:assertEquals((<error> a10_2).message(), "The CSV cannot be converted into any of the uniform union types in '((union_type_tests:record {| string a; string b; anydata...; |} & readonly)|(union_type_tests:record {| int a; int b; anydata...; |} & readonly))[]'");
+    test:assertEquals((<error> a10_2).message(), "source value cannot converted in to the '((union_type_tests:record {| string a; string b; anydata...; |} & readonly)|(union_type_tests:record {| int a; int b; anydata...; |} & readonly))[]'");
 }
 
 @test:Config

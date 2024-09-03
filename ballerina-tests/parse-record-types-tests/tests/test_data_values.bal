@@ -14,18 +14,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-boolean b1 = true;
-false b2 = false;
-boolean? b3 = ();
-boolean|int b4 = false;
+final boolean b1 = true;
+final false b2 = false;
+final boolean? b3 = ();
+final boolean|int b4 = false;
 
-() n1 = ();
-int? n2 = ();
-() n3 = null;
+final () n1 = ();
+final int? n2 = ();
+final () n3 = null;
 
-int i1 = 1;
-map<boolean> bm1 = {b1, b2};
-map<boolean?> bm2 = {b1, b2, b3, n1, n3};
-map<boolean|int?> bm3 = {b1, b2, b3, b4, i1};
-map<()> bm4 = {n1, n3};
-map<boolean?> bm5 = {b1, b2, b3, b4:true};
+final int i1 = 1;
+final map<boolean> bm1 = {b1, b2};
+final map<boolean?> bm2 = {b1, b2, b3, n1, n3};
+final map<boolean|int?> bm3 = {b1, b2, b3, b4, i1};
+final map<()> bm4 = {n1, n3};
+final map<boolean?> bm5 = {b1, b2, b3, b4:true};

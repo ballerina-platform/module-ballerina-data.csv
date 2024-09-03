@@ -31,9 +31,9 @@ public const annotation NameConfig Name on record field;
 public type Options record {
     # Allows data projection with specific settings.
     #
-    # This configuration can be either a record or a boolean. 
-    # If it's a record, it contains `nilAsOptionalField` and `absentAsNilableType` options.
-    # If it's set to `false`, data projection is not allowed.
+    # This configuration can be either a record or false. 
+    # If it is a record, it contains `nilAsOptionalField` and `absentAsNilableType` options.
+    # If it is set to `false`, data projection is not allowed.
     record {
         # If `true`, nil values will be considered as optional fields in the projection.
         boolean nilAsOptionalField = false;
@@ -78,19 +78,19 @@ public type ParseListOptions record {|
     *Options;
     # If `0`, all the source data will treat as data rows.
     # Otherwise specify the header rows(Starts from 1) in the source data.
-    int:Unsigned32 headersRows = 0;
+    int:Unsigned32 headerRows = 0;
     # Specify the header names of the source data.
     # This field will overwrite the header values in the header rows.
     # This will be mandatory if the header row parameter is larger than one.
-    string[]? customHeaders = ();
+    string[] customHeaders?;
 |};
 
 # Represents options for treating a list as a record.
 public type TransformOptions record {|
     *Options;
     # Specify the order of the headers in the source data.
-    # If the expected type is a subset of `record{}[]` this parameter will be ignored.
-    string[]? headersOrder = ();
+    # If the expected type is a subset of `record {}[]` this parameter will be ignored.
+    string[]? headerOrder = ();
 |};
 
 # Enum representing possible line terminators.
@@ -110,5 +110,5 @@ public enum NilValue {
     # Represents an empty string as a nil value.
     EMPTY_STRING = "",
     # Represents a nil value as Ballerina nil value `()`.
-    BAL_NULL = "()"
+    NIL = "()"
 };
