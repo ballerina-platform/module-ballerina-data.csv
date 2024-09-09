@@ -33,7 +33,6 @@ public final class Constants {
     static final String CSVDATA = "csv";
     static final String BALLERINA = "ballerina";
     static final String DATA_CSVDATA = "data.csv";
-    static final String FALSE = "false";
     static final String NIL = "()";
     static final String NULL = "null";
 

@@ -118,7 +118,7 @@ public final class FromString {
                         fromStringWithType(string, ((IntersectionType) expType).getEffectiveType(), config);
                 default -> returnError(value, expType.toString());
             };
-        } catch (NumberFormatException | ParseException e) {
+        } catch (ParseException | RuntimeException e) {
             return returnError(value, expType.toString());
         }
     }
@@ -150,7 +150,7 @@ public final class FromString {
     private static int stringToByte(String value, CsvConfig config) throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            int intValue = parseNumberValue(value, config).intValue();
+            int intValue = number.intValue();
             if (isByteLiteral(intValue)) {
                 return intValue;
             }
@@ -162,7 +162,7 @@ public final class FromString {
             ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isSigned8LiteralValue(intValue)) {
                 return intValue;
             }
@@ -175,7 +175,7 @@ public final class FromString {
 
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isSigned16LiteralValue(intValue)) {
                 return intValue;
             }
@@ -187,7 +187,7 @@ public final class FromString {
             ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isSigned32LiteralValue(intValue)) {
                 return intValue;
             }
@@ -199,7 +199,7 @@ public final class FromString {
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isUnsigned8LiteralValue(intValue)) {
                 return intValue;
             }
@@ -211,7 +211,7 @@ public final class FromString {
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isUnsigned16LiteralValue(intValue)) {
                 return intValue;
             }
@@ -223,7 +223,7 @@ public final class FromString {
             throws NumberFormatException, ParseException {
         Number number = parseNumberValue(value, config);
         if (isIntegerValue(value, number, config.locale)) {
-            long intValue = parseNumberValue(value, config).longValue();
+            long intValue = number.longValue();
             if (isUnsigned32LiteralValue(intValue)) {
                 return intValue;
             }
@@ -231,11 +231,11 @@ public final class FromString {
         throw new NumberFormatException();
     }
 
-    private static BString stringToChar(String value) throws NumberFormatException {
+    private static BString stringToChar(String value) throws RuntimeException {
         if (isCharLiteralValue(value)) {
             return StringUtils.fromString(value);
         }
-        throw new NumberFormatException();
+        throw new RuntimeException();
     }
 
     private static Double stringToFloat(String value, CsvConfig config) throws NumberFormatException, ParseException {
@@ -257,11 +257,11 @@ public final class FromString {
     }
 
     private static Object stringToBoolean(String value) throws NumberFormatException {
-        if ("true".equals(value) || "TRUE".equals(value)) {
+        if ("true".equalsIgnoreCase(value)) {
             return true;
         }
 
-        if ("false".equals(value)  || "FALSE".equals(value)) {
+        if ("false".equalsIgnoreCase(value)) {
             return false;
         }
         return returnError(value, "boolean");
@@ -336,11 +336,11 @@ public final class FromString {
     }
 
     private static boolean isIntegerValue(String value, Number number, String localeStr) {
-        return number instanceof Long && value.matches(getLocale(localeStr).intRegex());
+        return isNumericType(number) && value.matches(getLocale(localeStr).intRegex());
     }
 
     private static boolean isDoubleValue(String value, Number number, String localeStr) {
-        return (number instanceof Double || number instanceof Long)
+        return (number instanceof Double || isNumericType(number))
                 && value.matches(getLocale(localeStr).doubleRegex());
     }
 
@@ -367,12 +367,18 @@ public final class FromString {
         char decimalSeparator = dfs.getDecimalSeparator();
         char minusSign = dfs.getMinusSign();
         char zeroDigit = dfs.getZeroDigit();
+        String numRange = "[" + zeroDigit + "-9]";
         String exponentSeparator = dfs.getExponentSeparator();
-        String intRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+$";
-        String doubleRegex = "^[" + minusSign + "+]?[" + zeroDigit + "-9]+(" +
-                (decimalSeparator == '.' ? "\\." : decimalSeparator)
-                + "[" + zeroDigit + "-9]*)?(" + exponentSeparator + "[+-]?[" + zeroDigit + "-9]+)?$";
+        String intRegex = "^[" + minusSign + "+]?" + numRange + "+$";
+        String doubleRegex = "^[" + minusSign + "+]?" + numRange + "+(" +
+                (decimalSeparator == '.' ? "\\." : decimalSeparator) +
+                numRange + "*)?(" + exponentSeparator + "[+-]?" + numRange + "+)?$";
         return new LocaleInfo(locale, intRegex, doubleRegex);
+    }
+
+    private static boolean isNumericType(Object value) {
+        return value instanceof Integer || value instanceof Long ||
+                value instanceof Short || value instanceof Byte;
     }
 
     private record LocaleInfo(Locale locale, String intRegex, String doubleRegex) {

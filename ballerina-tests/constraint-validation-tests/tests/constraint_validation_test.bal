@@ -38,7 +38,7 @@ function testConstraintWithLists() returns error? {
     ConstrainedList|csv:Error cList1 = csv:parseString(string `1 
                                             2 
                                             3 
-                                            4`, {header: false, customHeadersIfHeadersAbsent: ["a", "b", "c", "d"]});
+                                            4`, {header: (), customHeadersIfHeadersAbsent: ["a", "b", "c", "d"]});
     test:assertEquals(cList1, [[1], [2], [3], [4]]);
 
     cList1 = csv:parseString(string `1 
@@ -46,7 +46,7 @@ function testConstraintWithLists() returns error? {
                                      3
                                      4
                                      5
-                                     6`, {header: false, customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"]});
+                                     6`, {header: null, customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"]});
     test:assertTrue(cList1 is csv:Error);
     test:assertTrue((<error>cList1).message().startsWith("Validation failed")
                     && (<error>cList1).message().includes("length"));
@@ -56,7 +56,7 @@ function testConstraintWithLists() returns error? {
                                      3
                                      4
                                      5
-                                     6`, {header: false, customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"], enableConstraintValidation: false});
+                                     6`, {header: (), customHeadersIfHeadersAbsent: ["a", "b", "c", "d", "e", "f"], enableConstraintValidation: false});
     test:assertEquals(cList1, [[1], [2], [3], [4], [5], [6]]);
 
     cList1 = csv:transform([{"a": 1}, {"a": 1}, {"a": 1}, {"a": 1}], {});

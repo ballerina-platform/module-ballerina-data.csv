@@ -240,22 +240,14 @@ public final class CsvTraversal {
             }
 
             switch (expectedArrayElementType.getTag()) {
-                case TypeTags.RECORD_TYPE_TAG:
-                case TypeTags.MAP_TAG:
-                    traverseCsvWithMappingAsExpectedType(sourceArraySize, csv,
-                            expectedArrayElementType, isIntersection);
-                    break;
-                case TypeTags.ARRAY_TAG:
-                case TypeTags.TUPLE_TAG:
-                    traverseCsvWithListAsExpectedType(sourceArraySize, csv,
-                            expectedArrayElementType, isIntersection);
-                    break;
-                case TypeTags.UNION_TAG:
-                    traverseCsvWithUnionExpectedType(csv,
-                            (UnionType) expectedArrayElementType, type);
-                    break;
-                default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
+                case TypeTags.RECORD_TYPE_TAG, TypeTags.MAP_TAG ->
+                        traverseCsvWithMappingAsExpectedType(sourceArraySize, csv,
+                                expectedArrayElementType, isIntersection);
+                case TypeTags.ARRAY_TAG, TypeTags.TUPLE_TAG -> traverseCsvWithListAsExpectedType(sourceArraySize, csv,
+                        expectedArrayElementType, isIntersection);
+                case TypeTags.UNION_TAG -> traverseCsvWithUnionExpectedType(csv,
+                        (UnionType) expectedArrayElementType, type);
+                default -> throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
             }
         }
 
@@ -362,7 +354,7 @@ public final class CsvTraversal {
         public Object initStatesForCsvRowWithMappingAsExpectedType(Object csvElement, Type expectedType) {
             expectedType = TypeUtils.getReferredType(expectedType);
             switch (expectedType.getTag()) {
-                case TypeTags.RECORD_TYPE_TAG:
+                case TypeTags.RECORD_TYPE_TAG -> {
                     RecordType recordType = (RecordType) expectedType;
                     this.fieldHierarchy = new HashMap<>(recordType.getFields());
                     fields = new HashSet<>(recordType.getFields().keySet());
@@ -372,14 +364,13 @@ public final class CsvTraversal {
                     this.restType = recordType.getRestFieldType();
                     currentCsvNode = ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName());
                     traverseCsvRowWithMappingAsExpectedType(csvElement, expectedType, false);
-                    break;
-                case TypeTags.MAP_TAG:
+                }
+                case TypeTags.MAP_TAG -> {
                     MapType mapType = (MapType) expectedType;
                     currentCsvNode = ValueCreator.createMapValue(mapType);
                     traverseCsvRowWithMappingAsExpectedType(csvElement, expectedType, true);
-                    break;
-                default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+                }
+                default -> throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }
             return currentCsvNode;
         }
@@ -387,25 +378,24 @@ public final class CsvTraversal {
         public Object initStatesForCsvRowWithListAsExpectedType(Object csvElement, Type expectedType) {
             expectedType = TypeUtils.getReferredType(expectedType);
             switch (expectedType.getTag()) {
-                case TypeTags.ARRAY_TAG:
+                case TypeTags.ARRAY_TAG -> {
                     ArrayType arrayType = (ArrayType) expectedType;
                     currentCsvNode = ValueCreator.createArrayValue(arrayType);
                     traverseCsvRowWithListAsExpectedType(csvElement, arrayType);
-                    break;
-                case TypeTags.TUPLE_TAG:
+                }
+                case TypeTags.TUPLE_TAG -> {
                     TupleType tupleType = (TupleType) expectedType;
                     this.restType = tupleType.getRestType();
                     currentCsvNode = ValueCreator.createTupleValue(tupleType);
                     traverseCsvRowWithListAsExpectedType(csvElement, tupleType);
-                    break;
-                default:
-                    throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
+                }
+                default -> throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TYPE, expectedType);
             }
             return currentCsvNode;
         }
 
         private void traverseCsvRowWithListAsExpectedType(Object csvElement, Type type) {
-            int expectedTypeSize = CsvUtils.getTheActualExpectedType(type);
+            int expectedTypeSize = CsvUtils.getTheExpectedArraySize(type);
             if (csvElement instanceof BMap map) {
                 constructCsvArrayFromMapping(map, type, expectedTypeSize == -1 ? map.size() : expectedTypeSize);
             } else if (csvElement instanceof BArray array) {
@@ -468,9 +458,8 @@ public final class CsvTraversal {
                                                    boolean mappingType, Type expectedType) {
             this.isFirstRowIsHeader = false;
             int arraySize = csvElement.size();
-            String[] headers = new String[csvElement.size()];
             if (this.headers == null) {
-                this.headers = CsvUtils.createHeadersForParseLists(csvElement, headers, config);
+                this.headers = CsvUtils.createHeadersForParseLists(csvElement, csvElement.size(), config);
                 if (!this.isFirstRowInserted && config.headerRows >= 1) {
                     // To skip the row at the position [config.headerRows - 1] from being aded to the result.
                     this.isFirstRowIsHeader = true;
@@ -509,8 +498,7 @@ public final class CsvTraversal {
         private void insertHeaderValuesForTheCsvIfApplicable(Object obj, Type type) {
             if (config.outputWithHeaders && CsvUtils.isExpectedTypeIsArray(type)) {
                 if (this.headers == null && obj instanceof BArray array) {
-                    String[] headers = new String[array.size()];
-                    this.headers = CsvUtils.createHeadersForParseLists(array, headers, config);
+                    this.headers = CsvUtils.createHeadersForParseLists(array, array.size(), config);
                 }
                 if (this.headers == null && obj instanceof BMap<?, ?>) {
                     BMap<BString, Object> map = (BMap<BString, Object>) obj;
@@ -722,7 +710,7 @@ public final class CsvTraversal {
             if (!isRecursive && config.nilAsOptionalField && !fieldType.isNilable()
                     && CsvUtils.isNullValue(nilValue, csvMember)
                     && currentField != null && SymbolFlags.isFlagOn(currentField.getFlags(), SymbolFlags.OPTIONAL)) {
-                return CsvUtils.SkipMappedValue.createSkippedValue();
+                return CsvUtils.SkipMappedValue.VALUE;
             }
             if (config.stringConversion && csvMember instanceof BString str) {
                 Object convertedValue =  CsvCreator.convertToExpectedType(str, type, config);
@@ -787,7 +775,7 @@ public final class CsvTraversal {
                         throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_EXPECTED_TYPE, type);
                 }
             }
-            return CsvUtils.UnMappedValue.createUnMappedValue();
+            return CsvUtils.UnMappedValue.VALUE;
         }
 
         private void insertRestFieldMemberIntoMapping(Type type, BString key, Object csvMember) {

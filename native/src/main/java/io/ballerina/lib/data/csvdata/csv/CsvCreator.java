@@ -109,7 +109,7 @@ public final class CsvCreator {
     }
 
     public static String getHeaderValueForColumnIndex(CsvParser.StateMachine sm) {
-        if (sm.config.customHeadersIfHeadersAbsent == null &&  (sm.config.header == Boolean.FALSE)) {
+        if (sm.config.customHeadersIfHeadersAbsent == null &&  (sm.config.header == null)) {
             String header = String.valueOf(sm.columnIndex + 1);
             Map<String, Field> fieldHierarchy = sm.fieldHierarchy;
             fieldHierarchy.remove(header);

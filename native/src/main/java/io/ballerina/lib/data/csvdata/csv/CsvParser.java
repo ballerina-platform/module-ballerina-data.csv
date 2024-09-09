@@ -300,7 +300,7 @@ public final class CsvParser {
             }
 
             State currentState;
-            if (config.header != Boolean.FALSE) {
+            if (config.header != null) {
                 currentState = HEADER_START_STATE;
             } else {
                 Object customHeadersIfHeadersAbsent = config.customHeadersIfHeadersAbsent;

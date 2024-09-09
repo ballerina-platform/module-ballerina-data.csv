@@ -435,7 +435,7 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
         [true, false, true, false, true]
     ]);
 
-    string[][]|csv:Error cv1baa_4 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: false});
+    string[][]|csv:Error cv1baa_4 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true});
     test:assertEquals(cv1baa_4, [
         ["b1", "b2", "b3", "b4"],
         ["true", "false", "true", "false"],
@@ -466,7 +466,13 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
         [true, false, true, false, true]
     ]);
     
-    string[2][2]|csv:Error cv1baa_9 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: false});
+    string[2][2]|csv:Error cv1baa_9 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: ()});
+    test:assertEquals(cv1baa_9, [
+        ["b1", "b2"],
+        ["true", "false"]
+    ]);
+
+    cv1baa_9 = csv:parseString(csvStringWithBooleanValues1, {outputWithHeaders: true, header: null});
     test:assertEquals(cv1baa_9, [
         ["b1", "b2"],
         ["true", "false"]

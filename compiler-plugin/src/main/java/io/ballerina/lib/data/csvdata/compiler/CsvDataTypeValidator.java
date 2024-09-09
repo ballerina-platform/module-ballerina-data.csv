@@ -76,6 +76,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -126,8 +127,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private void updateModulePrefix(ModulePartNode rootNode) {
         for (ImportDeclarationNode importDeclarationNode : rootNode.imports()) {
-            Optional<Symbol> symbol = semanticModel.symbol(importDeclarationNode);
-            symbol.filter(moduleSymbol -> moduleSymbol.kind() == SymbolKind.MODULE)
+            semanticModel.symbol(importDeclarationNode)
+                    .filter(moduleSymbol -> moduleSymbol.kind() == SymbolKind.MODULE)
                     .filter(moduleSymbol -> isCsvDataImport((ModuleSymbol) moduleSymbol))
                     .ifPresent(moduleSymbol -> modulePrefix = ((ModuleSymbol) moduleSymbol).id().modulePrefix());
         }
@@ -152,12 +153,9 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             return;
         }
         currentLocation = assignmentStatementNode.location();
-        Optional<Symbol> symbol = semanticModel.symbol(assignmentStatementNode.varRef());
-        if (symbol.isEmpty()) {
-            return;
-        }
-        TypeSymbol typeSymbol = ((VariableSymbol) symbol.get()).typeDescriptor();
-        validateFunctionParameterTypes(expressionNode, typeSymbol, currentLocation, ctx);
+        semanticModel.symbol(assignmentStatementNode.varRef())
+            .map(symbol -> ((VariableSymbol) symbol).typeDescriptor())
+            .ifPresent(typeSymbol -> validateFunctionParameterTypes(expressionNode, typeSymbol, currentLocation, ctx));
     }
 
     private void processLocalVarDeclNode(VariableDeclarationNode variableDeclarationNode,
@@ -212,17 +210,17 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         };
     }
 
-    private String getFunctionName(FunctionCallExpressionNode node) {
+    private Optional<String> getFunctionName(FunctionCallExpressionNode node) {
         NameReferenceNode nameReferenceNode = node.functionName();
         if (nameReferenceNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
-            return "";
+            return Optional.empty();
         }
         QualifiedNameReferenceNode qualifiedNameReferenceNode = (QualifiedNameReferenceNode) nameReferenceNode;
         String prefix = qualifiedNameReferenceNode.modulePrefix().text();
         if (!prefix.equals(modulePrefix)) {
-            return "";
+            return Optional.empty();
         }
-        return qualifiedNameReferenceNode.identifier().text();
+        return Optional.of(qualifiedNameReferenceNode.identifier().text());
     }
 
     private boolean isParseFunctionOfStringSource(ExpressionNode expressionNode) {
@@ -230,12 +228,12 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         if (node == null) {
             return false;
         }
-        String functionName = getFunctionName(node);
-        return functionName.contains(Constants.PARSE_STRING) ||
-                functionName.contains(Constants.PARSE_BYTES) ||
-                functionName.contains(Constants.PARSE_STREAM) ||
-                functionName.contains(Constants.TRANSFORM) ||
-                functionName.contains(Constants.PARSE_LISTS);
+        Optional<String> functionName = getFunctionName(node);
+        return functionName
+                .map(fn -> fn.contains(Constants.PARSE_STRING) || fn.contains(Constants.PARSE_BYTES) ||
+                        fn.contains(Constants.PARSE_STREAM) || fn.contains(Constants.TRANSFORM) ||
+                        fn.contains(Constants.PARSE_LISTS))
+                .orElse(false);
     }
 
     private void validateFunctionParameterTypes(ExpressionNode expressionNode,
@@ -245,9 +243,10 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         if (node == null) {
             return;
         }
-        String functionName = getFunctionName(node);
+        Optional<String> functionName = getFunctionName(node);
         SeparatedNodeList<FunctionArgumentNode> args = node.arguments();
-        validateFunctionParameterTypesWithExpType(expType, currentLocation, ctx, functionName, args);
+        functionName.ifPresent(fn ->
+                validateFunctionParameterTypesWithExpType(expType, currentLocation, ctx, fn, args));
     }
 
     private void validateFunctionParameterTypesWithExpType(TypeSymbol expType, Location currentLocation,
@@ -343,24 +342,28 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                         Node node = specificFieldNode.fieldName();
                         if (node instanceof IdentifierToken identifierToken) {
                             String fieldName = identifierToken.text();
-                            if (fieldName.equals(Constants.UserConfigurations.HEADER)) {
-                                header = getTheValueOfTheUserConfigOption(specificFieldNode);
-                            }
-                            if (fieldName.equals(Constants.UserConfigurations.CUSTOM_HEADERS_IF_ABSENT)) {
-                                customHeadersIfHeaderAbsent = getTheValueOfTheUserConfigOption(specificFieldNode);
-                            }
-                            if (fieldName.equals(Constants.UserConfigurations.HEADERS_ROWS)) {
-                                headerRows = getTheValueOfTheUserConfigOption(specificFieldNode);
-                            }
-                            if (fieldName.equals(Constants.UserConfigurations.CUSTOM_HEADERS)) {
-                                customHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
-                                isCustomHeaderPresent = true;
-                            }
-                            if (isRecord && fieldName.equals(Constants.UserConfigurations.HEADERS_ORDER)) {
-                                headerOrder = getTheValueOfTheUserConfigOption(specificFieldNode);
-                            }
-                            if (isRecord && fieldName.equals(Constants.UserConfigurations.OUTPUT_WITH_HEADERS)) {
-                                outputWithHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
+                            switch (fieldName) {
+                                case Constants.UserConfigurations.HEADER ->
+                                        header = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                case Constants.UserConfigurations.CUSTOM_HEADERS_IF_ABSENT ->
+                                        customHeadersIfHeaderAbsent =
+                                                getTheValueOfTheUserConfigOption(specificFieldNode);
+                                case Constants.UserConfigurations.HEADERS_ROWS ->
+                                        headerRows = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                case Constants.UserConfigurations.CUSTOM_HEADERS -> {
+                                    customHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                    isCustomHeaderPresent = true;
+                                }
+                                case Constants.UserConfigurations.HEADERS_ORDER -> {
+                                    if (isRecord) {
+                                        headerOrder = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                    }
+                                }
+                                case Constants.UserConfigurations.OUTPUT_WITH_HEADERS -> {
+                                    if (isRecord) {
+                                        outputWithHeaders = getTheValueOfTheUserConfigOption(specificFieldNode);
+                                    }
+                                }
                             }
                         }
                     }
@@ -383,23 +386,30 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             String headerRows, String customHeaders, boolean isCustomHeaderPresent, String headerOrder,
             String outputWithHeaders, SyntaxNodeAnalysisContext ctx, Location currentLocation,
             String functionName, boolean isRecord) {
-        if (functionName.equals(Constants.PARSE_STRING) && header != null && !header.equals(Constants.FALSE)
-                && customHeadersIfHeaderAbsent != null && !customHeadersIfHeaderAbsent.equals(Constants.NIL)
-                && !customHeadersIfHeaderAbsent.equals(Constants.NULL)) {
-            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
-                    CsvDataDiagnosticCodes.IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
-        }
-        if (functionName.equals(Constants.PARSE_LISTS) && headerRows != null
-                && !headerRows.equals("0") && !headerRows.equals("1") &&
-                (!isCustomHeaderPresent || (customHeaders != null && (customHeaders.equals(Constants.NIL)
-                || customHeaders.equals(Constants.NULL))))) {
-            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
-                    CsvDataDiagnosticCodes.CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
-        }
-        if (isRecord && functionName.equals(Constants.TRANSFORM) && headerOrder != null
-                && !headerOrder.equals(Constants.NIL) && !headerOrder.equals(Constants.NULL)) {
-            reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
-                    CsvDataDiagnosticCodes.IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+        switch (functionName) {
+            case Constants.PARSE_STRING -> {
+                if (header != null && !(header.equals(Constants.NIL) || header.equals(Constants.NULL))
+                        && customHeadersIfHeaderAbsent != null && !customHeadersIfHeaderAbsent.equals(Constants.NIL)
+                        && !customHeadersIfHeaderAbsent.equals(Constants.NULL)) {
+                    reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                            CsvDataDiagnosticCodes.IGNORE_CUSTOM_HEADERS_PARAMETER_WHEN_HEADER_PRESENT);
+                }
+            }
+            case Constants.PARSE_LISTS -> {
+                if (headerRows != null && !headerRows.equals("0") && !headerRows.equals("1")
+                        && (!isCustomHeaderPresent || (customHeaders != null &&
+                        (customHeaders.equals(Constants.NIL) || customHeaders.equals(Constants.NULL))))) {
+                    reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                            CsvDataDiagnosticCodes.CUSTOM_HEADERS_SHOULD_BE_PROVIDED);
+                }
+            }
+            case Constants.TRANSFORM -> {
+                if (isRecord && headerOrder != null && !headerOrder.equals(Constants.NIL)
+                        && !headerOrder.equals(Constants.NULL)) {
+                    reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
+                            CsvDataDiagnosticCodes.IGNORE_HEADERS_ORDER_FOR_RECORD_ARRAY);
+                }
+            }
         }
         if (isRecord && outputWithHeaders != null) {
             reportDiagnosticInfo(ctx, Optional.ofNullable(currentLocation),
@@ -408,9 +418,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private String getTheValueOfTheUserConfigOption(SpecificFieldNode specificFieldNode) {
-        Optional<ExpressionNode> optExpNode = specificFieldNode.valueExpr();
-        if (optExpNode.isPresent()) {
-            ExpressionNode expNode = optExpNode.get();
+        return specificFieldNode.valueExpr().map(expNode -> {
             if (expNode instanceof BasicLiteralNode basicLiteralNode) {
                 return basicLiteralNode.literalToken().text();
             }
@@ -420,8 +428,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             if (expNode instanceof NilLiteralNode) {
                 return Constants.NIL;
             }
-        }
-        return null;
+            return null;
+        }).orElse(null);
     }
 
     private void validateExpectedType(TypeSymbol typeSymbol, Location currentLocation, SyntaxNodeAnalysisContext ctx) {
@@ -507,11 +515,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         recordTypeSymbol.fieldDescriptors().values().forEach(field -> validateNestedTypeSymbols(ctx,
                 currentLocation, field.typeDescriptor(), true));
 
-        Optional<TypeSymbol> restSymbol = recordTypeSymbol.restTypeDescriptor();
-        if (restSymbol.isPresent()) {
-            TypeSymbol restSym = restSymbol.get();
-            validateNestedTypeSymbols(ctx, currentLocation, restSym, true);
-        }
+        recordTypeSymbol.restTypeDescriptor().ifPresent(restSym ->
+                validateNestedTypeSymbols(ctx, currentLocation, restSym, true));
     }
 
     private void validateNestedTypeSymbols(SyntaxNodeAnalysisContext ctx,
@@ -537,14 +542,11 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
         if (typeDescriptor.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             TypeReferenceTypeSymbol typeRef = (TypeReferenceTypeSymbol) typeDescriptor;
-            if (typeRef.typeDescriptor().typeKind() == TypeDescKind.INTERSECTION) {
-                return getRawType(((IntersectionTypeSymbol) typeRef.typeDescriptor()).effectiveTypeDescriptor());
-            }
-            TypeSymbol rawType = typeRef.typeDescriptor();
-            if (rawType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-                return getRawType(rawType);
-            }
-            return rawType;
+            TypeSymbol refType = typeRef.typeDescriptor();
+            return switch (refType.typeKind()) {
+                case TYPE_REFERENCE, INTERSECTION -> getRawType(refType);
+                default -> refType;
+            };
         }
         return typeDescriptor;
     }
@@ -554,9 +556,10 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         Location pos = location.orElseGet(() -> currentLocation);
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(diagnosticsCodes.getCode(),
                 diagnosticsCodes.getMessage(), diagnosticsCodes.getSeverity());
-        if (pos == null || (allDiagnosticInfo.containsKey(pos) && allDiagnosticInfo.get(pos).equals(diagnosticInfo))) {
+        if (pos == null || Objects.equals(allDiagnosticInfo.get(pos), diagnosticInfo)) {
             return;
         }
+
         allDiagnosticInfo.put(pos, diagnosticInfo);
         ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, pos));
     }
@@ -591,12 +594,10 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private void validateRecordTypeDefinition(TypeDefinitionNode typeDefinitionNode, SyntaxNodeAnalysisContext ctx) {
-        Optional<Symbol> symbol = semanticModel.symbol(typeDefinitionNode);
-        if (symbol.isEmpty()) {
-            return;
-        }
-        TypeDefinitionSymbol typeDefinitionSymbol = (TypeDefinitionSymbol) symbol.get();
-        detectDuplicateFields((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), ctx);
+        semanticModel.symbol(typeDefinitionNode)
+                .map(symbol -> (TypeDefinitionSymbol) symbol)
+                .ifPresent(typeDefinitionSymbol ->
+                        detectDuplicateFields((RecordTypeSymbol) typeDefinitionSymbol.typeDescriptor(), ctx));
     }
 
     private void detectDuplicateFields(RecordTypeSymbol recordTypeSymbol, SyntaxNodeAnalysisContext ctx) {
@@ -604,11 +605,10 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         for (Map.Entry<String, RecordFieldSymbol> entry : recordTypeSymbol.fieldDescriptors().entrySet()) {
             RecordFieldSymbol fieldSymbol = entry.getValue();
             String name = getNameFromAnnotation(entry.getKey(), fieldSymbol.annotAttachments());
-            if (fieldMembers.contains(name)) {
+            if (!fieldMembers.add(name)) {
                 reportDiagnosticInfo(ctx, fieldSymbol.getLocation(), CsvDataDiagnosticCodes.DUPLICATE_FIELD);
                 return;
             }
-            fieldMembers.add(name);
         }
     }
 
@@ -633,12 +633,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private String getAnnotModuleName(AnnotationSymbol annotation) {
-        Optional<ModuleSymbol> moduleSymbol = annotation.getModule();
-        if (moduleSymbol.isEmpty()) {
-            return "";
-        }
-        Optional<String> moduleName = moduleSymbol.get().getName();
-        return moduleName.orElse("");
+        return annotation.getModule().flatMap(ms -> ms.getName()).orElse("");
     }
 
     private boolean isCsvDataImport(ModuleSymbol moduleSymbol) {
