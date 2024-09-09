@@ -22,13 +22,13 @@ final csv:ParseOptions option2 = {nilValue: "N/A", lineTerminator: [csv:CRLF, cs
 final csv:ParseOptions option3 = {nilValue: "()", header: 1, skipLines: [1, 2]};
 final csv:ParseOptions option4 = {nilValue: "", header: 4, skipLines: "1-5"};
 final csv:ParseOptions option5 = {nilValue: "", header: 4, skipLines: "1-1"};
-final csv:ParseOptions option6 = {nilValue: "()", header: false, skipLines: [1, 2]};
+final csv:ParseOptions option6 = {nilValue: "()", header: (), skipLines: [1, 2]};
 
 final csv:ParseOptions ptOption1 = {nilValue: "", header: 1, skipLines: [2, 4]};
 final csv:ParseOptions ptOption2 = {nilValue: "", header: 1, skipLines: "2-4"};
 final csv:ParseOptions ptOption3 = {nilValue: "", header: 4, skipLines: "1-5"};
 final csv:ParseOptions ptOption4 = {nilValue: "", header: 4, skipLines: [-1, -2, 4, 2]};
-final csv:ParseOptions ptOption5 = {header: false, skipLines: [-1, -2, 5, 3]};
+final csv:ParseOptions ptOption5 = {header: (), skipLines: [-1, -2, 5, 3]};
 
 // Invalid parser options
 final csv:ParseOptions invalidParserOptions1 = {header: 4};

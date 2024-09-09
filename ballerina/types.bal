@@ -68,7 +68,7 @@ public type ParseOptions record {|
     # The character used to indicate comments in the data.
     string:Char comment = "#";
     # Specifies whether the header is present and, if so, the number of header lines.
-    false|int:Unsigned32 header = 0;
+    int:Unsigned32? header = 0;
     # Custom headers for the data, if headers are absent.
     string[]? customHeadersIfHeadersAbsent = ();
 |};
