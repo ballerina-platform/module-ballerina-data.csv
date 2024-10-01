@@ -22,6 +22,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread pool for data reader.
@@ -33,6 +34,7 @@ public final class DataReaderThreadPool {
     private static final int MAX_POOL_SIZE = 50;
     private static final long KEEP_ALIVE_TIME = 60L;
     private static final String THREAD_NAME = "bal-data-csv-thread";
+    private static final AtomicLong THREAD_ID = new AtomicLong(1);
     public static final ExecutorService EXECUTOR_SERVICE = new ThreadPoolExecutor(CORE_POOL_SIZE,
             MAX_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new SynchronousQueue<>(), new DataThreadFactory());
 
@@ -47,7 +49,7 @@ public final class DataReaderThreadPool {
         @Override
         public Thread newThread(Runnable runnable) {
             Thread ballerinaData = new Thread(runnable);
-            ballerinaData.setName(THREAD_NAME + "-" + ballerinaData.getId());
+            ballerinaData.setName(THREAD_NAME + "-" + THREAD_ID.getAndIncrement());
             return ballerinaData;
         }
     }
