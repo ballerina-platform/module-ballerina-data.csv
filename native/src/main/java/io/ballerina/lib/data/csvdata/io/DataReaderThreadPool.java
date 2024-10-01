@@ -47,7 +47,7 @@ public final class DataReaderThreadPool {
         @Override
         public Thread newThread(Runnable runnable) {
             Thread ballerinaData = new Thread(runnable);
-            ballerinaData.setName(THREAD_NAME);
+            ballerinaData.setName(THREAD_NAME + "-" + ballerinaData.getId());
             return ballerinaData;
         }
     }
