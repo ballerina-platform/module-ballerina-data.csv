@@ -8,12 +8,19 @@ repository = "https://github.com/ballerina-platform/module-ballerina-data.csv"
 license = ["Apache-2.0"]
 distribution = "2201.9.0"
 export = ["data.csv"]
+readme = "Package.md"
 
 [platform.java17]
 graalvmCompatible = true
 
 [[platform.java17.dependency]]
-groupId = "io.ballerina.stdlib"
+groupId = "io.ballerina.lib"
 artifactId = "data.csv-native"
 version = "@toml.version@"
 path = "../native/build/libs/data.csv-native-@project.version@.jar"
+
+[[platform.java17.dependency]]
+groupId = "io.ballerina.stdlib"
+artifactId = "constraint-native"
+version = "@constraint.version@"
+path = "./lib/constraint-native-@stdlib.constraintnative.version@.jar"

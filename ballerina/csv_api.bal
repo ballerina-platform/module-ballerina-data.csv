@@ -16,99 +16,96 @@
 
 import ballerina/jballerina.java;
 
-# Converts CSV string to subtype of record array.
+# Parse a CSV string as a subtype of `record {}[]` or `anydata[][]`.
+# 
+# ```ballerina
+# string csvString = string `id,name
+#                            1,John
+#                            3,Jane`;
+# record {int id; string name;}[] csv1 = check csv:parseString(csvString);
+# [int, string][] csv2 = check csv:parseString(csvString);
+# record {|int id;|}[] csv3 = check csv:parseString(csvString);
+# record {int id;}[] csv4 = check csv:parseString(csvString, {skipLines: [1]});
+# ```
 #
-# + s - Source CSV string value
+# + csvString - Source CSV string value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseStringToRecord(string s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseString(string csvString, ParseOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
+     returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-# Converts byte[] to subtype of record array.
+# Parse a byte[] as a subtype of `record {}[]` or `anydata[][]`.
+# 
+# ```ballerina
+# byte[] csvBytes = check io:fileReadBytes("example.csv");
+# 
+# record {int id; string name;}[] csv1 = check csv:parseBytes(csvBytes);
+# [int, string][] csv2 = check csv:parseBytes(csvBytes);
+# record {|int id;|}[] csv3 = check csv:parseBytes(csvBytes);
+# record {int id;}[] csv4 = check csv:parseBytes(csvBytes, {skipLines: [1]});
+# ```
 #
-# + s - Source CSV byte array
+# + csvBytes - Source CSV byte array
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseBytesToRecord(byte[] s, parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseBytes(byte[] csvBytes, ParseOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
+     returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-# Converts CSV byte-block-stream to subtype of record array.
-#
-# + s - Source CSV byte-block-stream
+# Parse a CSV byte block stream as a subtype of `record {}[]` or `anydata[][]`.
+# 
+# ```ballerina
+# stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("example.csv");
+# record {int id; string name;}[] csv1 = check csv:parseStream(csvByteStream);
+# 
+# stream<byte[], io:Error?> csvByteStream2 = check io:fileReadBlocksAsStream("example.csv");
+# [int, string][] csv2 = check csv:parseStream(csvByteStream2);
+# 
+# stream<byte[], io:Error?> csvByteStream3 = check io:fileReadBlocksAsStream("example.csv");
+# record {|int id;|}[] csv3 = check csv:parseStream(csvByteStream3);
+# 
+# stream<byte[], io:Error?> csvByteStream4 = check io:fileReadBlocksAsStream("example.csv");
+# record {int id;}[] csv4 = check csv:parseStream(csvByteStream4, {skipLines: [1]});
+# ```
+# 
+# + csvByteStream - Source CSV byte block stream
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseStreamToRecord(stream<byte[], error?> s,
-            parseToRecordOption options = {}, typedesc<record{}[]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseStream(stream<byte[], error?> csvByteStream,
+           ParseOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
+     returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-# Converts CSV string to subtype of anydata[][].
+# Transform value of type record {}[] to subtype of `record {}[]` or `anydata[][]`.
+# 
+# ```ballerina
+# record {int id; string name;}[] csvRecords = [{id: 1, name: "John"}, {id: 2, name: "Jane"}];
+# [int, string][] csv1 = check csv:transform(csvRecords);
+# record {|int id;|}[] csv2 = check csv:transform(csvRecords);
+# record {int id;}[] csv3 = check csv:transform(csvRecords, {skipLines: [1]});
+# ```
 #
-# + s - Source CSV string value
-# + options - Options to be used for filtering in the projection
-# + t - Target type
-# + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseStringToList(string s, ParseOption options = {}, typedesc<anydata[][]> t = <>)
-       returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
-
-# Converts byte[] to subtype of anydata[][].
-#
-# + s - Source CSV byte array
-# + options - Options to be used for filtering in the projection
-# + t - Target type
-# + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseBytesToList(byte[] s, ParseOption options = {}, typedesc<anydata[][]> t = <>)
-       returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
-
-# Converts CSV byte-block-stream to subtype of anydata[][].
-#
-# + s - Source CSV byte-block-stream
-# + options - Options to be used for filtering in the projection
-# + t - Target type
-# + return - On success, value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseStreamToList(stream<byte[], error?> s,
-            ParseOption options = {}, typedesc<anydata[][]> t = <>)
-       returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
-
-# Convert value of type record{}[] to subtype of record{}[].
-#
-# + s - Source Ballerina record array value
+# + csvRecords - Source Ballerina record array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseRecordAsRecordType(record{}[] s,
-            RecordAsRecordOption options = {}, typedesc<record{}[]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function transform(record {}[] csvRecords,
+           TransformOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
+     returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
 
-# Convert value of type record{}[] to subtype of anydata[][].
-#
-# + s - Source Ballerina record array value
-# + headerNames - The order of the header names in the source
+# Parse a string array of array as a subtype of `record {}[]` or `anydata[][]`.
+# 
+# ```ballerina
+# string[][] csvList = [["1", "John"], ["2", "Jane"]];
+# [int, string][] csv1 = check csv:parseList(csvList);
+# record {|int id;|}[] csv2 = check csv:parseList(csvList, {customHeaders: ["id", "name"]});
+# record {int id;}[] csv3 = check csv:parseList(csvList, {skipLines: [1], customHeaders: ["id", "name"]});
+# ```
+# 
+# + csvList - Source Ballerina string array of array value
 # + options - Options to be used for filtering in the projection
 # + t - Target type
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseRecordAsListType(record{}[] s, string[] headerNames,
-            Options options = {}, typedesc<anydata[][]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
-
-# Convert value of type string[][] to subtype of record{}[].
-#
-# + s - Source Ballerina string array of array value
-# + customHeaders - The order of the header names in the source
-# + options - Options to be used for filtering in the projection
-# + t - Target type
-# + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseListAsRecordType(string[][] s, string[]? customHeaders = (),
-            ListAsRecordOption options = {}, typedesc<record{}[]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
-
-# Convert value of type string[][] to subtype of anydata[][].
-#
-# + s - Source Ballerina string array of array value
-# + options - Options to be used for filtering in the projection
-# + t - Target type
-# + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseListAsListType(string[][] s, ListAsListOption options = {}, typedesc<anydata[][]> t = <>)
-      returns t|Error = @java:Method {'class: "io.ballerina.stdlib.data.csvdata.csv.Native"} external;
+public isolated function parseList(string[][] csvList, ParseListOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
+     returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;

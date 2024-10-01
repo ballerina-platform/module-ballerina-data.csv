@@ -60,7 +60,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
-    testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.data.*:ballerina.*"
+    testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.lib.data.csvdata.*:ballerina.*"
     packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
@@ -82,6 +82,8 @@ task updateTomlFiles {
         def stdlibDependentConstraintVersion = stripBallerinaExtensionVersion("${stdlibDependentConstraintNativeVersion}")
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@stdlib.constraintnative.version@", stdlibDependentConstraintNativeVersion)
+        newConfig = newConfig.replace("@constraint.version@", stdlibDependentConstraintVersion)
         ballerinaTomlFile.text = newConfig
 
         def newCompilerPluginToml = compilerPluginTomlFilePlaceHolder.text.replace("@project.version@", project.version)
@@ -127,16 +129,15 @@ task deleteDependencyTomlFiles {
     }
 }
 
-
 updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn "generatePomFileForMavenPublication"
+build.dependsOn deleteDependencyTomlFiles
 build.dependsOn ":${packageName}-native:build"
-build.dependsOn deleteDependencyTomlFiles
 build.dependsOn ":${packageName}-compiler-plugin:build"
-build.dependsOn deleteDependencyTomlFiles
 
-test.dependsOn ":${packageName}-native:build"
+test.dependsOn "generatePomFileForMavenPublication"
+test.dependsOn deleteDependencyTomlFiles
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-compiler-plugin:build"
 
