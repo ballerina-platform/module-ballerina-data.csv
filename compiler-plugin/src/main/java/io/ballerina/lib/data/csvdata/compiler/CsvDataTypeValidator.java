@@ -250,8 +250,7 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
     }
 
     private void validateFunctionParameterTypesWithExpType(TypeSymbol expType, Location currentLocation,
-                                                           SyntaxNodeAnalysisContext ctx, String functionName,
-           SeparatedNodeList<FunctionArgumentNode> args) {
+                   SyntaxNodeAnalysisContext ctx, String functionName, SeparatedNodeList<FunctionArgumentNode> args) {
         switch (expType.typeKind()) {
             case ARRAY -> validateFunctionParameterTypesWithArrayType(
                     (ArrayTypeSymbol) expType, currentLocation, ctx, functionName, args);
@@ -496,11 +495,8 @@ public class CsvDataTypeValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         TupleTypeSymbol tupleTypeSymbol = (TupleTypeSymbol) typeSymbol;
         tupleTypeSymbol.memberTypeDescriptors().forEach(symbol ->
                 validateNestedTypeSymbols(ctx, currentLocation, symbol, false));
-        Optional<TypeSymbol> restSymbol = tupleTypeSymbol.restTypeDescriptor();
-        if (restSymbol.isPresent()) {
-            TypeSymbol restSym = restSymbol.get();
-            validateNestedTypeSymbols(ctx, currentLocation, restSym, false);
-        }
+        tupleTypeSymbol.restTypeDescriptor().ifPresent(restSym ->
+                validateNestedTypeSymbols(ctx, currentLocation, restSym, false));
     }
 
     private void validateRecordFields(SyntaxNodeAnalysisContext ctx, Location currentLocation, TypeSymbol typeSymbol) {
