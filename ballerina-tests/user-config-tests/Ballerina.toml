@@ -1,15 +1,15 @@
 [package]
 org = "ballerina"
 name = "user_config_tests"
-version = "0.1.0"
+version = "0.1.1"
 
 [[dependency]]
 org = "ballerina"
 name = "csv_commons"
 repository = "local"
-version = "0.1.0"
+version = "0.1.1"
 
-[platform.java17]
+[platform.java21]
 graalvmCompatible = true
 
 [build-options]
