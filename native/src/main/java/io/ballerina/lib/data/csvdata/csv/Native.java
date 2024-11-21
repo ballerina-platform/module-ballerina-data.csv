@@ -24,6 +24,7 @@ import io.ballerina.lib.data.csvdata.utils.CsvConfig;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -85,7 +86,7 @@ public final class Native {
                 try {
                     return future.get();
                 } catch (BError | InterruptedException | ExecutionException bError) {
-                    return bError;
+                    return ErrorCreator.createError(bError);
                 }
             });
         } catch (BError e) {
