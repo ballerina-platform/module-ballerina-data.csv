@@ -21,7 +21,6 @@ import io.ballerina.lib.data.csvdata.csv.CsvParser;
 import io.ballerina.lib.data.csvdata.utils.CsvConfig;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
@@ -31,6 +30,7 @@ import io.ballerina.runtime.api.values.BTypedesc;
 
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -45,12 +45,12 @@ public class DataReaderTask implements Runnable {
 
     private final Environment env;
     private final BObject iteratorObj;
-    private final Future future;
+    private final CompletableFuture<Object> future;
     private final BTypedesc typed;
     private final CsvConfig config;
     private final BString encoding;
 
-    public DataReaderTask(Environment env, BObject iteratorObj, Future future, BTypedesc typed,
+    public DataReaderTask(Environment env, BObject iteratorObj, CompletableFuture<Object> future, BTypedesc typed,
                           CsvConfig config, BString encoding) {
         this.env = env;
         this.iteratorObj = iteratorObj;
@@ -105,7 +105,7 @@ public class DataReaderTask implements Runnable {
      * @param future The future to complete
      * @since 0.1.0
      */
-    public record ResultConsumer<T>(Future future) implements Consumer<T> {
+    public record ResultConsumer<T>(CompletableFuture<Object> future) implements Consumer<T> {
 
         @Override
         public void accept(T t) {

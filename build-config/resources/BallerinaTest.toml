@@ -9,7 +9,7 @@ name = "@test.common@"
 repository = "local"
 version = "@toml.version@"
 
-[platform.java17]
+[platform.java21]
 graalvmCompatible = true
 
 [build-options]

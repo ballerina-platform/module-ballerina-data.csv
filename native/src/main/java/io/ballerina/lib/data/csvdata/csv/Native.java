@@ -19,13 +19,12 @@
 package io.ballerina.lib.data.csvdata.csv;
 
 import io.ballerina.lib.data.csvdata.io.DataReaderTask;
-import io.ballerina.lib.data.csvdata.io.DataReaderThreadPool;
 import io.ballerina.lib.data.csvdata.utils.Constants;
 import io.ballerina.lib.data.csvdata.utils.CsvConfig;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -38,6 +37,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Csv conversion.
@@ -76,12 +77,18 @@ public final class Native {
                                      BMap<BString, Object> options, BTypedesc type) {
         try {
             final BObject iteratorObj = csv.getIteratorObj();
-            final Future future = env.markAsync();
-            DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
-                    CsvConfig.createParseOptions(options),
-                    options.getStringValue(Constants.ConfigConstants.ENCODING));
-            DataReaderThreadPool.EXECUTOR_SERVICE.submit(task);
-            return null;
+            return env.yieldAndRun(() -> {
+                CompletableFuture<Object> future = new CompletableFuture<>();
+                DataReaderTask task = new DataReaderTask(env, iteratorObj, future, type,
+                        CsvConfig.createParseOptions(options),
+                        options.getStringValue(Constants.ConfigConstants.ENCODING));
+                Thread.startVirtualThread(task);
+                try {
+                    return future.get();
+                } catch (BError | InterruptedException | ExecutionException bError) {
+                    return ErrorCreator.createError(bError);
+                }
+            });
         } catch (BError e) {
             return e;
         } catch (Exception e) {
