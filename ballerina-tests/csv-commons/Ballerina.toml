@@ -1,7 +1,7 @@
 [package]
 org = "ballerina"
 name = "csv_commons"
-version = "0.4.0"
+version = "0.7.0"
 
-[platform.java17]
+[platform.java21]
 graalvmCompatible = true
