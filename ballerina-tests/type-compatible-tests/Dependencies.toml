@@ -10,7 +10,7 @@ distribution-version = "2201.12.0-20250228-201300-8d411a0f"
 [[package]]
 org = "ballerina"
 name = "csv_commons"
-version = "0.7.1"
+version = "0.8.0"
 scope = "testOnly"
 modules = [
 	{org = "ballerina", packageName = "csv_commons", moduleName = "csv_commons"}
@@ -19,7 +19,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "data.csv"
-version = "0.7.1"
+version = "0.8.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
@@ -31,7 +31,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.7.0"
+version = "1.8.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -108,7 +108,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "type_compatible_tests"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
 	{org = "ballerina", name = "csv_commons"},
 	{org = "ballerina", name = "data.csv"},
