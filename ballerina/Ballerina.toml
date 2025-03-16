@@ -17,10 +17,10 @@ graalvmCompatible = true
 groupId = "io.ballerina.lib"
 artifactId = "data.csv-native"
 version = "0.8.0"
-path = "../native/build/libs/data.csv-native-0.8.0-SNAPSHOT.jar"
+path = "../native/build/libs/data.csv-native-0.8.0.jar"
 
 [[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "constraint-native"
 version = "1.7.0"
-path = "./lib/constraint-native-1.7.0-20250305-165400-52275bd.jar"
+path = "./lib/constraint-native-1.7.0.jar"
