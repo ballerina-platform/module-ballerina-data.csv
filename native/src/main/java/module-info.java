@@ -16,7 +16,7 @@
  * under the License.
  */
 
-module io.ballerina.lib.data {
+module io.ballerina.lib.data.csvdata {
     requires io.ballerina.runtime;
     requires io.ballerina.lang.value;
     requires junit;
