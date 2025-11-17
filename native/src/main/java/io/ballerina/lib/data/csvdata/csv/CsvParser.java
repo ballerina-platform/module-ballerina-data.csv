@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSPACE_CHAR;
@@ -119,7 +121,7 @@ public final class CsvParser {
         private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
         private static final char LINE_BREAK = '\n';
-
+        private static final Logger LOGGER = Logger.getLogger(StateMachine.class.getName());
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -319,7 +321,17 @@ public final class CsvParser {
                 while ((count = reader.read(buff)) > 0) {
                     this.index = 0;
                     while (this.index < count) {
-                        currentState = currentState.transition(this, buff, this.index, count);
+                        try {
+                            currentState = currentState.transition(this, buff, this.index, count);
+                        } catch (Exception e) {
+                            this.index = getIndexOfNextLine(this, buff, count);
+                            if (this.index <= count) {
+                                LOGGER.log(Level.SEVERE, "CSV parse error at line {0}, column {1}: {2}",
+                                        new Object[]{this.lineNumber + 1, this.columnIndex + 1, e.getMessage()});
+                            }
+                            updateLineAndColumnIndexes(this);
+                            currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
+                        }
                     }
                 }
                 currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
@@ -332,6 +344,19 @@ public final class CsvParser {
             } catch (IOException | CsvParserException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             }
+        }
+
+        private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {
+            int index = 0;
+            int currentLineNumber = sm.lineNumber + 1;
+            int lineBreaksCount = 0;
+            while (index < count && lineBreaksCount < currentLineNumber) {
+                if (buff[index] == LINE_BREAK) {
+                    lineBreaksCount++;
+                }
+                index++;
+            }
+            return index;
         }
 
         private void addFieldNamesForNonHeaderState() {
