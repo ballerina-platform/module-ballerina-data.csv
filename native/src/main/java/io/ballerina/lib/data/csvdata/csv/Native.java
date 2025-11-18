@@ -49,9 +49,10 @@ public final class Native {
     private Native() {
     }
 
-    public static Object parseString(BString csv, BMap<BString, Object> options, BTypedesc type) {
+    public static Object parseString(Environment environment, BString csv,
+                                     BMap<BString, Object> options, BTypedesc type) {
         try {
-            return CsvParser.parse(new StringReader(csv.getValue()),
+            return CsvParser.parse(environment, new StringReader(csv.getValue()),
                     type, CsvConfig.createParseOptions(options));
         } catch (BError e) {
             return e;
@@ -60,10 +61,11 @@ public final class Native {
         }
     }
 
-    public static Object parseBytes(BArray csv, BMap<BString, Object> options, BTypedesc type) {
+    public static Object parseBytes(Environment environment, BArray csv,
+                                    BMap<BString, Object> options, BTypedesc type) {
         try {
             byte[] bytes = csv.getBytes();
-            return CsvParser.parse(new InputStreamReader(new ByteArrayInputStream(bytes),
+            return CsvParser.parse(environment, new InputStreamReader(new ByteArrayInputStream(bytes),
                             Charset.forName(options.getStringValue(Constants.ConfigConstants.ENCODING).toString())),
                     type, CsvConfig.createParseOptions(options));
         } catch (BError e) {

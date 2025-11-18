@@ -89,7 +89,7 @@ public class DataReaderTask implements Runnable {
         ResultConsumer<Object> resultConsumer = new ResultConsumer<>(future);
         try (var byteBlockSteam = new BallerinaByteBlockInputStream(env, iteratorObj, resolveNextMethod(iteratorObj),
                 resolveCloseMethod(iteratorObj), resultConsumer)) {
-            Object result = CsvParser.parse(new InputStreamReader(byteBlockSteam,
+            Object result = CsvParser.parse(this.env, new InputStreamReader(byteBlockSteam,
                             Charset.forName(this.encoding.toString())),
                     typed, this.config);
             future.complete(result);

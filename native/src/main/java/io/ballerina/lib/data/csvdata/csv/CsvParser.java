@@ -24,6 +24,9 @@ import io.ballerina.lib.data.csvdata.utils.CsvUtils;
 import io.ballerina.lib.data.csvdata.utils.DataUtils;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
+import io.ballerina.lib.data.csvdata.utils.ModuleUtils;
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -36,6 +39,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.TypeTags;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -49,8 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSPACE_CHAR;
@@ -87,14 +89,14 @@ public final class CsvParser {
     // private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
     //       = ThreadLocal.withInitial(StateMachine::new);
 
-    public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
+    public static Object parse(Environment environment, Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
         // TODO: Add this implementation after creating the object pool implementation
         // StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
         StateMachine sm = new StateMachine();
         try {
             CsvUtils.validateConfigs(config);
-            Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
+            Object convertedValue = sm.execute(environment, reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } finally {
@@ -121,7 +123,7 @@ public final class CsvParser {
         private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
         private static final char LINE_BREAK = '\n';
-        private static final Logger LOGGER = Logger.getLogger(StateMachine.class.getName());
+        public static final String PRINT_ERROR = "printError";
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -232,7 +234,8 @@ public final class CsvParser {
             return new String(this.charBuff, 0, this.charBuffIndex);
         }
 
-        public Object execute(Reader reader, Type type, CsvConfig config, BTypedesc bTypedesc) throws BError {
+        public Object execute(Environment environment, Reader reader, Type type,
+                              CsvConfig config, BTypedesc bTypedesc) throws BError {
             this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -240,7 +243,8 @@ public final class CsvParser {
                     if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                         continue;
                     }
-                    return CsvCreator.constructReadOnlyValue(execute(reader, constituentType, config, bTypedesc));
+                    return CsvCreator.constructReadOnlyValue(execute(environment, reader,
+                            constituentType, config, bTypedesc));
                 }
             }
 
@@ -274,7 +278,7 @@ public final class CsvParser {
                         if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                             continue;
                         }
-                        Object mapValue = execute(reader, TypeCreator.createArrayType(
+                        Object mapValue = execute(environment, reader, TypeCreator.createArrayType(
                                 TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                         ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                         config.stringConversion = true;
@@ -287,7 +291,7 @@ public final class CsvParser {
                 case TypeTags.UNION_TAG:
                     boolean outputHeaders = config.outputWithHeaders;
                     Object customHeaders = config.customHeadersIfHeadersAbsent;
-                    Object mapValue = execute(reader, TypeCreator.createArrayType(
+                    Object mapValue = execute(environment, reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                     ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                     config.stringConversion = true;
@@ -327,15 +331,7 @@ public final class CsvParser {
                             if (config.failSafe) {
                                 this.index = getIndexOfNextLine(this, buff, count);
                                 if (this.index <= count) {
-                                    LOGGER.log(
-                                            Level.SEVERE,
-                                            "CSV parse error at line {0}, column {1}: {2}",
-                                            new Object[] {
-                                                    this.lineNumber + 1,
-                                                    this.columnIndex + 1,
-                                                    exception.getMessage()
-                                            }
-                                    );
+                                    printErrorLogs(environment, exception);
                                 }
                                 updateLineAndColumnIndexes(this);
                                 currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
@@ -355,6 +351,17 @@ public final class CsvParser {
             } catch (IOException | CsvParserException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             }
+        }
+
+        private void printErrorLogs(Environment environment, Exception exception) {
+            StrandMetadata strandMetadata = new StrandMetadata(true,
+                    ModuleUtils.getProperties(PRINT_ERROR));
+            String errorMessage = String.format("CSV parse error at line %d, column %d: %s",
+                    this.lineNumber + 1, this.columnIndex + 1, exception.getMessage());
+            Object[] arguments = new Object[]{StringUtils.fromString(errorMessage),
+                    null, null, ValueCreator.createMapValue()};
+            environment.getRuntime().callFunction(ModuleUtils.getModule(), PRINT_ERROR,
+                    strandMetadata, arguments);
         }
 
         private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {
