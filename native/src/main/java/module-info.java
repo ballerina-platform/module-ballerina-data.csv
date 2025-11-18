@@ -22,7 +22,6 @@ module io.ballerina.lib.data.csvdata {
     requires junit;
     requires org.apache.commons.lang3;
     requires io.ballerina.stdlib.constraint;
-    requires java.logging;
     exports io.ballerina.lib.data.csvdata.csv;
     exports io.ballerina.lib.data.csvdata.utils;
 }

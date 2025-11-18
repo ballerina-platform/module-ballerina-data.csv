@@ -29,7 +29,7 @@ public class CsvConfig {
     public Object customHeadersIfHeadersAbsent = null;
     public long headerRows = 0;
     public Object customHeaders = null;
-    public boolean failSafe = true;
+    public boolean failSafe;
 
     private CsvConfig(CsvConfig config) {
         this.allowDataProjection = false;
