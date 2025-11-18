@@ -21,6 +21,15 @@ import ballerina/test;
 @test:Config {
     groups: ["fail_safe"]
 }
+function testFailSafeMechanismWithHeaderErrors() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
+    UserStatusRecord[] data = check csv:parseStream(csvStream);
+    test:assertEquals(data.length(), 0);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
 function testFailSafeMechanismWithBasicErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_simple_data.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream);
