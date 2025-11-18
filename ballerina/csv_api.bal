@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/jballerina.java;
+import ballerina/log;
 
 # Parse a CSV string as a subtype of `record {}[]` or `anydata[][]`.
 # 
@@ -109,3 +110,14 @@ public isolated function transform(record {}[] csvRecords,
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
 public isolated function parseList(string[][] csvList, ParseListOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
+
+# Print an error message to the log with error level.
+# 
+# + msg - The message to be logged
+# + 'error - The error struct to be logged
+# + stackTrace - The error stack trace to be logged
+# + keyValues - The key-value pairs to be logged
+public function printError(string|log:PrintableRawTemplate msg, error? 'error = (), 
+                           error:StackFrame[]? stackTrace = (), *log:KeyValues keyValues) {
+     return log:printError(msg, 'error, stackTrace, keyValues);
+}
