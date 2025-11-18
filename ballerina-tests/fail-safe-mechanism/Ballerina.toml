@@ -1,19 +1,13 @@
 [package]
 org = "ballerina"
 name = "fail_safe_mechanism"
-version = "0.8.1"
-
-[[dependency]]
-org = "ballerina"
-name = "data.csv"
-repository = "local"
-version = "0.8.1"
+version = "0.9.0"
 
 [[dependency]]
 org = "ballerina"
 name = "csv_commons"
 repository = "local"
-version = "0.8.1"
+version = "0.9.0"
 
 [platform.java21]
 graalvmCompatible = true

@@ -9,15 +9,6 @@ distribution-version = "2201.12.0"
 
 [[package]]
 org = "ballerina"
-name = "csv_commons"
-version = "0.9.0"
-scope = "testOnly"
-modules = [
-	{org = "ballerina", packageName = "csv_commons", moduleName = "csv_commons"}
-]
-
-[[package]]
-org = "ballerina"
 name = "data.csv"
 version = "0.9.0"
 scope = "testOnly"
@@ -31,12 +22,28 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "fail_safe_mechanism"
+version = "0.9.0"
+dependencies = [
+	{org = "ballerina", name = "data.csv"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "test"}
+]
+modules = [
+	{org = "ballerina", packageName = "fail_safe_mechanism", moduleName = "fail_safe_mechanism"}
+]
+
+[[package]]
+org = "ballerina"
 name = "io"
 version = "1.8.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
+]
+modules = [
+	{org = "ballerina", packageName = "io", moduleName = "io"}
 ]
 
 [[package]]
@@ -104,23 +111,10 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.6.0"
+version = "1.5.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
-name = "parse_record_types_tests"
-version = "0.9.0"
-dependencies = [
-	{org = "ballerina", name = "csv_commons"},
-	{org = "ballerina", name = "data.csv"},
-	{org = "ballerina", name = "test"}
-]
-modules = [
-	{org = "ballerina", packageName = "parse_record_types_tests", moduleName = "parse_record_types_tests"}
 ]
 
 [[package]]
