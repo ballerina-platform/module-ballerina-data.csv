@@ -22,7 +22,7 @@ import ballerina/test;
     groups: ["fail_safe"]
 }
 function testFailSafeMechanismWithBasicErrors() returns error? {
-    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("fail_test_with_simple_data.csv");
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_simple_data.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream);
     test:assertEquals(data.length(), 3);
 }
@@ -31,7 +31,7 @@ function testFailSafeMechanismWithBasicErrors() returns error? {
     groups: ["fail_safe"]
 }
 function testFailSafeMechanismWithMultipleHeaders() returns error? {
-    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("fail_test_with_multiple_headers.csv");
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_headers.csv");
     UserDetailsRecord[] data = check csv:parseStream(csvStream);
     test:assertEquals(data.length(), 8);
 }
@@ -40,7 +40,7 @@ function testFailSafeMechanismWithMultipleHeaders() returns error? {
     groups: ["fail_safe"]
 }
 function testFailSafeMechanismWithErrorsInLastRow() returns error? {
-    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("fail_test_with_single_error.csv");
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_single_error.csv");
     UserProfileRecord[] data = check csv:parseStream(csvStream);
     test:assertEquals(data.length(), 1);
 }
@@ -49,7 +49,7 @@ function testFailSafeMechanismWithErrorsInLastRow() returns error? {
     groups: ["fail_safe"]
 }
 function testFailSafeMechanismWithMultipleErrorRows() returns error? {
-    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("fail_test_with_multiple_errors.csv");
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream);
     test:assertEquals(data.length(), 5);
 }
