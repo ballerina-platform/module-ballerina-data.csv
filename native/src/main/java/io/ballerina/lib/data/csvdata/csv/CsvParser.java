@@ -323,14 +323,25 @@ public final class CsvParser {
                     while (this.index < count) {
                         try {
                             currentState = currentState.transition(this, buff, this.index, count);
-                        } catch (Exception e) {
-                            this.index = getIndexOfNextLine(this, buff, count);
-                            if (this.index <= count) {
-                                LOGGER.log(Level.SEVERE, "CSV parse error at line {0}, column {1}: {2}",
-                                        new Object[]{this.lineNumber + 1, this.columnIndex + 1, e.getMessage()});
+                        } catch (Exception exception) {
+                            if (config.failSafe) {
+                                this.index = getIndexOfNextLine(this, buff, count);
+                                if (this.index <= count) {
+                                    LOGGER.log(
+                                            Level.SEVERE,
+                                            "CSV parse error at line {0}, column {1}: {2}",
+                                            new Object[] {
+                                                    this.lineNumber + 1,
+                                                    this.columnIndex + 1,
+                                                    exception.getMessage()
+                                            }
+                                    );
+                                }
+                                updateLineAndColumnIndexes(this);
+                                currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
+                            } else {
+                                throw exception;
                             }
-                            updateLineAndColumnIndexes(this);
-                            currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
                         }
                     }
                 }

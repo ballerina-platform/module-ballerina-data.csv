@@ -46,6 +46,9 @@ public type Options record {
     boolean enableConstraintValidation = true;  
     # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
+    # Specifies whether to enable the fail-safe mechanism during parsing. 
+    # This will skip rows with errors instead of failing the entire operation.
+    boolean failSafe = true;
 };
 
 # Represents the options for parsing data.

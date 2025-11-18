@@ -23,7 +23,6 @@ public final class Constants {
         public static final BString NIL_AS_OPTIONAL = StringUtils.fromString("nilAsOptionalField");
         public static final BString ABSENT_AS_NILABLE = StringUtils.fromString("absentAsNilableType");
         public static final BString ALLOW_DATA_PROJECTION = StringUtils.fromString("allowDataProjection");
-        public static final BString STRING_CONVERSION = StringUtils.fromString("stringConversion");
         public static final BString ENABLE_CONSTRAINT_VALIDATION = StringUtils.
                 fromString("enableConstraintValidation");
         public static final BString OUTPUT_WITH_HEADERS = StringUtils.fromString("outputWithHeaders");
@@ -32,6 +31,7 @@ public final class Constants {
                 StringUtils.fromString("customHeadersIfHeadersAbsent");
         public static final BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
         public static final BString HEADERS_ORDER = StringUtils.fromString("headerOrder");
+        public static final BString FAIL_SAFE = StringUtils.fromString("failSafe");
 
         private ConfigConstants() {
         }
