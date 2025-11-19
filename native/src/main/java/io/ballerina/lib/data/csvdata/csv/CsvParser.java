@@ -328,7 +328,7 @@ public final class CsvParser {
                         try {
                             currentState = currentState.transition(this, buff, this.index, count);
                         } catch (Exception exception) {
-                            if (config.failSafe) {
+                            if (config.failSafe && isAllowedFailSafe(exception)) {
                                 this.index = getIndexOfNextLine(this, buff, count);
                                 if (this.index <= count) {
                                     printErrorLogs(environment, exception);
@@ -362,6 +362,20 @@ public final class CsvParser {
                     null, null, ValueCreator.createMapValue()};
             environment.getRuntime().callFunction(ModuleUtils.getModule(), PRINT_ERROR,
                     strandMetadata, arguments);
+        }
+
+        private boolean isAllowedFailSafe(Exception exception) {
+            String message = exception.getMessage();
+            if (message == null) {
+                return true;
+            }
+            String normalized = message.toLowerCase();
+            if (normalized.contains("invalid csv data format")
+                    || normalized.contains("no matching header value is found for the required field")
+                    || normalized.contains("header cannot be empty")) {
+                return false;
+            }
+            return true;
         }
 
         private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {
