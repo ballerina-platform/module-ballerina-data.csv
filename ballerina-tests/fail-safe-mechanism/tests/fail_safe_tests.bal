@@ -23,16 +23,24 @@ import ballerina/test;
 }
 function testFailSafeMechanismWithHeaderErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
-    UserStatusRecord[] data = check csv:parseStream(csvStream, {failSafe: true});
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertEquals(data.length(), 0);
 }
 
 @test:Config {
-    groups: ["fail_safe"]
+    groups: ["fail_safe", "l"]
 }
 function testFailSafeMechanismWithBasicErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_simple_data.csv");
-    UserStatusRecord[] data = check csv:parseStream(csvStream, {failSafe: true});
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertEquals(data.length(), 3);
 }
 
@@ -41,7 +49,11 @@ function testFailSafeMechanismWithBasicErrors() returns error? {
 }
 function testFailSafeMechanismWithMultipleHeaders() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_headers.csv");
-    UserDetailsRecord[] data = check csv:parseStream(csvStream, {failSafe: true});
+    UserDetailsRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertEquals(data.length(), 8);
 }
 
@@ -50,7 +62,11 @@ function testFailSafeMechanismWithMultipleHeaders() returns error? {
 }
 function testFailSafeMechanismWithErrorsInLastRow() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_single_error.csv");
-    UserProfileRecord[] data = check csv:parseStream(csvStream, {failSafe: true});
+    UserProfileRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertEquals(data.length(), 1);
 }
 
@@ -59,7 +75,11 @@ function testFailSafeMechanismWithErrorsInLastRow() returns error? {
 }
 function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
-    UserStatusRecord[] data = check csv:parseStream(csvStream, {failSafe: true});
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertEquals(data.length(), 5);
 }
 
@@ -68,10 +88,18 @@ function testFailSafeMechanismWithMultipleErrorRows() returns error? {
 }
 function testErrorsWithEmptyFiles() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/empty_file.xml");
-    UserStatusRecord[]|csv:Error data = csv:parseStream(csvStream, {failSafe: true});
+    UserStatusRecord[]|csv:Error data = csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertTrue(data is csv:Error);
     csvStream = check io:fileReadBlocksAsStream("resources/invalid_file_format.xml");
-    data = csv:parseStream(csvStream, {failSafe: true});
+    data = csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true
+        }
+    });
     test:assertTrue(data is csv:Error);
 }
 
