@@ -29,7 +29,7 @@ public class CsvConfig {
     public Object customHeadersIfHeadersAbsent = null;
     public long headerRows = 0;
     public Object customHeaders = null;
-    public boolean failSafe;
+    public BMap<?, ?> failSafe;
 
     private CsvConfig(CsvConfig config) {
         this.allowDataProjection = false;
@@ -55,13 +55,13 @@ public class CsvConfig {
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
                 options.getIntValue(Constants.ConfigConstants.HEADER_ROWS),
                 options.get(Constants.ConfigConstants.CUSTOM_HEADERS),
-                options.getBooleanValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
         );
     }
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     long headerRows, Object headers, boolean failSafe) {
+                     long headerRows, Object headers, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -83,13 +83,13 @@ public class CsvConfig {
                 options.getBooleanValue(Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION),
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
                 options.get(Constants.ConfigConstants.HEADERS_ORDER),
-                options.getBooleanValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
         );
     }
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     Object headerOrder, boolean failSafe) {
+                     Object headerOrder, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -118,7 +118,7 @@ public class CsvConfig {
                 StringUtils.getStringValue(options.getStringValue(Constants.ConfigConstants.COMMENT_CHAR)).charAt(0),
                 options.get(Constants.ConfigConstants.HEADER),
                 options.get(Constants.ConfigConstants.CUSTOM_HEADERS_IF_HEADER_ABSENT),
-                options.getBooleanValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
         );
     }
 
@@ -126,7 +126,7 @@ public class CsvConfig {
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders, char delimiter,
                      String locale, char textEnclosure, char escapeChar, Object lineTerminator,
                      Object nilValue, char comment, Object header,
-                     Object customHeadersIfHeadersAbsent, boolean failSafe) {
+                     Object customHeadersIfHeadersAbsent, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;

@@ -32,6 +32,7 @@ public final class Constants {
         public static final BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
         public static final BString HEADERS_ORDER = StringUtils.fromString("headerOrder");
         public static final BString FAIL_SAFE = StringUtils.fromString("failSafe");
+        public static final BString ENABLED_FAIL_SAFE = StringUtils.fromString("enabled");
 
         private ConfigConstants() {
         }

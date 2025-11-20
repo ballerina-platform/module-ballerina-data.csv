@@ -43,17 +43,26 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static io.ballerina.lib.data.csvdata.utils.Constants.ConfigConstants.ENABLED_FAIL_SAFE;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSPACE_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.CARRIAGE_RETURN_CHAR;
@@ -124,6 +133,11 @@ public final class CsvParser {
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
         private static final char LINE_BREAK = '\n';
         public static final String PRINT_ERROR = "printError";
+        public static final BString FILE_PATH = StringUtils.fromString("filePath");
+        public static final String OVERWRITE = "OVERWRITE";
+        public static final String CONSOLE = "CONSOLE";
+        public static final BString OUTPUT_MODE = StringUtils.fromString("outputMode");
+        public static final BString LOG_FILE_CONFIG = StringUtils.fromString("logFileConfig");
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -322,16 +336,56 @@ public final class CsvParser {
             try {
                 char[] buff = new char[1024];
                 int count;
+                boolean isOverwritten = false;
                 while ((count = reader.read(buff)) > 0) {
                     this.index = 0;
                     while (this.index < count) {
                         try {
                             currentState = currentState.transition(this, buff, this.index, count);
                         } catch (Exception exception) {
-                            if (config.failSafe && isAllowedFailSafe(exception)) {
+                            BMap<?, ?> failSafe = config.failSafe;
+                            boolean enableFailSafe = failSafe.getBooleanValue(ENABLED_FAIL_SAFE);
+                            if (enableFailSafe && isAllowedFailSafe(exception)) {
                                 this.index = getIndexOfNextLine(this, buff, count);
                                 if (this.index <= count) {
-                                    printErrorLogs(environment, exception);
+                                    String outputMode = failSafe.getStringValue(OUTPUT_MODE).toString();
+                                    if (outputMode.equals(CONSOLE)) {
+                                        printErrorLogs(environment, exception);
+                                    } else {
+                                        BMap<?, ?> logFileConfig = failSafe.getMapValue(LOG_FILE_CONFIG);
+                                        if (!logFileConfig.containsKey(FILE_PATH)) {
+                                            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                                                    "The `outputMode` is set to FILE," +
+                                                            "but the `filePath` parameter is not provided.");
+                                        }
+                                        String filePath = logFileConfig.getStringValue(FILE_PATH).toString();
+                                        File logFile = new File(filePath);
+                                        try {
+                                            java.io.File parentDir = logFile.getParentFile();
+                                            if (parentDir != null && !parentDir.exists()) {
+                                                parentDir.mkdirs();
+                                            }
+                                            if (!logFile.exists()) {
+                                                logFile.createNewFile();
+                                            }
+                                        } catch (IOException ioException) {
+                                            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                                                    "Failed to create log file at: " + filePath + " (" +
+                                                            ioException.getMessage() + ")");
+                                        }
+                                        String fileWriteOption = logFileConfig.getStringValue(
+                                                StringUtils.fromString("fileWriteOption")).toString();
+                                        if (fileWriteOption.equals(OVERWRITE) && !isOverwritten) {
+                                            overwriteLogFile(filePath);
+                                            isOverwritten = true;
+                                        }
+                                        writeLogsToFile(filePath,
+                                                String.format("CSV parse error at line %d, column %d: %s%n",
+                                                        this.lineNumber + 1, this.columnIndex + 1,
+                                                        exception.getMessage()), false);
+                                        
+                                    }
+
                                 }
                                 updateLineAndColumnIndexes(this);
                                 currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
@@ -362,6 +416,27 @@ public final class CsvParser {
                     null, null, ValueCreator.createMapValue()};
             environment.getRuntime().callFunction(ModuleUtils.getModule(), PRINT_ERROR,
                     strandMetadata, arguments);
+        }
+
+        private void overwriteLogFile(String filePath) {
+            Path path = Paths.get(filePath);
+            try {
+                Files.write(path, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (IOException e) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                        "Failed to overwrite log file at: " + filePath + " (" + e.getMessage() + ")");
+            }
+        }
+
+        private void writeLogsToFile(String filePath, String content, boolean append) {
+            Path path = Paths.get(filePath);
+            try {
+                Files.write(path, content.getBytes(StandardCharsets.UTF_8),
+                        StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS,
+                        "Failed to write to log file at: " + filePath + " (" + e.getMessage() + ")");
+            }
         }
 
         private boolean isAllowedFailSafe(Exception exception) {
