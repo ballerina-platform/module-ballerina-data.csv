@@ -74,3 +74,21 @@ function testErrorsWithEmptyFiles() returns error? {
     data = csv:parseStream(csvStream, {failSafe: true});
     test:assertTrue(data is csv:Error);
 }
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testErrorsWithWritingLogsToFile() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true,
+            outputMode: csv:FILE,
+            logFileConfig: {
+                filePath: "logs/logs.txt",
+                fileWriteOption: csv:OVERWRITE
+            }
+        }
+    });
+    test:assertEquals(data.length(), 0);
+}
