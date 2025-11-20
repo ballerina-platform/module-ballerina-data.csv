@@ -55,7 +55,7 @@ public type FailSafeOptions record {
     # Specifies whether to enable the fail-safe mechanism during parsing
     # If `true`, errors in individual rows are skipped and logged, allowing the operation to continue
     # If `false`, the operation fails immediately upon encountering an error
-    boolean enabled = true;
+    boolean enabled = false;
     # Specifies the output mode for logging errors encountered during parsing
     OutputMode outputMode = CONSOLE;
     # Configuration for logging errors to a file when the output mode is set to FILE
