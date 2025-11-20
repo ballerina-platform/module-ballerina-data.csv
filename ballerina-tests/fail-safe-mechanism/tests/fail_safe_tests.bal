@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/data.csv;
+import ballerina/file;
 import ballerina/io;
 import ballerina/test;
 
@@ -119,4 +120,5 @@ function testErrorsWithWritingLogsToFile() returns error? {
         }
     });
     test:assertEquals(data.length(), 0);
+    check file:remove("logs/logs.txt");
 }
