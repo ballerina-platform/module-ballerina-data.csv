@@ -46,13 +46,42 @@ public type Options record {
     boolean enableConstraintValidation = true;  
     # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
-    # Specifies whether to enable the fail-safe mechanism during parsing
-    boolean failSafe = false;
+    # Specifies the fail-safe options for handling errors during processing
+    FailSafeOptions failSafe = {};
 };
 
-    # Specifies whether to enable the fail-safe mechanism during parsing. 
-    # This will skip rows with errors instead of failing the entire operation.
-    boolean failSafe = true;
+# Represents the options for fail-safe mechanism during parsing.
+public type FailSafeOptions record {
+    # Specifies whether to enable the fail-safe mechanism during parsing
+    # If `true`, errors in individual rows are skipped and logged, allowing the operation to continue
+    # If `false`, the operation fails immediately upon encountering an error
+    boolean enabled = true;
+    # Specifies the output mode for logging errors encountered during parsing
+    OutputMode outputMode = CONSOLE;
+    # Configuration for logging errors to a file when the output mode is set to FILE
+    LogFileConfig logFileConfig = {};
+};
+
+# Represents the output modes for logging errors.
+public enum OutputMode {
+    CONSOLE,
+    FILE
+};
+
+# Represents the configuration for logging errors to a file.
+public type LogFileConfig record {
+    # The file path where errors will be logged
+    string filePath?;
+    # Configuration for writing to the log file
+    FileWriteOption fileWriteOption = OVERWRITE;
+};
+
+# Represents the options for writing data.
+public enum FileWriteOption {
+    # If the file already exists, new logs will be appended to the existing file
+    APPEND,
+    # When the error logging starts, if the file already exists, the file will be overwritten
+    OVERWRITE
 };
 
 # Represents the options for parsing data.
