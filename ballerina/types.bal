@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
+
 # Represents an error.
 public type Error error;
 
@@ -60,12 +62,15 @@ public type FailSafeOptions record {
     OutputMode outputMode = CONSOLE;
     # Configuration for logging errors to a file when the output mode is set to FILE
     LogFileConfig logFileConfig = {};
+    # Additional context to include in the error logs
+    log:KeyValues additionalContext?;
 };
 
 # Represents the output modes for logging errors.
 public enum OutputMode {
     CONSOLE,
-    FILE
+    FILE,
+    FILE_AND_CONSOLE
 };
 
 # Represents the configuration for logging errors to a file.
