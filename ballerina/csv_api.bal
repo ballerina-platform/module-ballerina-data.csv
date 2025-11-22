@@ -121,3 +121,12 @@ public function printError(string|log:PrintableRawTemplate msg, error? 'error = 
                            error:StackFrame[]? stackTrace = (), *log:KeyValues keyValues) {
      return log:printError(msg, 'error, stackTrace, keyValues);
 }
+
+
+# Convert anydata value to a JSON value.
+#
+# + value - The anydata value to be converted
+# + return - On success, the converted JSON value, else returns an error
+public function toJson(anydata value) returns json|error {
+    return value.toJson();
+}
