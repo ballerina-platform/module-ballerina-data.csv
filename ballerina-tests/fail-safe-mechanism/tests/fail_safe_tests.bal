@@ -112,13 +112,16 @@ function testErrorsWithWritingLogsToFile() returns error? {
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
             enabled: true,
-            outputMode: csv:FILE,
+            outputMode: csv:FILE_AND_CONSOLE,
             logFileConfig: {
-                filePath: "logs/logs.txt",
-                fileWriteOption: csv:OVERWRITE
+                filePath: "logs.txt",
+                fileWriteOption: csv:APPEND
+            },
+            additionalContext: {
+                "testKey": "testValue"
             }
         }
     });
     test:assertEquals(data.length(), 0);
-    check file:remove("logs/logs.txt");
+    check file:remove("logs.txt");
 }
