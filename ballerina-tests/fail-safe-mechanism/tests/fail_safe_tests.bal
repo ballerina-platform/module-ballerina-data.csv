@@ -33,7 +33,7 @@ function testFailSafeMechanismWithHeaderErrors() returns error? {
 }
 
 @test:Config {
-    groups: ["fail_safe", "l"]
+    groups: ["fail_safe"]
 }
 function testFailSafeMechanismWithBasicErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_simple_data.csv");
@@ -65,7 +65,8 @@ function testFailSafeMechanismWithErrorsInLastRow() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_single_error.csv");
     UserProfileRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            enabled: true
+            enabled: true,
+            outputMode: csv:CONSOLE
         }
     });
     test:assertEquals(data.length(), 1);
@@ -112,7 +113,7 @@ function testErrorsWithWritingLogsToFile() returns error? {
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
             enabled: true,
-            outputMode: csv:FILE_AND_CONSOLE,
+            outputMode: csv:FILE,
             logFileConfig: {
                 filePath: "logs.txt",
                 fileWriteOption: csv:APPEND
@@ -124,4 +125,43 @@ function testErrorsWithWritingLogsToFile() returns error? {
     });
     test:assertEquals(data.length(), 0);
     check file:remove("logs.txt");
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testIOErrorsWithWritingLogsToFile() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
+    UserStatusRecord[]|error data = csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true,
+            outputMode: csv:FILE_AND_CONSOLE,
+            logFileConfig: {
+                filePath: "resources",
+                fileWriteOption: csv:APPEND
+            }
+        }
+    });
+    test:assertTrue(data is csv:Error);
+}
+
+@test:Config {
+    groups: ["fail_safe", "l"]
+}
+function testOverwritingErrorLogFiles() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
+    UserStatusRecord[]|error data = csv:parseStream(csvStream, {
+        failSafe: {
+            enabled: true,
+            outputMode: csv:FILE_AND_CONSOLE,
+            logFileConfig: {
+                filePath: "resources",
+                fileWriteOption: csv:OVERWRITE
+            },
+            additionalContext: {
+                "testKey": "testValue"
+            }
+        }
+    });
+    test:assertTrue(data is csv:Error);
 }
