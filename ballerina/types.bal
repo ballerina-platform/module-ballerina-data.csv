@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-
 # Represents an error.
 public type Error error;
 
@@ -49,36 +47,60 @@ public type Options record {
     # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
     # Specifies the fail-safe options for handling errors during processing
-    FailSafeOptions failSafe = {};
+    FailSafeOptions failSafe?;
 };
 
 # Represents the options for fail-safe mechanism during parsing.
-public type FailSafeOptions record {
-    # Specifies whether to enable the fail-safe mechanism during parsing
-    # If `true`, errors in individual rows are skipped and logged, allowing the operation to continue
-    # If `false`, the operation fails immediately upon encountering an error
-    boolean enabled = false;
+public type FailSafeOptions record {|
     # Specifies the output mode for logging errors encountered during parsing
-    OutputMode outputMode = CONSOLE;
-    # Configuration for logging errors to a file when the output mode is set to FILE
-    LogFileConfig logFileConfig = {};
-    # Additional context to include in the error logs
-    log:KeyValues additionalContext?;
-};
+    ConsoleOutputMode|FileOutputMode outputMode = {};
+|};
 
-# Represents the output modes for logging errors.
-public enum OutputMode {
-    CONSOLE,
-    FILE,
-    FILE_AND_CONSOLE
-};
+# Represents the console output mode for logging errors.
+public type ConsoleOutputMode record {|
+    # Specifies enabling logging errors to the console
+    boolean maskSourceData = true;
+|};
 
-# Represents the configuration for logging errors to a file.
-public type LogFileConfig record {
+# Represents the file output mode for logging errors.
+public type FileOutputMode record {|
+    # Specifies enabling logging errors to the console
+    boolean enableConsoleLogs = false;
     # The file path where errors will be logged
-    string filePath?;
+    string filePath;
+    # Specifies logging source data row along with error details
+    DataType dataType = METADATA;
     # Configuration for writing to the log file
-    FileWriteOption fileWriteOption = OVERWRITE;
+    FileWriteOption fileWriteOption = APPEND;
+|};
+
+public enum DataType {
+    # Logs only the error messages without source data rows
+    METADATA,
+    # Logs the raw source data rows along with error messages
+    RAW,
+    # Logs both raw source data rows and metadata along with error messages
+    RAW_AND_METADATA
+};
+
+# Represents an error log entry.
+public type LogOutput record {|
+    # The timestamp of the error occurrence
+    string time;
+    # The location where the error occurred
+    Location location;
+    # The error message
+    string message;
+    # The source data row related to the error
+    string sourceDataRow;
+|};
+
+# Represents the location of an error.
+public type Location record {
+    # The row number where the error occurred
+    int row;
+    # The column number where the error occurred
+    int column;
 };
 
 # Represents the options for writing data.
