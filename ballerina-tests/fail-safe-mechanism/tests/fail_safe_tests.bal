@@ -25,9 +25,7 @@ import ballerina/test;
 function testFailSafeMechanismWithHeaderErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertEquals(data.length(), 0);
 }
@@ -38,9 +36,7 @@ function testFailSafeMechanismWithHeaderErrors() returns error? {
 function testFailSafeMechanismWithBasicErrors() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_simple_data.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertEquals(data.length(), 3);
 }
@@ -51,9 +47,7 @@ function testFailSafeMechanismWithBasicErrors() returns error? {
 function testFailSafeMechanismWithMultipleHeaders() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_headers.csv");
     UserDetailsRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertEquals(data.length(), 8);
 }
@@ -64,10 +58,7 @@ function testFailSafeMechanismWithMultipleHeaders() returns error? {
 function testFailSafeMechanismWithErrorsInLastRow() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_single_error.csv");
     UserProfileRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true,
-            outputMode: csv:CONSOLE
-        }
+        failSafe: {}
     });
     test:assertEquals(data.length(), 1);
 }
@@ -78,9 +69,7 @@ function testFailSafeMechanismWithErrorsInLastRow() returns error? {
 function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertEquals(data.length(), 5);
 }
@@ -91,35 +80,27 @@ function testFailSafeMechanismWithMultipleErrorRows() returns error? {
 function testErrorsWithEmptyFiles() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/empty_file.xml");
     UserStatusRecord[]|csv:Error data = csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertTrue(data is csv:Error);
     csvStream = check io:fileReadBlocksAsStream("resources/invalid_file_format.xml");
     data = csv:parseStream(csvStream, {
-        failSafe: {
-            enabled: true
-        }
+        failSafe: {}
     });
     test:assertTrue(data is csv:Error);
 }
 
 @test:Config {
-    groups: ["fail_safe"]
+    groups: ["fail_safe", "d"]
 }
 function testErrorsWithWritingLogsToFile() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            enabled: true,
-            outputMode: csv:FILE,
-            logFileConfig: {
+            outputMode: {
+                enableConsoleLogs: true,
                 filePath: "logs.txt",
-                fileWriteOption: csv:APPEND
-            },
-            additionalContext: {
-                "testKey": "testValue"
+                fileWriteOption: "OVERWRITE"
             }
         }
     });
@@ -134,11 +115,10 @@ function testIOErrorsWithWritingLogsToFile() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[]|error data = csv:parseStream(csvStream, {
         failSafe: {
-            enabled: true,
-            outputMode: csv:FILE_AND_CONSOLE,
-            logFileConfig: {
+            outputMode: {
+                enableConsoleLogs: true,
                 filePath: "resources",
-                fileWriteOption: csv:APPEND
+                dataType: csv:RAW
             }
         }
     });
@@ -146,22 +126,56 @@ function testIOErrorsWithWritingLogsToFile() returns error? {
 }
 
 @test:Config {
-    groups: ["fail_safe", "l"]
+    groups: ["fail_safe"]
 }
-function testOverwritingErrorLogFiles() returns error? {
+function testWritingLogsToFileWithEmptyFilePath() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[]|error data = csv:parseStream(csvStream, {
         failSafe: {
-            enabled: true,
-            outputMode: csv:FILE_AND_CONSOLE,
-            logFileConfig: {
-                filePath: "resources",
-                fileWriteOption: csv:OVERWRITE
-            },
-            additionalContext: {
-                "testKey": "testValue"
+            outputMode: {
+                enableConsoleLogs: true,
+                filePath: "",
+                dataType: csv:RAW
             }
         }
     });
     test:assertTrue(data is csv:Error);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testOverwritingErrorLogFiles() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            outputMode: {
+                enableConsoleLogs: true,
+                filePath: "logs.txt",
+                fileWriteOption: csv:OVERWRITE,
+                dataType: csv:RAW_AND_METADATA
+            }
+        }
+    });
+    test:assertEquals(data.length(), 5);
+    check file:remove("logs.txt");
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testWritingMetadataLogsIntoFiles() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            outputMode: {
+                enableConsoleLogs: true,
+                filePath: "logs.txt",
+                fileWriteOption: csv:OVERWRITE,
+                dataType: csv:METADATA
+            }
+        }
+    });
+    test:assertEquals(data.length(), 5);
+    check file:remove("logs.txt");
 }

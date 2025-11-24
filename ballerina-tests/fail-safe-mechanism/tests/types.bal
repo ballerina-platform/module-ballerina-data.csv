@@ -19,6 +19,12 @@ type UserStatusRecord record {
     boolean active;
 };
 
+type UserStatus record {
+    int id;
+    string name;
+};
+
+
 type UserProfileRecord record {
     string id;
     string name;
