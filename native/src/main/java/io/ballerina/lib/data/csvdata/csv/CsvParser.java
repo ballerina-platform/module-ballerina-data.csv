@@ -390,7 +390,8 @@ public final class CsvParser {
             }
         }
 
-        private void processFileLogs(Environment environment, AtomicBoolean isOverwritten, Exception exception, BMap<?, ?> outputMode, String sourceRow) {
+        private void processFileLogs(Environment environment, AtomicBoolean isOverwritten,
+                                     Exception exception, BMap<?, ?> outputMode, String sourceRow) {
             boolean enableConsoleLogs = outputMode.getBooleanValue(ENABLE_CONSOLE_LOGS);
             String dataType = outputMode.getStringValue(DATA_TYPE).toString();
             if (enableConsoleLogs) {
@@ -404,7 +405,8 @@ public final class CsvParser {
                     sourceRow, dataType);
         }
 
-        private void processConsoleLogs(Environment environment, Exception exception, BMap<?, ?> outputMode, String sourceRow) {
+        private void processConsoleLogs(Environment environment, Exception exception,
+                                        BMap<?, ?> outputMode, String sourceRow) {
             boolean maskSourceData = outputMode.getBooleanValue(MASK_SOURCE_DATA);
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
             if (maskSourceData) {
