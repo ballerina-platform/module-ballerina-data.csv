@@ -117,7 +117,7 @@ public isolated function parseList(string[][] csvList, ParseListOptions options 
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public function printError(string|log:PrintableRawTemplate msg, error? 'error = (), 
+function printError(string|log:PrintableRawTemplate msg, error? 'error = (), 
                            error:StackFrame[]? stackTrace = (), *log:KeyValues keyValues) {
      return log:printError(msg, 'error, stackTrace, keyValues);
 }
@@ -127,6 +127,6 @@ public function printError(string|log:PrintableRawTemplate msg, error? 'error = 
 #
 # + value - The anydata value to be converted
 # + return - On success, the converted JSON value, else returns an error
-public function toJson(anydata value) returns json|error {
+function toJson(anydata value) returns json|error {
     return value.toJson();
 }
