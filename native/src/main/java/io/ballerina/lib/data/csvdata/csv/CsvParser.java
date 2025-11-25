@@ -398,7 +398,7 @@ public final class CsvParser {
             if (enableConsoleLogs) {
                 BMap<BString, Object> keyValues = ValueCreator.createMapValue();
                 if (!dataType.equals(METADATA)) {
-                    keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow));
+                    keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
                 }
                 printErrorLogs(environment, exception, keyValues);
             }
@@ -410,7 +410,7 @@ public final class CsvParser {
             boolean excludeSourceData = outputMode.getBooleanValue(EXCLUDE_SOURCE_DATA);
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
             if (excludeSourceData) {
-                keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow));
+                keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
                 printErrorLogs(environment, exception, keyValues);
             }
             printErrorLogs(environment, exception);
@@ -467,7 +467,7 @@ public final class CsvParser {
         private void writeLogsToFile(String filePath, String content) {
             Path path = Paths.get(filePath);
             try {
-                Files.writeString(path, content, StandardOpenOption.CREATE,
+                Files.writeString(path, content.trim() + "\n", StandardOpenOption.CREATE,
                                   StandardOpenOption.WRITE, StandardOpenOption.APPEND);
             } catch (IOException exception) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
@@ -482,7 +482,7 @@ public final class CsvParser {
             String json = "{\"time\":\"" + StringUtils.fromString(time) + "\"," +
                     "\"location\":{\"row\":" + (this.lineNumber + 1) +
                     ",\"column\":" + (this.columnIndex + 1) + "}," +
-                    (excludeSourceData ? "" : "\"sourceData\":\"" + StringUtils.fromString(sourceData) + "\",") +
+                    (excludeSourceData ? "" : "\"sourceData\":\"" + StringUtils.fromString(sourceData.trim()) + "\",") +
                     "\"message\":\"" + StringUtils.fromString(message) + "\"" +
                     "}";
             StrandMetadata strandMetadata = new StrandMetadata(true,
