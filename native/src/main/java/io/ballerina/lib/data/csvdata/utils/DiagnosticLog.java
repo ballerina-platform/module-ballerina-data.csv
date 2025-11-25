@@ -58,4 +58,8 @@ public final class DiagnosticLog {
     public static BError getCsvError(String message) {
         return getCsvError(message, CSV_CONVERSION_ERROR);
     }
+
+    public static String getErrorMessage(DiagnosticErrorCode code) {
+        return MESSAGES.getString(ERROR_PREFIX + "." + code.messageKey());
+    }
 }
