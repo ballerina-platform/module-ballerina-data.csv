@@ -14,6 +14,7 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 - **Versatile CSV Data Input**: Accept CSV data as a string, byte array, or a stream and convert it into a subtype of ballerina records or lists.
 - **CSV to anydata Value transformation**: Transform CSV data into expected type which is subtype of ballerina record arrays or anydata arrays.
 - **Projection Support**: Perform selective conversion of CSV data subsets into ballerina record array or anydata array values through projection.
+- **Fail-Safe Error Handling**: Continue processing CSV data even when encountering row-level errors and logging errors to the console or file for error tracking and debugging.
 
 ## Usage
 
@@ -101,6 +102,106 @@ public function main() returns error? {
     // Transform CSV records to a string array of arrays.
     [string, int][] books3 = check csv:transform(bookRecords);
     io:println(books3);
+}
+```
+
+### Fail-safe CSV parsing with metadata error logging
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Transaction record {
+    int transactionId;
+    decimal amount;
+    string date;
+};
+
+public function main() returns error? {
+    string csvString = string `transactionId,amount,date
+                               1001,250.50,2024-01-15
+                               1002,INVALID,2024-01-16
+                               1003,175.25,2024-01-17`;
+
+    Transaction[] transactions = check csv:parseString(csvString, {
+        failSafe: {
+            outputMode: {
+                filePath: "./logs/transaction-errors.log",
+                dataType: csv:METADATA,
+                fileWriteOption: csv:APPEND,
+                enableConsoleLogs: false
+            }
+        }
+    });
+    
+    io:println(transactions);
+}
+```
+
+### Fail-safe CSV parsing with raw data error logging
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type SensorReading record {
+    int sensorId;
+    float temperature;
+    int timestamp;
+};
+
+public function main() returns error? {
+    string csvString = string `sensorId,temperature,timestamp
+                               1,23.5,1640000000
+                               2,HOT,1640000060
+                               3,22.1,NOT_A_NUMBER
+                               4,24.8,1640000180`;
+
+    SensorReading[] readings = check csv:parseString(csvString, {
+        failSafe: {
+            outputMode: {
+                filePath: "./logs/sensor-errors.log",
+                dataType: csv:RAW,
+                fileWriteOption: csv:OVERWRITE,
+                enableConsoleLogs: false
+            }
+        }
+    });
+    
+    io:println(readings);
+}
+```
+
+### Fail-safe CSV parsing with combined logging and console output
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Order record {
+    string orderId;
+    int quantity;
+    decimal totalAmount;
+};
+
+public function main() returns error? {
+    string csvString = string `orderId,quantity,totalAmount
+                               ORD001,5,125.50
+                               ORD002,INVALID,250.00
+                               ORD003,3,75.25`;
+
+    Order[] orders = check csv:parseString(csvString, {
+        failSafe: {
+            outputMode: {
+                filePath: "./logs/order-errors.log",
+                dataType: csv:RAW_AND_METADATA,
+                fileWriteOption: csv:APPEND,
+                enableConsoleLogs: true
+            }
+        }
+    });
+    
+    io:println(orders);
 }
 ```
 
