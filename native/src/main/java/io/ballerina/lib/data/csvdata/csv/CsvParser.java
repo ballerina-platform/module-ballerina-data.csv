@@ -410,9 +410,8 @@ public final class CsvParser {
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
             if (!excludeSourceData) {
                 keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
-                printErrorLogs(environment, exception, keyValues);
             }
-            printErrorLogs(environment, exception);
+            printErrorLogs(environment, exception, keyValues);
         }
 
         private static void handleLogFileGeneration(String filePath) {
@@ -429,10 +428,6 @@ public final class CsvParser {
                 throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
                         String.format(FILE_IO_ERROR, filePath, ioException.getMessage()));
             }
-        }
-
-        private void printErrorLogs(Environment environment, Exception exception) {
-            printErrorLogs(environment, exception, ValueCreator.createMapValue());
         }
 
         private void printErrorLogs(Environment environment, Exception exception, BMap<BString, Object> keyValues) {
