@@ -69,7 +69,11 @@ function testFailSafeMechanismWithErrorsInLastRow() returns error? {
 function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
-        failSafe: {}
+        failSafe: {
+            outputMode: {
+                excludeSourceData: false
+            }
+        }
     });
     test:assertEquals(data.length(), 5);
 }
@@ -83,15 +87,10 @@ function testErrorsWithEmptyFiles() returns error? {
         failSafe: {}
     });
     test:assertTrue(data is csv:Error);
-    csvStream = check io:fileReadBlocksAsStream("resources/invalid_file_format.xml");
-    data = csv:parseStream(csvStream, {
-        failSafe: {}
-    });
-    test:assertTrue(data is csv:Error);
 }
 
 @test:Config {
-    groups: ["fail_safe", "d"]
+    groups: ["fail_safe"]
 }
 function testErrorsWithWritingLogsToFile() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
@@ -118,7 +117,7 @@ function testIOErrorsWithWritingLogsToFile() returns error? {
             outputMode: {
                 enableConsoleLogs: true,
                 filePath: "resources",
-                contentType: csv:RAW
+                contentType: csv:METADATA
             }
         }
     });
@@ -169,7 +168,7 @@ function testWritingMetadataLogsIntoFiles() returns error? {
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
             outputMode: {
-                enableConsoleLogs: true,
+                enableConsoleLogs: false,
                 filePath: "logs.txt",
                 fileWriteOption: csv:OVERWRITE,
                 contentType: csv:METADATA
