@@ -68,40 +68,41 @@ public type FileOutputMode record {|
     boolean enableConsoleLogs = false;
     # The file path where errors will be logged
     string filePath;
-    # Specifies logging source data row along with error details
-    DataType dataType = METADATA;
+    # Controls the level of detail included in the error logs.
+    ErrorLogContentType contentType = METADATA;
     # Configuration for writing to the log file
     FileWriteOption fileWriteOption = APPEND;
 |};
 
-public enum DataType {
-    # Logs only the error messages without source data rows
+# Represents the content type for error logging.
+public enum ErrorLogContentType {
+    # Logs only the metadata (timestamp, location, message) without source data rows
     METADATA,
-    # Logs the raw source data rows along with error messages
+    # Logs the source data rows along with error messages
     RAW,
-    # Logs both raw source data rows and metadata along with error messages
+    # Logs both source data rows and metadata along with error messages
     RAW_AND_METADATA
 };
 
 # Represents an error log entry.
 public type LogOutput record {|
     # The timestamp of the error occurrence
-    string time;
+    string time?;
     # The location where the error occurred
-    Location location;
+    Location location?;
     # The error message
-    string message;
+    string message?;
     # The source data row related to the error
-    string offendingRow;
+    string offendingRow?;
 |};
 
 # Represents the location of an error.
-public type Location record {
+public type Location record {|
     # The row number where the error occurred
     int row;
     # The column number where the error occurred
     int column;
-};
+|};
 
 # Represents the options for writing data.
 public enum FileWriteOption {

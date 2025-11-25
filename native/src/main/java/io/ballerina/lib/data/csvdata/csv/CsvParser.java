@@ -146,7 +146,7 @@ public final class CsvParser {
         public static final String FILE = "FILE";
         public static final BString ADDITIONAL_CONTEXT = StringUtils.fromString("additionalContext");
         public static final String CONSOLE_OUTPUT_MODE = "ConsoleOutputMode";
-        public static final BString DATA_TYPE = StringUtils.fromString("dataType");
+        public static final BString CONTENT_TYPE = StringUtils.fromString("contentType");
         public static final String RAW = "RAW";
         public static final String METADATA = "METADATA";
         public static final String TO_JSON_METHOD = "toJson";
@@ -359,23 +359,22 @@ public final class CsvParser {
                             currentState = currentState.transition(this, buff, this.index, count);
                         } catch (Exception exception) {
                             BMap<?, ?> failSafe = config.failSafe;
-                            if (failSafe != null && isAllowedFailSafe(exception)) {
-                                this.index = getIndexOfNextLine(this, buff, count);
-                                if (this.index <= count) {
-                                    BMap<?, ?> outputMode = failSafe.getMapValue(OUTPUT_MODE);
-                                    String offendingRow = getCurrentRowFromBuffer(buff, count);
-                                    if (TypeUtils.getType(outputMode).getName().equals(CONSOLE_OUTPUT_MODE)) {
-                                        processConsoleLogs(environment, exception, outputMode, offendingRow);
-                                    } else {
-                                        processFileLogs(environment, isOverwritten,
-                                                        exception, outputMode, offendingRow);
-                                    }
-                                }
-                                updateLineAndColumnIndexes(this);
-                                currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
-                            } else {
+                            if (failSafe == null || !isAllowedFailSafe(exception)) {
                                 throw exception;
                             }
+                            this.index = getIndexOfNextLine(this, buff, count);
+                            if (this.index <= count) {
+                                BMap<?, ?> outputMode = failSafe.getMapValue(OUTPUT_MODE);
+                                String offendingRow = getCurrentRowFromBuffer(buff, count);
+                                if (TypeUtils.getType(outputMode).getName().equals(CONSOLE_OUTPUT_MODE)) {
+                                    processConsoleLogs(environment, exception, outputMode, offendingRow);
+                                } else {
+                                    processFileLogs(environment, isOverwritten,
+                                            exception, outputMode, offendingRow);
+                                }
+                            }
+                            updateLineAndColumnIndexes(this);
+                            currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
                         }
                     }
                 }
@@ -394,7 +393,7 @@ public final class CsvParser {
         private void processFileLogs(Environment environment, AtomicBoolean isOverwritten,
                                      Exception exception, BMap<?, ?> outputMode, String offendingRow) {
             boolean enableConsoleLogs = outputMode.getBooleanValue(ENABLE_CONSOLE_LOGS);
-            String dataType = outputMode.getStringValue(DATA_TYPE).toString();
+            String dataType = outputMode.getStringValue(CONTENT_TYPE).toString();
             if (enableConsoleLogs) {
                 BMap<BString, Object> keyValues = ValueCreator.createMapValue();
                 if (!dataType.equals(METADATA)) {
@@ -409,7 +408,7 @@ public final class CsvParser {
                                         BMap<?, ?> outputMode, String offendingRow) {
             boolean excludeSourceData = outputMode.getBooleanValue(EXCLUDE_SOURCE_DATA);
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
-            if (excludeSourceData) {
+            if (!excludeSourceData) {
                 keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
                 printErrorLogs(environment, exception, keyValues);
             }
@@ -433,14 +432,7 @@ public final class CsvParser {
         }
 
         private void printErrorLogs(Environment environment, Exception exception) {
-            StrandMetadata strandMetadata = new StrandMetadata(true,
-                    ModuleUtils.getProperties(PRINT_ERROR));
-            String errorMessage = String.format(CSV_PARSE_ERROR, this.lineNumber + 1,
-                    this.columnIndex + 1, exception.getMessage());
-            Object[] arguments = new Object[]{StringUtils.fromString(errorMessage),
-                    null, null, ValueCreator.createMapValue()};
-            environment.getRuntime().callFunction(ModuleUtils.getModule(), PRINT_ERROR,
-                    strandMetadata, arguments);
+            printErrorLogs(environment, exception, ValueCreator.createMapValue());
         }
 
         private void printErrorLogs(Environment environment, Exception exception, BMap<BString, Object> keyValues) {
@@ -467,7 +459,7 @@ public final class CsvParser {
         private void writeLogsToFile(String filePath, String content) {
             Path path = Paths.get(filePath);
             try {
-                Files.writeString(path, content.trim() + "\n", StandardOpenOption.CREATE,
+                Files.writeString(path, content.trim() + System.lineSeparator(), StandardOpenOption.CREATE,
                                   StandardOpenOption.WRITE, StandardOpenOption.APPEND);
             } catch (IOException exception) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
@@ -479,15 +471,17 @@ public final class CsvParser {
                                     String sourceData, boolean excludeSourceData) {
             String time = Instant.now().toString();
             String message = exception.getMessage();
-            String json = "{\"time\":\"" + StringUtils.fromString(time) + "\"," +
-                    "\"location\":{\"row\":" + (this.lineNumber + 1) +
-                    ",\"column\":" + (this.columnIndex + 1) + "}," +
-                    (excludeSourceData ? "" : "\"sourceData\":\"" + StringUtils.fromString(sourceData.trim()) + "\",") +
-                    "\"message\":\"" + StringUtils.fromString(message) + "\"" +
-                    "}";
+            StringBuilder json = new StringBuilder();
+            json.append("{\"time\":\"").append(StringUtils.fromString(time)).append("\",");
+            json.append("\"location\":{\"row\":").append(this.lineNumber + 1);
+            json.append(",\"column\":").append(this.columnIndex + 1).append("},");
+            if (!excludeSourceData) {
+                json.append("\"sourceData\":\"").append(StringUtils.fromString(sourceData.trim())).append("\",");
+            }
+            json.append("\"message\":\"").append(StringUtils.fromString(message)).append("\"}");
             StrandMetadata strandMetadata = new StrandMetadata(true,
                     ModuleUtils.getProperties(TO_JSON_METHOD));
-            Object[] arguments = new Object[]{StringUtils.fromString(json)};
+            Object[] arguments = new Object[]{StringUtils.fromString(json.toString())};
             Object result = environment.getRuntime().callFunction(ModuleUtils.getModule(), TO_JSON_METHOD,
                     strandMetadata, arguments);
             return result.toString();
@@ -510,11 +504,11 @@ public final class CsvParser {
                 isOverwritten.set(true);
             }
             if (dataType.equals(RAW)) {
-                writeLogsToFile(filePath, rawData + "\n");
+                writeLogsToFile(filePath, rawData + System.lineSeparator());
             } else {
                 boolean excludeSourceData = dataType.equals(METADATA);
                 String jsonLog = buildJsonLog(environment, exception, rawData, excludeSourceData);
-                writeLogsToFile(filePath, jsonLog + "\n");
+                writeLogsToFile(filePath, jsonLog + System.lineSeparator());
             }
         }
 

@@ -118,7 +118,7 @@ function testIOErrorsWithWritingLogsToFile() returns error? {
             outputMode: {
                 enableConsoleLogs: true,
                 filePath: "resources",
-                dataType: csv:RAW
+                contentType: csv:RAW
             }
         }
     });
@@ -135,7 +135,7 @@ function testWritingLogsToFileWithEmptyFilePath() returns error? {
             outputMode: {
                 enableConsoleLogs: true,
                 filePath: "",
-                dataType: csv:RAW
+                contentType: csv:RAW
             }
         }
     });
@@ -153,7 +153,7 @@ function testOverwritingErrorLogFiles() returns error? {
                 enableConsoleLogs: true,
                 filePath: "logs.txt",
                 fileWriteOption: csv:OVERWRITE,
-                dataType: csv:RAW_AND_METADATA
+                contentType: csv:RAW_AND_METADATA
             }
         }
     });
@@ -172,7 +172,7 @@ function testWritingMetadataLogsIntoFiles() returns error? {
                 enableConsoleLogs: true,
                 filePath: "logs.txt",
                 fileWriteOption: csv:OVERWRITE,
-                dataType: csv:METADATA
+                contentType: csv:METADATA
             }
         }
     });
