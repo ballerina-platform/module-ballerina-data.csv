@@ -10,6 +10,7 @@ import io.ballerina.runtime.api.values.BString;
  * @since 0.1.0
  */
 public class CsvConfig {
+    public static final BString FAIL_SAFE = StringUtils.fromString("failSafe");
     public char delimiter = ',';
     public char textEnclosure = '\\';
     public Object header = 0;
@@ -55,7 +56,7 @@ public class CsvConfig {
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
                 options.getIntValue(Constants.ConfigConstants.HEADER_ROWS),
                 options.get(Constants.ConfigConstants.CUSTOM_HEADERS),
-                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
@@ -83,7 +84,7 @@ public class CsvConfig {
                 options.getBooleanValue(Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION),
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
                 options.get(Constants.ConfigConstants.HEADERS_ORDER),
-                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
@@ -118,7 +119,7 @@ public class CsvConfig {
                 StringUtils.getStringValue(options.getStringValue(Constants.ConfigConstants.COMMENT_CHAR)).charAt(0),
                 options.get(Constants.ConfigConstants.HEADER),
                 options.get(Constants.ConfigConstants.CUSTOM_HEADERS_IF_HEADER_ABSENT),
-                options.getMapValue(Constants.ConfigConstants.FAIL_SAFE)
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
