@@ -142,7 +142,7 @@ public final class CsvParser {
         public static final String FILE_IO_ERROR = "Failed to create log file at: %s. Caused by: %s%n";
         public static final String FILE_OVERWRITE_ERROR = "Failed to overwrite log file at: %s. Caused by: %s";
         public static final String FILE_WRITE_ERROR = "Failed to write log file at: %s. Caused by: %s";
-        public static final String CSV_PARSE_ERROR = "CSV parse error at line %d, column %d: %s";
+        public static final String CSV_PARSE_ERROR = "CSV parse error at row %d, column %d: %s";
         public static final String FILE = "FILE";
         public static final BString ADDITIONAL_CONTEXT = StringUtils.fromString("additionalContext");
         public static final String CONSOLE_OUTPUT_MODE = "ConsoleOutputMode";
