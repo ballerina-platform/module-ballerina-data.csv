@@ -111,30 +111,28 @@ public function main() returns error? {
 import ballerina/data.csv;
 import ballerina/io;
 
-type Transaction record {
-    int transactionId;
-    decimal amount;
-    string date;
-};
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
 
 public function main() returns error? {
-    string csvString = string `transactionId,amount,date
-                               1001,250.50,2024-01-15
-                               1002,INVALID,2024-01-16
-                               1003,175.25,2024-01-17`;
-
-    Transaction[] transactions = check csv:parseString(csvString, {
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
+    Book[] books = check csv:parseString(csvString, {
         failSafe: {
             outputMode: {
-                filePath: "./logs/transaction-errors.log",
-                dataType: csv:METADATA,
+                filePath: "./logs/book-errors.log",
+                contentType: csv:METADATA,
                 fileWriteOption: csv:APPEND,
                 enableConsoleLogs: false
             }
         }
     });
-    
-    io:println(transactions);
+    io:println(books);
 }
 ```
 
@@ -144,31 +142,30 @@ public function main() returns error? {
 import ballerina/data.csv;
 import ballerina/io;
 
-type SensorReading record {
-    int sensorId;
-    float temperature;
-    int timestamp;
-};
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
 
 public function main() returns error? {
-    string csvString = string `sensorId,temperature,timestamp
-                               1,23.5,1640000000
-                               2,HOT,1640000060
-                               3,22.1,NOT_A_NUMBER
-                               4,24.8,1640000180`;
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
 
-    SensorReading[] readings = check csv:parseString(csvString, {
+    Book[] books = check csv:parseString(csvString, {
         failSafe: {
             outputMode: {
-                filePath: "./logs/sensor-errors.log",
-                dataType: csv:RAW,
+                filePath: "./logs/book-errors.log",
+                contentType: csv:RAW,
                 fileWriteOption: csv:OVERWRITE,
                 enableConsoleLogs: false
             }
         }
     });
     
-    io:println(readings);
+    io:println(books);
 }
 ```
 
@@ -178,30 +175,30 @@ public function main() returns error? {
 import ballerina/data.csv;
 import ballerina/io;
 
-type Order record {
-    string orderId;
-    int quantity;
-    decimal totalAmount;
-};
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
 
 public function main() returns error? {
-    string csvString = string `orderId,quantity,totalAmount
-                               ORD001,5,125.50
-                               ORD002,INVALID,250.00
-                               ORD003,3,75.25`;
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
 
-    Order[] orders = check csv:parseString(csvString, {
+    Book[] books = check csv:parseString(csvString, {
         failSafe: {
             outputMode: {
-                filePath: "./logs/order-errors.log",
-                dataType: csv:RAW_AND_METADATA,
+                filePath: "./logs/book-errors.log",
+                contentType: csv:RAW_AND_METADATA,
                 fileWriteOption: csv:APPEND,
                 enableConsoleLogs: true
             }
         }
     });
     
-    io:println(orders);
+    io:println(books);
 }
 ```
 
