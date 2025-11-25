@@ -178,3 +178,40 @@ function testWritingMetadataLogsIntoFiles() returns error? {
     test:assertEquals(data.length(), 5);
     check file:remove("logs.txt");
 }
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testHandleLogFileGenerationWithNestedDirectories() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
+    UserStatusRecord[] data = check csv:parseStream(csvStream, {
+        failSafe: {
+            outputMode: {
+                enableConsoleLogs: true,
+                filePath: "nested/logs/directory/error.log",
+                fileWriteOption: csv:APPEND,
+                contentType: csv:RAW_AND_METADATA
+            }
+        }
+    });
+    test:assertEquals(data.length(), 5);
+    check file:remove("nested", file:RECURSIVE);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testOverwriteLogFileWithIOException() returns error? {
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
+    UserStatusRecord[]|error data = csv:parseStream(csvStream, {
+        failSafe: {
+            outputMode: {
+                enableConsoleLogs: false,
+                filePath: "resources",
+                fileWriteOption: csv:OVERWRITE,
+                contentType: csv:RAW
+            }
+        }
+    });
+    test:assertTrue(data is csv:Error);
+}
