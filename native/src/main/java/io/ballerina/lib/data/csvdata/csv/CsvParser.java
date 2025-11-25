@@ -151,8 +151,8 @@ public final class CsvParser {
         public static final String METADATA = "METADATA";
         public static final String TO_JSON_METHOD = "toJson";
         public static final BString ENABLE_CONSOLE_LOGS = StringUtils.fromString("enableConsoleLogs");
-        public static final BString SOURCE_ROW = StringUtils.fromString("sourceRow");
-        public static final BString MASK_SOURCE_DATA = StringUtils.fromString("maskSourceData");
+        public static final BString OFFENDING_ROW = StringUtils.fromString("offendingRow");
+        public static final BString EXCLUDE_SOURCE_DATA = StringUtils.fromString("excludeSourceData");
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -363,11 +363,12 @@ public final class CsvParser {
                                 this.index = getIndexOfNextLine(this, buff, count);
                                 if (this.index <= count) {
                                     BMap<?, ?> outputMode = failSafe.getMapValue(OUTPUT_MODE);
-                                    String sourceRow = getCurrentRowFromBuffer(buff, count);
+                                    String offendingRow = getCurrentRowFromBuffer(buff, count);
                                     if (TypeUtils.getType(outputMode).getName().equals(CONSOLE_OUTPUT_MODE)) {
-                                        processConsoleLogs(environment, exception, outputMode, sourceRow);
+                                        processConsoleLogs(environment, exception, outputMode, offendingRow);
                                     } else {
-                                        processFileLogs(environment, isOverwritten, exception, outputMode, sourceRow);
+                                        processFileLogs(environment, isOverwritten,
+                                                        exception, outputMode, offendingRow);
                                     }
                                 }
                                 updateLineAndColumnIndexes(this);
@@ -391,26 +392,25 @@ public final class CsvParser {
         }
 
         private void processFileLogs(Environment environment, AtomicBoolean isOverwritten,
-                                     Exception exception, BMap<?, ?> outputMode, String sourceRow) {
+                                     Exception exception, BMap<?, ?> outputMode, String offendingRow) {
             boolean enableConsoleLogs = outputMode.getBooleanValue(ENABLE_CONSOLE_LOGS);
             String dataType = outputMode.getStringValue(DATA_TYPE).toString();
             if (enableConsoleLogs) {
                 BMap<BString, Object> keyValues = ValueCreator.createMapValue();
                 if (!dataType.equals(METADATA)) {
-                    keyValues.put(SOURCE_ROW, StringUtils.fromString(sourceRow));
+                    keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow));
                 }
                 printErrorLogs(environment, exception, keyValues);
             }
-            handleFileOutputLogging(environment, outputMode, exception, isOverwritten,
-                    sourceRow, dataType);
+            handleFileOutputLogging(environment, outputMode, exception, isOverwritten, offendingRow, dataType);
         }
 
         private void processConsoleLogs(Environment environment, Exception exception,
-                                        BMap<?, ?> outputMode, String sourceRow) {
-            boolean maskSourceData = outputMode.getBooleanValue(MASK_SOURCE_DATA);
+                                        BMap<?, ?> outputMode, String offendingRow) {
+            boolean excludeSourceData = outputMode.getBooleanValue(EXCLUDE_SOURCE_DATA);
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
-            if (maskSourceData) {
-                keyValues.put(SOURCE_ROW, StringUtils.fromString(sourceRow));
+            if (excludeSourceData) {
+                keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow));
                 printErrorLogs(environment, exception, keyValues);
             }
             printErrorLogs(environment, exception);
@@ -476,13 +476,13 @@ public final class CsvParser {
         }
 
         private String buildJsonLog(Environment environment, Exception exception,
-                                    String sourceData, boolean maskSourceData) {
+                                    String sourceData, boolean excludeSourceData) {
             String time = Instant.now().toString();
             String message = exception.getMessage();
             String json = "{\"time\":\"" + StringUtils.fromString(time) + "\"," +
                     "\"location\":{\"row\":" + (this.lineNumber + 1) +
                     ",\"column\":" + (this.columnIndex + 1) + "}," +
-                    (maskSourceData ? "" : "\"sourceData\":\"" + StringUtils.fromString(sourceData) + "\",") +
+                    (excludeSourceData ? "" : "\"sourceData\":\"" + StringUtils.fromString(sourceData) + "\",") +
                     "\"message\":\"" + StringUtils.fromString(message) + "\"" +
                     "}";
             StrandMetadata strandMetadata = new StrandMetadata(true,
@@ -512,8 +512,8 @@ public final class CsvParser {
             if (dataType.equals(RAW)) {
                 writeLogsToFile(filePath, rawData + "\n");
             } else {
-                boolean maskSourceData = dataType.equals(METADATA);
-                String jsonLog = buildJsonLog(environment, exception, rawData, maskSourceData);
+                boolean excludeSourceData = dataType.equals(METADATA);
+                String jsonLog = buildJsonLog(environment, exception, rawData, excludeSourceData);
                 writeLogsToFile(filePath, jsonLog + "\n");
             }
         }

@@ -59,7 +59,7 @@ public type FailSafeOptions record {|
 # Represents the console output mode for logging errors.
 public type ConsoleOutputMode record {|
     # Specifies enabling logging errors to the console
-    boolean maskSourceData = true;
+    boolean excludeSourceData = true;
 |};
 
 # Represents the file output mode for logging errors.
@@ -92,7 +92,7 @@ public type LogOutput record {|
     # The error message
     string message;
     # The source data row related to the error
-    string sourceDataRow;
+    string offendingRow;
 |};
 
 # Represents the location of an error.
