@@ -78,7 +78,7 @@ function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     groups: ["fail_safe"]
 }
 function testErrorsWithEmptyFiles() returns error? {
-    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/empty_file.xml");
+    stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/empty_file.csv");
     UserStatusRecord[]|csv:Error data = csv:parseStream(csvStream, {
         failSafe: {}
     });
