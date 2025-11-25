@@ -1,6 +1,6 @@
 [package]
 org = "ballerina"
-name = "fail_safe_mechanism"
+name = "fail_safe_tests"
 version = "0.9.0"
 
 [[dependency]]

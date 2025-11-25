@@ -22,7 +22,7 @@ modules = [
 
 [[package]]
 org = "ballerina"
-name = "fail_safe_mechanism"
+name = "fail_safe_tests"
 version = "0.9.0"
 dependencies = [
 	{org = "ballerina", name = "data.csv"},
@@ -31,7 +31,7 @@ dependencies = [
 	{org = "ballerina", name = "test"}
 ]
 modules = [
-	{org = "ballerina", packageName = "fail_safe_mechanism", moduleName = "fail_safe_mechanism"}
+	{org = "ballerina", packageName = "fail_safe_tests", moduleName = "fail_safe_tests"}
 ]
 
 [[package]]
@@ -160,7 +160,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.7.0"
+version = "2.8.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
