@@ -139,7 +139,7 @@ public final class CsvParser {
         public static final BString FILE_PATH = StringUtils.fromString("filePath");
         public static final String OVERWRITE = "OVERWRITE";
         public static final String CONSOLE = "CONSOLE";
-        public static final BString OUTPUT_MODE = StringUtils.fromString("outputMode");
+        public static final BString FILE_OUTPUT_MODE = StringUtils.fromString("fileOutputMode");
         public static final BString LOG_FILE_CONFIG = StringUtils.fromString("logFileConfig");
         public static final BString FILE_WRITE_OPTION = StringUtils.fromString("fileWriteOption");
         public static final String MISSING_FILE_PATH_ERROR =
@@ -148,16 +148,13 @@ public final class CsvParser {
         public static final String FILE_OVERWRITE_ERROR = "Failed to overwrite log file at: %s. Caused by: %s";
         public static final String FILE_WRITE_ERROR = "Failed to write log file at: %s. Caused by: %s";
         public static final String CSV_PARSE_ERROR = "CSV parse error at row %d, column %d: %s";
-        public static final String FILE = "FILE";
-        public static final BString ADDITIONAL_CONTEXT = StringUtils.fromString("additionalContext");
-        public static final String CONSOLE_OUTPUT_MODE = "ConsoleOutputMode";
         public static final BString CONTENT_TYPE = StringUtils.fromString("contentType");
         public static final String RAW = "RAW";
         public static final String METADATA = "METADATA";
-        public static final String TO_JSON_METHOD = "toJson";
         public static final BString ENABLE_CONSOLE_LOGS = StringUtils.fromString("enableConsoleLogs");
         public static final BString OFFENDING_ROW = StringUtils.fromString("offendingRow");
-        public static final BString EXCLUDE_SOURCE_DATA = StringUtils.fromString("excludeSourceData");
+        public static final BString EXCLUDE_SOURCE_DATA_IN_CONSOLE =
+                StringUtils.fromString("excludeSourceDataInConsole");
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -370,13 +367,17 @@ public final class CsvParser {
                             }
                             this.index = getIndexOfNextLine(this, buff, count);
                             if (this.index <= count) {
-                                BMap<?, ?> outputMode = failSafe.getMapValue(OUTPUT_MODE);
+                                boolean enableConsoleLogs = failSafe.getBooleanValue(ENABLE_CONSOLE_LOGS);
+                                boolean excludeSourceDataInConsole = failSafe
+                                        .getBooleanValue(EXCLUDE_SOURCE_DATA_IN_CONSOLE);
                                 String offendingRow = getCurrentRowFromBuffer(buff, count);
-                                if (TypeUtils.getType(outputMode).getName().equals(CONSOLE_OUTPUT_MODE)) {
-                                    processConsoleLogs(environment, exception, outputMode, offendingRow);
-                                } else {
-                                    processErrorLogsInFiles(environment, isOverwritten,
-                                            exception, outputMode, offendingRow);
+                                if (enableConsoleLogs) {
+                                    processConsoleLogs(environment,
+                                            exception, excludeSourceDataInConsole, offendingRow);
+                                }
+                                BMap<?, ?> fileOutputMode = failSafe.getMapValue(FILE_OUTPUT_MODE);
+                                if (fileOutputMode != null) {
+                                    processErrorLogsInFiles(isOverwritten, exception, fileOutputMode, offendingRow);
                                 }
                             }
                             updateLineAndColumnIndexes(this);
@@ -397,23 +398,14 @@ public final class CsvParser {
             }
         }
 
-        private void processErrorLogsInFiles(Environment environment, AtomicBoolean isOverwritten,
+        private void processErrorLogsInFiles(AtomicBoolean isOverwritten,
                                              Exception exception, BMap<?, ?> outputMode, String offendingRow) {
-            boolean enableConsoleLogs = outputMode.getBooleanValue(ENABLE_CONSOLE_LOGS);
             String dataType = outputMode.getStringValue(CONTENT_TYPE).toString();
-            if (enableConsoleLogs) {
-                BMap<BString, Object> keyValues = ValueCreator.createMapValue();
-                if (!dataType.equals(METADATA)) {
-                    keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
-                }
-                printErrorLogs(environment, exception, keyValues);
-            }
             handleFileOutputLogging(outputMode, exception, isOverwritten, offendingRow, dataType);
         }
 
         private void processConsoleLogs(Environment environment, Exception exception,
-                                        BMap<?, ?> outputMode, String offendingRow) {
-            boolean excludeSourceData = outputMode.getBooleanValue(EXCLUDE_SOURCE_DATA);
+                                        boolean excludeSourceData, String offendingRow) {
             BMap<BString, Object> keyValues = ValueCreator.createMapValue();
             if (!excludeSourceData) {
                 keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));

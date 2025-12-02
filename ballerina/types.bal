@@ -53,20 +53,16 @@ public type Options record {
 
 # Represents the options for fail-safe mechanism during parsing.
 public type FailSafeOptions record {|
-    # Specifies the output mode for logging errors encountered during parsing
-    ConsoleOutputMode|FileOutputMode outputMode = {};
-|};
-
-# Represents the console output mode for logging errors.
-public type ConsoleOutputMode record {|
     # Specifies enabling logging errors to the console
-    boolean excludeSourceData = true;
+    boolean enableConsoleLogs = true;
+    # Excludes logging source data to the console
+    boolean excludeSourceDataInConsole = true;
+    # Specifies the output mode for logging errors encountered during parsing
+    FileOutputMode fileOutputMode?;
 |};
 
 # Represents the file output mode for logging errors.
 public type FileOutputMode record {|
-    # Specifies enabling logging errors to the console
-    boolean enableConsoleLogs = false;
     # The file path where errors will be logged
     string filePath;
     # Controls the level of detail included in the error logs.
