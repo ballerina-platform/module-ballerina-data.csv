@@ -23,6 +23,8 @@ import io.ballerina.lib.data.csvdata.utils.CsvUtils;
 import io.ballerina.lib.data.csvdata.utils.DataUtils;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
+import io.ballerina.lib.data.csvdata.utils.FailSafeUtils;
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -52,6 +54,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static io.ballerina.lib.data.csvdata.utils.FailSafeUtils.isAllowedFailSafe;
 
 /**
  * Convert Csv value to a ballerina record.
@@ -65,8 +70,13 @@ public final class CsvTraversal {
     }
 
     public static Object traverse(BArray csv, CsvConfig config, BTypedesc type) {
+        return traverse(null, csv, config, type);
+    }
+
+    public static Object traverse(Environment environment, BArray csv, CsvConfig config, BTypedesc type) {
         CsvTree csvTree = tlCsvTree.get();
         try {
+            csvTree.environment = environment;
             CsvUtils.validateConfigs(config);
             Object convertedValue = csvTree.traverseCsv(csv, config, type.getDescribingType());
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
@@ -78,8 +88,14 @@ public final class CsvTraversal {
     }
 
     public static Object traverse(BArray csv, CsvConfig config, BTypedesc typed, Type type) {
+        return traverse(null, csv, config, typed, type);
+    }
+
+    public static Object traverse(Environment environment, BArray csv, CsvConfig config,
+                                  BTypedesc typed, Type type) {
         CsvTree csvTree = tlCsvTree.get();
         try {
+            csvTree.environment = environment;
             Object convertedValue = csvTree.traverseCsv(csv, config, type);
             return DataUtils.validateConstraints(convertedValue, typed, config.enableConstraintValidation);
         } catch (BError e) {
@@ -108,6 +124,9 @@ public final class CsvTraversal {
         boolean addHeadersForOutput = false;
         boolean isFirstRowIsHeader = false;
         boolean isFirstRowInserted = false;
+        Environment environment = null;
+        AtomicBoolean isOverwritten = new AtomicBoolean(false);
+        int currentRowIndex = 0;
 
         void reset() {
             currentCsvNode = null;
@@ -128,6 +147,9 @@ public final class CsvTraversal {
             addHeadersForOutput = false;
             isFirstRowIsHeader = false;
             isFirstRowInserted = false;
+            environment = null;
+            isOverwritten.set(false);
+            currentRowIndex = 0;
         }
 
 
@@ -188,9 +210,9 @@ public final class CsvTraversal {
                 int expectedArraySize = ((ArrayType) referredType).getSize();
                 setRootCsvNodeForNonUnionArrays(referredType, type);
                 CsvUtils.validateExpectedArraySize(expectedArraySize, sourceArraySize);
-                traverseCsvWithExpectedType(sourceArraySize, csv, type);
+                traverseCsvWithExpectedType(sourceArraySize, csv, type, config);
             } else {
-                traverseCsvWithUnionExpectedType(referredType, type, sourceArraySize, csv);
+                traverseCsvWithUnionExpectedType(referredType, type, sourceArraySize, csv, config);
             }
             return rootCsvNode;
         }
@@ -208,7 +230,7 @@ public final class CsvTraversal {
         }
 
         private void traverseCsvWithUnionExpectedType(Type referredType, Type type, int sourceArraySize,
-                                                      BArray csv) {
+                                                      BArray csv, CsvConfig config) {
             for (Type memberType: ((UnionType) referredType).getMemberTypes()) {
                 Type mType = TypeUtils.getReferredType(memberType);
                 if (mType.getTag() == TypeTags.ARRAY_TAG) {
@@ -217,7 +239,7 @@ public final class CsvTraversal {
                     try {
                         setRootCsvNodeForNonUnionArrays(mType, mType);
                         CsvUtils.validateExpectedArraySize(expectedArraySize, sourceArraySize);
-                        traverseCsvWithExpectedType(sourceArraySize, csv, type);
+                        traverseCsvWithExpectedType(sourceArraySize, csv, type, config);
                         return;
                     } catch (Exception ex) {
                         // ignore
@@ -227,8 +249,7 @@ public final class CsvTraversal {
             throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
         }
 
-        private void traverseCsvWithExpectedType(int sourceArraySize,
-                                                 BArray csv, Type type) {
+        private void traverseCsvWithExpectedType(int sourceArraySize, BArray csv, Type type, CsvConfig config) {
             boolean isIntersection = false;
             this.isFirstRowIsHeader = false;
             if (expectedArrayElementType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -242,92 +263,118 @@ public final class CsvTraversal {
             switch (expectedArrayElementType.getTag()) {
                 case TypeTags.RECORD_TYPE_TAG, TypeTags.MAP_TAG ->
                         traverseCsvWithMappingAsExpectedType(sourceArraySize, csv,
-                                expectedArrayElementType, isIntersection);
+                                expectedArrayElementType, isIntersection, config);
                 case TypeTags.ARRAY_TAG, TypeTags.TUPLE_TAG -> traverseCsvWithListAsExpectedType(sourceArraySize, csv,
-                        expectedArrayElementType, isIntersection);
+                        expectedArrayElementType, isIntersection, config);
                 case TypeTags.UNION_TAG -> traverseCsvWithUnionExpectedType(csv,
-                        (UnionType) expectedArrayElementType, type);
+                        (UnionType) expectedArrayElementType, type, config);
                 default -> throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, type);
             }
         }
 
         public void traverseCsvWithMappingAsExpectedType(long length, BArray csv, Type expectedArrayType,
-                                                         boolean isIntersection) {
+                                                         boolean isIntersection, CsvConfig config) {
             Object rowValue;
+            Object currentRowData = null;
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
             int rowNumber = 0;
             for (int i = 0; i < length; i++) {
-                if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
-                        arrayType.getSize() - 1 < this.arraySize) {
-                    break;
-                }
-                Object o = csv.get(i);
+                try {
+                    this.currentRowIndex = i;
+                    if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
+                            arrayType.getSize() - 1 < this.arraySize) {
+                        break;
+                    }
+                    Object o = csv.get(i);
+                    currentRowData = o;
 
-                if (i < config.headerRows && i != config.headerRows - 1) {
-                    continue;
-                }
+                    if (i < config.headerRows && i != config.headerRows - 1) {
+                        continue;
+                    }
 
-                if (i >= config.headerRows && ignoreRow(rowNumber + 1, config.skipLines)) {
-                    rowNumber++;
-                    continue;
-                }
+                    if (i >= config.headerRows && ignoreRow(rowNumber + 1, config.skipLines)) {
+                        rowNumber++;
+                        continue;
+                    }
 
-                rowValue = initStatesForCsvRowWithMappingAsExpectedType(o, expectedArrayType);
-                if (isIntersection) {
-                    rowValue = CsvCreator.constructReadOnlyValue(rowValue);
-                }
+                    rowValue = initStatesForCsvRowWithMappingAsExpectedType(o, expectedArrayType);
+                    if (isIntersection) {
+                        rowValue = CsvCreator.constructReadOnlyValue(rowValue);
+                    }
 
-                if (!this.isFirstRowIsHeader) {
-                    rootCsvNode.add(this.arraySize, rowValue);
-                    this.arraySize++;
-                }
-                if (i >= config.headerRows) {
-                    rowNumber++;
+                    if (!this.isFirstRowIsHeader) {
+                        rootCsvNode.add(this.arraySize, rowValue);
+                        this.arraySize++;
+                    }
+                    if (i >= config.headerRows) {
+                        rowNumber++;
+                    }
+                } catch (Exception exception) {
+                    BMap<?, ?> failSafe = config.failSafe;
+                    if (failSafe == null || !isAllowedFailSafe(exception)) {
+                        throw exception;
+                    }
+                    handleFailSafeLogging(failSafe, exception, currentRowData);
+                    if (i >= config.headerRows) {
+                        rowNumber++;
+                    }
                 }
             }
         }
 
         public void traverseCsvWithListAsExpectedType(long length, BArray csv, Type expectedArrayType,
-                                                      boolean isIntersection) {
+                                                      boolean isIntersection, CsvConfig config) {
             Object rowValue;
+            Object currentRowData = null;
             expectedArrayType = TypeUtils.getReferredType(expectedArrayType);
             ArrayType arrayType = (ArrayType) rootCsvNode.getType();
             int rowNumber = 0;
             for (int i = 0; i < length; i++) {
-                if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
-                        arrayType.getSize() - 1 < this.arraySize) {
-                    break;
-                }
+                try {
+                    this.currentRowIndex = i;
+                    if (arrayType.getState() == ArrayType.ArrayState.CLOSED &&
+                            arrayType.getSize() - 1 < this.arraySize) {
+                        break;
+                    }
 
-                Object o = csv.get(i);
-                if (!addHeadersForOutput && config.outputWithHeaders
-                        && (o instanceof BMap || (config.customHeaders != null || i == config.headerRows - 1))) {
-                    // Headers will add to the list only in the first iteration
-                    insertHeaderValuesForTheCsvIfApplicable(o, expectedArrayType);
-                }
-                if (i < config.headerRows) {
-                    continue;
-                }
+                    Object o = csv.get(i);
+                    currentRowData = o;
+                    if (!addHeadersForOutput && config.outputWithHeaders
+                            && (o instanceof BMap || (config.customHeaders != null || i == config.headerRows - 1))) {
+                        // Headers will add to the list only in the first iteration
+                        insertHeaderValuesForTheCsvIfApplicable(o, expectedArrayType);
+                    }
+                    if (i < config.headerRows) {
+                        continue;
+                    }
 
-                if (ignoreRow(rowNumber + 1, config.skipLines)) {
+                    if (ignoreRow(rowNumber + 1, config.skipLines)) {
+                        rowNumber++;
+                        continue;
+                    }
+
+                    rowValue = initStatesForCsvRowWithListAsExpectedType(o, expectedArrayType);
+                    if (isIntersection) {
+                        rowValue = CsvCreator.constructReadOnlyValue(rowValue);
+                    }
+                    if (!this.isFirstRowIsHeader) {
+                        rootCsvNode.add(this.arraySize, rowValue);
+                        this.arraySize++;
+                    }
                     rowNumber++;
-                    continue;
+                } catch (Exception exception) {
+                    BMap<?, ?> failSafe = config.failSafe;
+                    if (failSafe == null || !isAllowedFailSafe(exception)) {
+                        throw exception;
+                    }
+                    handleFailSafeLogging(failSafe, exception, currentRowData);
+                    rowNumber++;
                 }
-
-                rowValue = initStatesForCsvRowWithListAsExpectedType(o, expectedArrayType);
-                if (isIntersection) {
-                    rowValue = CsvCreator.constructReadOnlyValue(rowValue);
-                }
-                if (!this.isFirstRowIsHeader) {
-                    rootCsvNode.add(this.arraySize, rowValue);
-                    this.arraySize++;
-                }
-                rowNumber++;
             }
         }
 
         public void traverseCsvWithUnionExpectedType(BArray csv,
-                                                     UnionType expectedArrayType, Type type) {
+                                                     UnionType expectedArrayType, Type type, CsvConfig config) {
 
             for (Type memberType: expectedArrayType.getMemberTypes()) {
                 try {
@@ -335,6 +382,12 @@ public final class CsvTraversal {
                     traverseCsv(csv, config, memberType);
                     return;
                 } catch (Exception ex) {
+                    BMap<?, ?> failSafe = config.failSafe;
+                    if (failSafe == null || !isAllowedFailSafe(ex)) {
+                        resetForUnionTypes();
+                        continue;
+                    }
+                    handleFailSafeLogging(failSafe, ex, csv);
                     resetForUnionTypes();
                 }
             }
@@ -832,6 +885,12 @@ public final class CsvTraversal {
                 return TypeCreator.createUnionType(memberTypes);
             }
             return csv.getElementType();
+        }
+
+        private void handleFailSafeLogging(BMap<?, ?> failSafe, Exception exception, Object offendingRowData) {
+            String offendingRow = offendingRowData != null ? offendingRowData.toString() : "";
+            FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
+                    this.currentRowIndex, 0, isOverwritten);
         }
     }
 }

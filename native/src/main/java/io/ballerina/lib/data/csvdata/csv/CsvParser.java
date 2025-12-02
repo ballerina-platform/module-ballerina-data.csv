@@ -24,9 +24,8 @@ import io.ballerina.lib.data.csvdata.utils.CsvUtils;
 import io.ballerina.lib.data.csvdata.utils.DataUtils;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
-import io.ballerina.lib.data.csvdata.utils.ModuleUtils;
+import io.ballerina.lib.data.csvdata.utils.FailSafeUtils;
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -39,22 +38,15 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.TypeTags;
-import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,11 +63,7 @@ import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.NEWLINE_C
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.SLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.TAB_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.UNICODE_START_CHAR;
-import static io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode.HEADER_CANNOT_BE_EMPTY;
-import static io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode.INVALID_CSV_DATA_FORMAT;
-import static io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode.INVALID_FIELD_IN_CSV;
-import static io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode.NO_FIELD_FOR_HEADER;
-import static org.ballerinalang.langlib.value.ToJson.toJson;
+import static io.ballerina.lib.data.csvdata.utils.FailSafeUtils.isAllowedFailSafe;
 
 /**
  * Convert Csv string to a ballerina record.
@@ -135,26 +123,6 @@ public final class CsvParser {
         private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
         private static final char LINE_BREAK = '\n';
-        public static final String PRINT_ERROR = "printError";
-        public static final BString FILE_PATH = StringUtils.fromString("filePath");
-        public static final String OVERWRITE = "OVERWRITE";
-        public static final String CONSOLE = "CONSOLE";
-        public static final BString FILE_OUTPUT_MODE = StringUtils.fromString("fileOutputMode");
-        public static final BString LOG_FILE_CONFIG = StringUtils.fromString("logFileConfig");
-        public static final BString FILE_WRITE_OPTION = StringUtils.fromString("fileWriteOption");
-        public static final String MISSING_FILE_PATH_ERROR =
-                "The `outputMode` is set to FILE, but no `filePath` was provided.";
-        public static final String FILE_IO_ERROR = "Failed to create log file at: %s. Caused by: %s%n";
-        public static final String FILE_OVERWRITE_ERROR = "Failed to overwrite log file at: %s. Caused by: %s";
-        public static final String FILE_WRITE_ERROR = "Failed to write log file at: %s. Caused by: %s";
-        public static final String CSV_PARSE_ERROR = "CSV parse error at row %d, column %d: %s";
-        public static final BString CONTENT_TYPE = StringUtils.fromString("contentType");
-        public static final String RAW = "RAW";
-        public static final String METADATA = "METADATA";
-        public static final BString ENABLE_CONSOLE_LOGS = StringUtils.fromString("enableConsoleLogs");
-        public static final BString OFFENDING_ROW = StringUtils.fromString("offendingRow");
-        public static final BString EXCLUDE_SOURCE_DATA_IN_CONSOLE =
-                StringUtils.fromString("excludeSourceDataInConsole");
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -266,7 +234,7 @@ public final class CsvParser {
         }
 
         public Object execute(Environment environment, Reader reader, Type type,
-                              CsvConfig config, BTypedesc bTypedesc) throws BError {
+                              CsvConfig config, BTypedesc bTypedesc) {
             this.config = config;
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -360,25 +328,14 @@ public final class CsvParser {
                         try {
                             currentState = currentState.transition(this, buff, this.index, count);
                         } catch (Exception exception) {
-                            BMap<?, ?> failSafe = config.failSafe;
-                            if (failSafe == null || !isAllowedFailSafe(exception)) {
-                                reader.close();
-                                throw exception;
-                            }
                             this.index = getIndexOfNextLine(this, buff, count);
                             if (this.index <= count) {
-                                boolean enableConsoleLogs = failSafe.getBooleanValue(ENABLE_CONSOLE_LOGS);
-                                boolean excludeSourceDataInConsole = failSafe
-                                        .getBooleanValue(EXCLUDE_SOURCE_DATA_IN_CONSOLE);
-                                String offendingRow = getCurrentRowFromBuffer(buff, count);
-                                if (enableConsoleLogs) {
-                                    processConsoleLogs(environment,
-                                            exception, excludeSourceDataInConsole, offendingRow);
+                                BMap<?, ?> failSafe = config.failSafe;
+                                if (failSafe == null || !isAllowedFailSafe(exception)) {
+                                    reader.close();
+                                    throw exception;
                                 }
-                                BMap<?, ?> fileOutputMode = failSafe.getMapValue(FILE_OUTPUT_MODE);
-                                if (fileOutputMode != null) {
-                                    processErrorLogsInFiles(isOverwritten, exception, fileOutputMode, offendingRow);
-                                }
+                                handleFailSafeLogging(environment, failSafe, exception, buff, count, isOverwritten);
                             }
                             updateLineAndColumnIndexes(this);
                             currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
@@ -386,11 +343,19 @@ public final class CsvParser {
                     }
                 }
                 reader.close();
-                currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
-                if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
-                    if (!this.isHeaderConfigExceedLineNumber) {
-                        throw new CsvParserException("Invalid token found");
+                try {
+                    currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
+                    if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
+                        if (!this.isHeaderConfigExceedLineNumber) {
+                            throw new CsvParserException("Invalid token found");
+                        }
                     }
+                } catch (Exception exception) {
+                    BMap<?, ?> failSafe = config.failSafe;
+                    if (failSafe == null || !isAllowedFailSafe(exception)) {
+                        throw exception;
+                    }
+                    handleFailSafeLogging(environment, failSafe, exception, buff, count, isOverwritten);
                 }
                 return rootCsvNode;
             } catch (IOException | CsvParserException e) {
@@ -398,124 +363,11 @@ public final class CsvParser {
             }
         }
 
-        private void processErrorLogsInFiles(AtomicBoolean isOverwritten,
-                                             Exception exception, BMap<?, ?> outputMode, String offendingRow) {
-            String dataType = outputMode.getStringValue(CONTENT_TYPE).toString();
-            handleFileOutputLogging(outputMode, exception, isOverwritten, offendingRow, dataType);
-        }
-
-        private void processConsoleLogs(Environment environment, Exception exception,
-                                        boolean excludeSourceData, String offendingRow) {
-            BMap<BString, Object> keyValues = ValueCreator.createMapValue();
-            if (!excludeSourceData) {
-                keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
-            }
-            printErrorLogs(environment, exception, keyValues);
-        }
-
-        private static void handleLogFileGeneration(String filePath) {
-            try {
-                Path path = Paths.get(filePath);
-                Path parentDir = path.getParent();
-                if (parentDir != null) {
-                    Files.createDirectories(parentDir);
-                }
-                if (Files.notExists(path)) {
-                    Files.createFile(path);
-                }
-            } catch (IOException ioException) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
-                        String.format(FILE_IO_ERROR, filePath, ioException.getMessage()));
-            }
-        }
-
-        private void printErrorLogs(Environment environment, Exception exception, BMap<BString, Object> keyValues) {
-            StrandMetadata strandMetadata = new StrandMetadata(true,
-                    ModuleUtils.getProperties(PRINT_ERROR));
-            String errorMessage = String.format(CSV_PARSE_ERROR, this.lineNumber + 1,
-                    this.columnIndex + 1, exception.getMessage());
-            Object[] arguments = new Object[]{StringUtils.fromString(errorMessage), null, null, keyValues};
-            environment.getRuntime().callFunction(ModuleUtils.getModule(), PRINT_ERROR, strandMetadata, arguments);
-        }
-
-        private void overwriteLogFile(String filePath) {
-            Path path = Paths.get(filePath);
-            try {
-                Files.write(path, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (IOException exception) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
-                        String.format(FILE_OVERWRITE_ERROR, filePath, exception.getMessage()));
-            }
-        }
-
-        private void writeLogsToFile(String filePath, String content) {
-            Path path = Paths.get(filePath);
-            try {
-                Files.writeString(path, content.trim() + System.lineSeparator(), StandardOpenOption.CREATE,
-                                  StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-            } catch (IOException exception) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.FAILED_FILE_IO_OPERATION,
-                        String.format(FILE_WRITE_ERROR, filePath, exception.getMessage()));
-            }
-        }
-
-        private String buildJsonLog(Exception exception, String sourceData, boolean excludeSourceData) {
-            String time = Instant.now().toString();
-            String message = exception.getMessage();
-            StringBuilder json = new StringBuilder();
-            json.append("{\"time\":\"").append(StringUtils.fromString(time)).append("\",");
-            json.append("\"location\":{\"row\":").append(this.lineNumber + 1);
-            json.append(",\"column\":").append(this.columnIndex + 1).append("},");
-            if (!excludeSourceData) {
-                json.append("\"offendingRow\":\"").append(StringUtils.fromString(sourceData.trim())).append("\",");
-            }
-            json.append("\"message\":\"").append(StringUtils.fromString(message)).append("\"}");
-            return toJson(StringUtils.fromString(json.toString())).toString();
-        }
-
-        private void handleFileOutputLogging(BMap<?, ?> logFileConfig, Exception exception,
-                                             AtomicBoolean isOverwritten, String rawData, String dataType) {
-            if (logFileConfig == null || !logFileConfig.containsKey(FILE_PATH)) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS, MISSING_FILE_PATH_ERROR);
-            }
-            BString filePathValue = logFileConfig.getStringValue(FILE_PATH);
-            String filePath = filePathValue != null ? filePathValue.toString() : null;
-            if (filePath == null || filePath.isBlank()) {
-                throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS, MISSING_FILE_PATH_ERROR);
-            }
-            handleLogFileGeneration(filePath);
-            String fileWriteOption = logFileConfig.getStringValue(FILE_WRITE_OPTION).toString();
-            if (OVERWRITE.equals(fileWriteOption) && !isOverwritten.get()) {
-                overwriteLogFile(filePath);
-                isOverwritten.set(true);
-            }
-            if (dataType.equals(RAW)) {
-                writeLogsToFile(filePath, rawData + System.lineSeparator());
-            } else {
-                boolean excludeSourceData = dataType.equals(METADATA);
-                String jsonLog = buildJsonLog(exception, rawData, excludeSourceData);
-                writeLogsToFile(filePath, jsonLog + System.lineSeparator());
-            }
-        }
-
-        private boolean isAllowedFailSafe(Exception exception) {
-            if (!(exception instanceof BError bError)) {
-                return true;
-            }
-            String message = bError.getMessage();
-            if (message == null) {
-                return true;
-            }
-            return !matchesErrorMessage(message, INVALID_CSV_DATA_FORMAT)
-                    && !matchesErrorMessage(message, INVALID_FIELD_IN_CSV)
-                    && !matchesErrorMessage(message, NO_FIELD_FOR_HEADER)
-                    && !matchesErrorMessage(message, HEADER_CANNOT_BE_EMPTY);
-        }
-
-        private boolean matchesErrorMessage(String message, DiagnosticErrorCode errorCode) {
-            String expectedMessage = DiagnosticLog.getErrorMessage(errorCode);
-            String baseMessage = expectedMessage.replaceAll("\\{\\d+\\}", "").trim();
-            return message.contains(baseMessage);
+        public void handleFailSafeLogging(Environment environment, BMap<?, ?> failSafe, Exception exception,
+                                          char[] buff, int count, AtomicBoolean isOverwritten) {
+            String offendingRow = getCurrentRowFromBuffer(buff, count);
+            FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
+                    this.lineNumber, this.columnIndex, isOverwritten);
         }
 
         private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {
