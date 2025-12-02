@@ -46,7 +46,8 @@ public type Options record {
     boolean enableConstraintValidation = true;  
     # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
-    # Specifies the fail-safe options for handling errors during processing
+    # Specifies the fail-safe options for handling errors during processing.
+    # If enabled, metadata is printed to console/files based on the output mode configuration.
     FailSafeOptions failSafe?;
 };
 
