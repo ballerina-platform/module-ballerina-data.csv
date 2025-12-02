@@ -70,9 +70,7 @@ function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                excludeSourceData: false
-            }
+           excludeSourceDataInConsole: false
         }
     });
     test:assertEquals(data.length(), 5);
@@ -96,8 +94,7 @@ function testErrorsWithWritingLogsToFile() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "logs.txt",
                 fileWriteOption: "OVERWRITE"
             }
@@ -114,8 +111,8 @@ function testIOErrorsWithWritingLogsToFile() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[]|error data = csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: true,
+            enableConsoleLogs: false,
+            fileOutputMode: {
                 filePath: "resources",
                 contentType: csv:METADATA
             }
@@ -131,8 +128,7 @@ function testWritingLogsToFileWithEmptyFilePath() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_header_error.csv");
     UserStatusRecord[]|error data = csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "",
                 contentType: csv:RAW
             }
@@ -148,8 +144,7 @@ function testOverwritingErrorLogFiles() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "logs.txt",
                 fileWriteOption: csv:OVERWRITE,
                 contentType: csv:RAW_AND_METADATA
@@ -167,8 +162,7 @@ function testWritingMetadataLogsIntoFiles() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: false,
+            fileOutputMode: {
                 filePath: "logs.txt",
                 fileWriteOption: csv:OVERWRITE,
                 contentType: csv:METADATA
@@ -186,8 +180,7 @@ function testHandleLogFileGenerationWithNestedDirectories() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "nested/logs/directory/error.log",
                 fileWriteOption: csv:APPEND,
                 contentType: csv:RAW_AND_METADATA
@@ -205,8 +198,7 @@ function testOverwriteLogFileWithIOException() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[]|error data = csv:parseStream(csvStream, {
         failSafe: {
-            outputMode: {
-                enableConsoleLogs: false,
+            fileOutputMode: {
                 filePath: "resources",
                 fileWriteOption: csv:OVERWRITE,
                 contentType: csv:RAW
