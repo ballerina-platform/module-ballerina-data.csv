@@ -375,7 +375,8 @@ public final class CsvParser {
                                 if (TypeUtils.getType(outputMode).getName().equals(CONSOLE_OUTPUT_MODE)) {
                                     processConsoleLogs(environment, exception, outputMode, offendingRow);
                                 } else {
-                                    processFileLogs(environment, isOverwritten, exception, outputMode, offendingRow);
+                                    processErrorLogsInFiles(environment, isOverwritten,
+                                            exception, outputMode, offendingRow);
                                 }
                             }
                             updateLineAndColumnIndexes(this);
@@ -396,8 +397,8 @@ public final class CsvParser {
             }
         }
 
-        private void processFileLogs(Environment environment, AtomicBoolean isOverwritten,
-                                     Exception exception, BMap<?, ?> outputMode, String offendingRow) {
+        private void processErrorLogsInFiles(Environment environment, AtomicBoolean isOverwritten,
+                                             Exception exception, BMap<?, ?> outputMode, String offendingRow) {
             boolean enableConsoleLogs = outputMode.getBooleanValue(ENABLE_CONSOLE_LOGS);
             String dataType = outputMode.getStringValue(CONTENT_TYPE).toString();
             if (enableConsoleLogs) {
