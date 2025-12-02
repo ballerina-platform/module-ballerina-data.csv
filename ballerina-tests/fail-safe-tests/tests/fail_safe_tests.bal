@@ -44,6 +44,40 @@ function testFailSafeMechanismWithBasicErrors() returns error? {
 @test:Config {
     groups: ["fail_safe"]
 }
+function testFailSafeMechanismWithListInput() returns error? {
+    string[][] csvList = [["id","active"], ["5","true"], ["8","true"], ["4","invalid"]];
+    UserStatusRecord[] data = check csv:parseList(csvList, {
+        failSafe: {},
+        headerRows: 1
+    });
+    test:assertEquals(data.length(), 2);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testFailSafeMechanismWithBytesInput() returns error? {
+    byte[] csvBytes = check io:fileReadBytes("resources/fail_test_with_simple_data.csv");
+    UserStatusRecord[] data = check csv:parseBytes(csvBytes, {
+        failSafe: {}
+    });
+    test:assertEquals(data.length(), 3);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
+function testFailSafeMechanismWithStringInput() returns error? {
+    string csvString = check io:fileReadString("resources/fail_test_with_simple_data.csv");
+    UserStatusRecord[] data = check csv:parseString(csvString, {
+        failSafe: {}
+    });
+    test:assertEquals(data.length(), 3);
+}
+
+@test:Config {
+    groups: ["fail_safe"]
+}
 function testFailSafeMechanismWithMultipleHeaders() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_headers.csv");
     UserDetailsRecord[] data = check csv:parseStream(csvStream, {
