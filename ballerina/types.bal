@@ -67,7 +67,7 @@ public type FileOutputMode record {|
     string filePath;
     # Controls the level of detail included in the error logs.
     ErrorLogContentType contentType = METADATA;
-    # Configuration for writing to the log file
+    # Configuration for writing to the error file
     FileWriteOption fileWriteOption = APPEND;
 |};
 
@@ -75,7 +75,7 @@ public type FileOutputMode record {|
 public enum ErrorLogContentType {
     # Logs only the metadata (timestamp, location, message) without source data rows
     METADATA,
-    # Logs the source data rows along with error messages
+    # Logs the source data rows
     RAW,
     # Logs both source data rows and metadata along with error messages
     RAW_AND_METADATA

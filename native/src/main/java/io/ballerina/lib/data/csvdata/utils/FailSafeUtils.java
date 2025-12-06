@@ -89,12 +89,10 @@ public final class FailSafeUtils {
         return message.contains(baseMessage);
     }
 
-    public static void handleFailSafeLogging(Environment environment, BMap<?, ?> failSafe,
-                                             Exception exception, String offendingRow,
-                                             int rowIndex, int columnIndex,
-                                             AtomicBoolean isOverwritten) {
-        boolean enableConsoleLogs = failSafe.getBooleanValue(ENABLE_CONSOLE_LOGS);
-        boolean excludeSourceDataInConsole = failSafe.getBooleanValue(EXCLUDE_SOURCE_DATA_IN_CONSOLE);
+    public static void handleFailSafeLogging(Environment environment, BMap<?, ?> failSafe, Exception exception,
+                                             String offendingRow, int rowIndex, int columnIndex,
+                                             AtomicBoolean isOverwritten, boolean enableConsoleLogs,
+                                             boolean excludeSourceDataInConsole) {
         if (enableConsoleLogs && environment != null) {
             processConsoleLogs(environment, exception, excludeSourceDataInConsole, offendingRow,
                     rowIndex, columnIndex);
@@ -135,14 +133,8 @@ public final class FailSafeUtils {
                                                String rawData, String dataType,
                                                int rowIndex, int columnIndex,
                                                AtomicBoolean isOverwritten) {
-        if (logFileConfig == null || !logFileConfig.containsKey(FILE_PATH)) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS, MISSING_FILE_PATH_ERROR);
-        }
         BString filePathValue = logFileConfig.getStringValue(FILE_PATH);
         String filePath = filePathValue != null ? filePathValue.toString() : null;
-        if (filePath == null || filePath.isBlank()) {
-            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_CONFIGURATIONS, MISSING_FILE_PATH_ERROR);
-        }
         handleLogFileGeneration(filePath);
         String fileWriteOption = logFileConfig.getStringValue(FILE_WRITE_OPTION).toString();
         if (OVERWRITE.equals(fileWriteOption) && !isOverwritten.get()) {
