@@ -127,7 +127,7 @@ public final class CsvTraversal {
         Environment environment = null;
         AtomicBoolean isOverwritten = new AtomicBoolean(false);
         int currentRowIndex = 0;
-        boolean enableConsoleLogs = false;
+        boolean enableConsoleLogs = true;
         boolean includeSourceDataInConsole = false;
 
         void reset() {

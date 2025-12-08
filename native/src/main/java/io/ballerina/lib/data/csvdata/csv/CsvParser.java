@@ -157,7 +157,7 @@ public final class CsvParser {
         boolean isRowMaxSizeReached = false;
 
         boolean isCarriageTokenPresent = false;
-        boolean enableConsoleLogs = false;
+        boolean enableConsoleLogs = true;
         boolean includeSourceDataInConsole = false;
 
         StateMachine() {
