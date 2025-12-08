@@ -124,11 +124,11 @@ public function main() returns error? {
                                Design Patterns,Gang of Four,INVALID,1994-10-31`;
     Book[] books = check csv:parseString(csvString, {
         failSafe: {
-            outputMode: {
+            enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "./logs/book-errors.log",
                 contentType: csv:METADATA,
-                fileWriteOption: csv:APPEND,
-                enableConsoleLogs: false
+                fileWriteOption: csv:APPEND
             }
         }
     });
@@ -153,18 +153,15 @@ public function main() returns error? {
     string csvString = string `name,author,price,publishDate
                                Clean Code,Robert Martin,25.50,2008-08-01
                                Design Patterns,Gang of Four,INVALID,1994-10-31`;
-
     Book[] books = check csv:parseString(csvString, {
         failSafe: {
-            outputMode: {
+            fileOutputMode: {
                 filePath: "./logs/book-errors.log",
                 contentType: csv:RAW,
-                fileWriteOption: csv:OVERWRITE,
-                enableConsoleLogs: false
+                fileWriteOption: csv:OVERWRITE
             }
         }
     });
-    
     io:println(books);
 }
 ```
@@ -186,10 +183,10 @@ public function main() returns error? {
     string csvString = string `name,author,price,publishDate
                                Clean Code,Robert Martin,25.50,2008-08-01
                                Design Patterns,Gang of Four,INVALID,1994-10-31`;
-
     Book[] books = check csv:parseString(csvString, {
         failSafe: {
-            outputMode: {
+            enableConsoleLogs: true,
+            fileOutputMode: {
                 filePath: "./logs/book-errors.log",
                 contentType: csv:RAW_AND_METADATA,
                 fileWriteOption: csv:APPEND,
@@ -197,7 +194,6 @@ public function main() returns error? {
             }
         }
     });
-    
     io:println(books);
 }
 ```
