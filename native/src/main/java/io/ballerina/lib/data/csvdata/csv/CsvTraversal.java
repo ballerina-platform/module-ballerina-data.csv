@@ -128,7 +128,7 @@ public final class CsvTraversal {
         AtomicBoolean isOverwritten = new AtomicBoolean(false);
         int currentRowIndex = 0;
         boolean enableConsoleLogs = false;
-        boolean excludeSourceDataInConsole = false;
+        boolean includeSourceDataInConsole = false;
 
         void reset() {
             currentCsvNode = null;
@@ -153,7 +153,7 @@ public final class CsvTraversal {
             isOverwritten.set(false);
             currentRowIndex = 0;
             enableConsoleLogs = false;
-            excludeSourceDataInConsole = false;
+            includeSourceDataInConsole = false;
         }
 
 
@@ -198,8 +198,8 @@ public final class CsvTraversal {
             this.config = config;
             if (config.failSafe != null) {
                 this.enableConsoleLogs = config.failSafe.getBooleanValue(FailSafeUtils.ENABLE_CONSOLE_LOGS);
-                this.excludeSourceDataInConsole = config.failSafe.getBooleanValue(
-                        FailSafeUtils.EXCLUDE_SOURCE_DATA_IN_CONSOLE);
+                this.includeSourceDataInConsole = config.failSafe.getBooleanValue(
+                        FailSafeUtils.INCLUDE_SOURCE_DATA_IN_CONSOLE);
             }
             sourceArrayElementType = TypeUtils.getReferredType(getSourceElementTypeForLists(csv));
             Type referredType = TypeUtils.getReferredType(type);
@@ -900,7 +900,7 @@ public final class CsvTraversal {
             String offendingRow = offendingRowData != null ? offendingRowData.toString() : "";
             FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
                     this.currentRowIndex, 0, isOverwritten,
-                    this.enableConsoleLogs, this.excludeSourceDataInConsole);
+                    this.enableConsoleLogs, this.includeSourceDataInConsole);
         }
     }
 }

@@ -63,8 +63,7 @@ public final class FailSafeUtils {
     public static final String METADATA = "METADATA";
     public static final BString ENABLE_CONSOLE_LOGS = StringUtils.fromString("enableConsoleLogs");
     public static final BString OFFENDING_ROW = StringUtils.fromString("offendingRow");
-    public static final BString EXCLUDE_SOURCE_DATA_IN_CONSOLE =
-            StringUtils.fromString("excludeSourceDataInConsole");
+    public static final BString INCLUDE_SOURCE_DATA_IN_CONSOLE = StringUtils.fromString("includeSourceDataInConsole");
 
     private FailSafeUtils() {
     }
@@ -92,9 +91,9 @@ public final class FailSafeUtils {
     public static void handleFailSafeLogging(Environment environment, BMap<?, ?> failSafe, Exception exception,
                                              String offendingRow, int rowIndex, int columnIndex,
                                              AtomicBoolean isOverwritten, boolean enableConsoleLogs,
-                                             boolean excludeSourceDataInConsole) {
+                                             boolean includeSourceDataInConsole) {
         if (enableConsoleLogs && environment != null) {
-            processConsoleLogs(environment, exception, excludeSourceDataInConsole, offendingRow,
+            processConsoleLogs(environment, exception, includeSourceDataInConsole, offendingRow,
                     rowIndex, columnIndex);
         }
         BMap<?, ?> fileOutputMode = failSafe.getMapValue(FILE_OUTPUT_MODE);
@@ -104,10 +103,10 @@ public final class FailSafeUtils {
     }
 
     public static void processConsoleLogs(Environment environment, Exception exception,
-                                          boolean excludeSourceData, String offendingRow,
+                                          boolean includeSourceData, String offendingRow,
                                           int rowIndex, int columnIndex) {
         BMap<BString, Object> keyValues = ValueCreator.createMapValue();
-        if (!excludeSourceData) {
+        if (includeSourceData) {
             keyValues.put(OFFENDING_ROW, StringUtils.fromString(offendingRow.trim()));
         }
         printErrorLogs(environment, exception, keyValues, rowIndex, columnIndex);

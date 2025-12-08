@@ -158,7 +158,7 @@ public final class CsvParser {
 
         boolean isCarriageTokenPresent = false;
         boolean enableConsoleLogs = false;
-        boolean excludeSourceDataInConsole = false;
+        boolean includeSourceDataInConsole = false;
 
         StateMachine() {
             reset();
@@ -199,7 +199,7 @@ public final class CsvParser {
             isRowMaxSizeReached = false;
             isCarriageTokenPresent = false;
             enableConsoleLogs = false;
-            excludeSourceDataInConsole = false;
+            includeSourceDataInConsole = false;
         }
 
         private boolean isWhitespace(char ch, Object lineTerminator) {
@@ -242,8 +242,8 @@ public final class CsvParser {
             this.config = config;
             if (config.failSafe != null) {
                 this.enableConsoleLogs = config.failSafe.getBooleanValue(FailSafeUtils.ENABLE_CONSOLE_LOGS);
-                this.excludeSourceDataInConsole = config.failSafe.getBooleanValue(
-                        FailSafeUtils.EXCLUDE_SOURCE_DATA_IN_CONSOLE);
+                this.includeSourceDataInConsole = config.failSafe.getBooleanValue(
+                        FailSafeUtils.INCLUDE_SOURCE_DATA_IN_CONSOLE);
             }
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
@@ -377,7 +377,7 @@ public final class CsvParser {
             String offendingRow = getCurrentRowFromBuffer(buff, count);
             FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
                     this.lineNumber, this.columnIndex, isOverwritten,
-                    this.enableConsoleLogs, this.excludeSourceDataInConsole);
+                    this.enableConsoleLogs, this.includeSourceDataInConsole);
         }
 
         private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {

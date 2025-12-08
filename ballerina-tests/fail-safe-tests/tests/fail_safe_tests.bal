@@ -104,7 +104,7 @@ function testFailSafeMechanismWithMultipleErrorRows() returns error? {
     stream<byte[], io:Error?> csvStream = check io:fileReadBlocksAsStream("resources/fail_test_with_multiple_errors.csv");
     UserStatusRecord[] data = check csv:parseStream(csvStream, {
         failSafe: {
-           excludeSourceDataInConsole: false
+           includeSourceDataInConsole: false
         }
     });
     test:assertEquals(data.length(), 5);

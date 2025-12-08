@@ -55,8 +55,8 @@ public type Options record {
 public type FailSafeOptions record {|
     # Specifies enabling logging errors to the console
     boolean enableConsoleLogs = true;
-    # Excludes logging source data to the console
-    boolean excludeSourceDataInConsole = true;
+    # Includes logging source data to the console
+    boolean includeSourceDataInConsole = false;
     # Specifies the output mode for logging errors encountered during parsing
     FileOutputMode fileOutputMode?;
 |};
