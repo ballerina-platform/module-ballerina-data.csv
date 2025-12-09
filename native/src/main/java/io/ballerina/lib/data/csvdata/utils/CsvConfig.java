@@ -10,6 +10,7 @@ import io.ballerina.runtime.api.values.BString;
  * @since 0.1.0
  */
 public class CsvConfig {
+    public static final BString FAIL_SAFE = StringUtils.fromString("failSafe");
     public char delimiter = ',';
     public char textEnclosure = '\\';
     public Object header = 0;
@@ -29,6 +30,7 @@ public class CsvConfig {
     public Object customHeadersIfHeadersAbsent = null;
     public long headerRows = 0;
     public Object customHeaders = null;
+    public BMap<?, ?> failSafe;
 
     private CsvConfig(CsvConfig config) {
         this.allowDataProjection = false;
@@ -40,6 +42,7 @@ public class CsvConfig {
         this.nilValue = config.nilValue;
         this.comment = config.comment;
         this.locale = config.locale;
+        this.failSafe = config.failSafe;
     }
 
     public static CsvConfig createParseListOptions(BMap<BString, Object> options) {
@@ -52,13 +55,14 @@ public class CsvConfig {
                 options.getBooleanValue(Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION),
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
                 options.getIntValue(Constants.ConfigConstants.HEADER_ROWS),
-                options.get(Constants.ConfigConstants.CUSTOM_HEADERS)
+                options.get(Constants.ConfigConstants.CUSTOM_HEADERS),
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     long headerRows, Object headers) {
+                     long headerRows, Object headers, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -67,6 +71,7 @@ public class CsvConfig {
         this.outputWithHeaders = outputWithHeaders;
         this.headerRows = headerRows;
         this.customHeaders = headers;
+        this.failSafe = failSafe;
     }
 
     public static CsvConfig createTransformOptions(BMap<BString, Object> options) {
@@ -78,13 +83,14 @@ public class CsvConfig {
                 options.get(Constants.ConfigConstants.SKIP_LINES),
                 options.getBooleanValue(Constants.ConfigConstants.ENABLE_CONSTRAINT_VALIDATION),
                 options.getBooleanValue(Constants.ConfigConstants.OUTPUT_WITH_HEADERS),
-                options.get(Constants.ConfigConstants.HEADERS_ORDER)
+                options.get(Constants.ConfigConstants.HEADERS_ORDER),
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders,
-                     Object headerOrder) {
+                     Object headerOrder, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -92,6 +98,7 @@ public class CsvConfig {
         this.enableConstraintValidation = enableConstraintValidation;
         this.outputWithHeaders = outputWithHeaders;
         this.headerOrder = headerOrder;
+        this.failSafe = failSafe;
     }
 
     public static CsvConfig createParseOptions(BMap<BString, Object> options) {
@@ -111,14 +118,16 @@ public class CsvConfig {
                 options.get(Constants.ConfigConstants.NIL_VALUE),
                 StringUtils.getStringValue(options.getStringValue(Constants.ConfigConstants.COMMENT_CHAR)).charAt(0),
                 options.get(Constants.ConfigConstants.HEADER),
-                options.get(Constants.ConfigConstants.CUSTOM_HEADERS_IF_HEADER_ABSENT)
+                options.get(Constants.ConfigConstants.CUSTOM_HEADERS_IF_HEADER_ABSENT),
+                options.getMapValue(FAIL_SAFE)
         );
     }
 
     public CsvConfig(boolean nilAsOptionalField, boolean absentAsNilableType, boolean allowDataProjection,
                      Object skipLines, boolean enableConstraintValidation, boolean outputWithHeaders, char delimiter,
                      String locale, char textEnclosure, char escapeChar, Object lineTerminator,
-                     Object nilValue, char comment, Object header, Object customHeadersIfHeadersAbsent) {
+                     Object nilValue, char comment, Object header,
+                     Object customHeadersIfHeadersAbsent, BMap<?, ?> failSafe) {
         this.nilAsOptionalField = nilAsOptionalField;
         this.absentAsNilableType = absentAsNilableType;
         this.allowDataProjection = allowDataProjection;
@@ -134,6 +143,7 @@ public class CsvConfig {
         this.comment = comment;
         this.header = header;
         this.customHeadersIfHeadersAbsent = customHeadersIfHeadersAbsent;
+        this.failSafe = failSafe;
     }
 
     public static CsvConfig createConfigOptionsForUnion(CsvConfig config) {

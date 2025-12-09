@@ -7,6 +7,7 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 - **Versatile CSV Data Input**: Accept CSV data as a string, byte array, or a stream and convert it into a subtype of ballerina records or lists.
 - **CSV to anydata Value transformation**: Transform CSV data into expected type which is subtype of ballerina record arrays or anydata arrays.
 - **Projection Support**: Perform selective conversion of CSV data subsets into ballerina record array or anydata array values through projection.
+- **Fail-Safe Error Handling**: Continue processing CSV data even when encountering row-level errors and logging errors to the console or file for error tracking and debugging.
 
 ## Usage
 
@@ -94,6 +95,100 @@ public function main() returns error? {
     // Transform CSV records to a string array of arrays.
     [string, int][] books3 = check csv:transform(bookRecords);
     io:println(books3);
+}
+```
+
+### Fail-safe CSV parsing with metadata error logging
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
+
+public function main() returns error? {
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
+    Book[] books = check csv:parseString(csvString, {
+        failSafe: {
+            enableConsoleLogs: true,
+            fileOutputMode: {
+                filePath: "./logs/book-errors.log",
+                contentType: csv:METADATA,
+                fileWriteOption: csv:APPEND
+            }
+        }
+    });
+    io:println(books);
+}
+```
+
+### Fail-safe CSV parsing with raw data error logging
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
+
+public function main() returns error? {
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
+    Book[] books = check csv:parseString(csvString, {
+        failSafe: {
+            fileOutputMode: {
+                filePath: "./logs/book-errors.log",
+                contentType: csv:RAW,
+                fileWriteOption: csv:OVERWRITE
+            }
+        }
+    });
+    io:println(books);
+}
+```
+
+### Fail-safe CSV parsing with combined logging and console output
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Book record {|
+    string name;
+    string author;
+    decimal price;
+    string publishDate;
+|};
+
+public function main() returns error? {
+    string csvString = string `name,author,price,publishDate
+                               Clean Code,Robert Martin,25.50,2008-08-01
+                               Design Patterns,Gang of Four,INVALID,1994-10-31`;
+
+    Book[] books = check csv:parseString(csvString, {
+        failSafe: {
+            enableConsoleLogs: true,
+            fileOutputMode: {
+                filePath: "./logs/book-errors.log",
+                contentType: csv:RAW_AND_METADATA,
+                fileWriteOption: csv:APPEND
+            }
+        }
+    });
+    
+    io:println(books);
 }
 ```
 

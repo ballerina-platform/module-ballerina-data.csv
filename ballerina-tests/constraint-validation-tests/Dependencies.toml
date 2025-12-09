@@ -22,7 +22,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "constraint_validation_tests"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "data.csv"},
@@ -35,13 +35,24 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "data.csv"
-version = "0.8.0"
+version = "0.9.0"
 scope = "testOnly"
 dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "log"}
 ]
 modules = [
 	{org = "ballerina", packageName = "data.csv", moduleName = "data.csv"}
+]
+
+[[package]]
+org = "ballerina"
+name = "io"
+version = "1.8.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"}
 ]
 
 [[package]]
@@ -84,6 +95,36 @@ org = "ballerina"
 name = "lang.object"
 version = "0.0.0"
 scope = "testOnly"
+
+[[package]]
+org = "ballerina"
+name = "lang.value"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "log"
+version = "2.14.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "observe"}
+]
+
+[[package]]
+org = "ballerina"
+name = "observe"
+version = "1.6.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
 
 [[package]]
 org = "ballerina"

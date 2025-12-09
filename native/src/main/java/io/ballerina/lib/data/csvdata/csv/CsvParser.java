@@ -24,6 +24,8 @@ import io.ballerina.lib.data.csvdata.utils.CsvUtils;
 import io.ballerina.lib.data.csvdata.utils.DataUtils;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
+import io.ballerina.lib.data.csvdata.utils.FailSafeUtils;
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -39,6 +41,7 @@ import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BTypedesc;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -49,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.BACKSPACE_CHAR;
@@ -59,6 +63,7 @@ import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.NEWLINE_C
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.SLASH_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.TAB_CHAR;
 import static io.ballerina.lib.data.csvdata.utils.Constants.EscapeChar.UNICODE_START_CHAR;
+import static io.ballerina.lib.data.csvdata.utils.FailSafeUtils.isAllowedFailSafe;
 
 /**
  * Convert Csv string to a ballerina record.
@@ -85,14 +90,14 @@ public final class CsvParser {
     // private static final ThreadLocal<StateMachine> LOCAL_THREAD_STATE_MACHINE
     //       = ThreadLocal.withInitial(StateMachine::new);
 
-    public static Object parse(Reader reader, BTypedesc type, CsvConfig config)
+    public static Object parse(Environment environment, Reader reader, BTypedesc type, CsvConfig config)
             throws BError {
         // TODO: Add this implementation after creating the object pool implementation
         // StateMachine sm = LOCAL_THREAD_STATE_MACHINE.get();
         StateMachine sm = new StateMachine();
         try {
             CsvUtils.validateConfigs(config);
-            Object convertedValue = sm.execute(reader, TypeUtils.getReferredType(type.getDescribingType()),
+            Object convertedValue = sm.execute(environment, reader, TypeUtils.getReferredType(type.getDescribingType()),
                     config, type);
             return DataUtils.validateConstraints(convertedValue, type, config.enableConstraintValidation);
         } finally {
@@ -107,7 +112,6 @@ public final class CsvParser {
      */
 
     static class StateMachine {
-
         private static final State HEADER_START_STATE = new HeaderStartState();
         private static final State HEADER_END_STATE = new HeaderEndState();
         private static final State ROW_START_STATE = new RowStartState();
@@ -119,7 +123,6 @@ public final class CsvParser {
         private static final State STRING_QUOTE_CHAR_STATE = new StringQuoteValueState();
         private static final State HEADER_QUOTE_CHAR_STATE = new HeaderQuoteValueState();
         private static final char LINE_BREAK = '\n';
-
         Object currentCsvNode;
         ArrayList<String> headers = new ArrayList<>();
         BArray rootCsvNode;
@@ -154,6 +157,8 @@ public final class CsvParser {
         boolean isRowMaxSizeReached = false;
 
         boolean isCarriageTokenPresent = false;
+        boolean enableConsoleLogs = true;
+        boolean includeSourceDataInConsole = false;
 
         StateMachine() {
             reset();
@@ -193,6 +198,8 @@ public final class CsvParser {
             isColumnMaxSizeReached = false;
             isRowMaxSizeReached = false;
             isCarriageTokenPresent = false;
+            enableConsoleLogs = false;
+            includeSourceDataInConsole = false;
         }
 
         private boolean isWhitespace(char ch, Object lineTerminator) {
@@ -230,15 +237,22 @@ public final class CsvParser {
             return new String(this.charBuff, 0, this.charBuffIndex);
         }
 
-        public Object execute(Reader reader, Type type, CsvConfig config, BTypedesc bTypedesc) throws BError {
+        public Object execute(Environment environment, Reader reader, Type type,
+                              CsvConfig config, BTypedesc bTypedesc) {
             this.config = config;
+            if (config.failSafe != null) {
+                this.enableConsoleLogs = config.failSafe.getBooleanValue(FailSafeUtils.ENABLE_CONSOLE_LOGS);
+                this.includeSourceDataInConsole = config.failSafe.getBooleanValue(
+                        FailSafeUtils.INCLUDE_SOURCE_DATA_IN_CONSOLE);
+            }
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
                 for (Type constituentType : ((IntersectionType) referredType).getConstituentTypes()) {
                     if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                         continue;
                     }
-                    return CsvCreator.constructReadOnlyValue(execute(reader, constituentType, config, bTypedesc));
+                    return CsvCreator.constructReadOnlyValue(execute(environment, reader,
+                            constituentType, config, bTypedesc));
                 }
             }
 
@@ -272,7 +286,7 @@ public final class CsvParser {
                         if (constituentType.getTag() == TypeTags.READONLY_TAG) {
                             continue;
                         }
-                        Object mapValue = execute(reader, TypeCreator.createArrayType(
+                        Object mapValue = execute(environment, reader, TypeCreator.createArrayType(
                                 TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                         ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                         config.stringConversion = true;
@@ -285,7 +299,7 @@ public final class CsvParser {
                 case TypeTags.UNION_TAG:
                     boolean outputHeaders = config.outputWithHeaders;
                     Object customHeaders = config.customHeadersIfHeadersAbsent;
-                    Object mapValue = execute(reader, TypeCreator.createArrayType(
+                    Object mapValue = execute(environment, reader, TypeCreator.createArrayType(
                             TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)
                     ), CsvConfig.createConfigOptionsForUnion(config), bTypedesc);
                     config.stringConversion = true;
@@ -316,22 +330,91 @@ public final class CsvParser {
             try {
                 char[] buff = new char[1024];
                 int count;
+                AtomicBoolean isOverwritten = new AtomicBoolean(false);
                 while ((count = reader.read(buff)) > 0) {
                     this.index = 0;
                     while (this.index < count) {
-                        currentState = currentState.transition(this, buff, this.index, count);
+                        try {
+                            currentState = currentState.transition(this, buff, this.index, count);
+                        } catch (Exception exception) {
+                            this.index = getIndexOfNextLine(this, buff, count);
+                            if (this.index <= count) {
+                                BMap<?, ?> failSafe = config.failSafe;
+                                if (failSafe == null || !isAllowedFailSafe(exception)) {
+                                    reader.close();
+                                    throw exception;
+                                }
+                                handleFailSafeLogging(environment, failSafe, exception, buff, count, isOverwritten);
+                            }
+                            updateLineAndColumnIndexes(this);
+                            currentState = (this.index >= count) ? ROW_END_STATE : ROW_START_STATE;
+                        }
                     }
                 }
-                currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
-                if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
-                    if (!this.isHeaderConfigExceedLineNumber) {
-                        throw new CsvParserException("Invalid token found");
+                reader.close();
+                try {
+                    currentState = currentState.transition(this, new char[]{EOF}, 0, 1);
+                    if (currentState != ROW_END_STATE && currentState != HEADER_END_STATE) {
+                        if (!this.isHeaderConfigExceedLineNumber) {
+                            throw new CsvParserException("Invalid token found");
+                        }
                     }
+                } catch (Exception exception) {
+                    BMap<?, ?> failSafe = config.failSafe;
+                    if (failSafe == null || !isAllowedFailSafe(exception)) {
+                        throw exception;
+                    }
+                    handleFailSafeLogging(environment, failSafe, exception, buff, count, isOverwritten);
                 }
                 return rootCsvNode;
             } catch (IOException | CsvParserException e) {
                 throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), line, column);
             }
+        }
+
+        public void handleFailSafeLogging(Environment environment, BMap<?, ?> failSafe, Exception exception,
+                                          char[] buff, int count, AtomicBoolean isOverwritten) {
+            String offendingRow = getCurrentRowFromBuffer(buff, count);
+            FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
+                    this.lineNumber, this.columnIndex, isOverwritten,
+                    this.enableConsoleLogs, this.includeSourceDataInConsole);
+        }
+
+        private int getIndexOfNextLine(StateMachine sm, char[] buff, int count) {
+            int index = 0;
+            int currentLineNumber = sm.lineNumber + 1;
+            int lineBreaksCount = 0;
+            while (index < count && lineBreaksCount < currentLineNumber) {
+                if (buff[index] == LINE_BREAK) {
+                    lineBreaksCount++;
+                }
+                index++;
+            }
+            return index;
+        }
+
+        private String getCurrentRowFromBuffer(char[] buff, int count) {
+            int targetRowNumber = this.lineNumber;
+            if (count <= 0) {
+                return "";
+            }
+            int lineBreaksCount = 0;
+            int start = 0;
+            while (start < count && lineBreaksCount < targetRowNumber) {
+                if (buff[start] == LINE_BREAK) {
+                    lineBreaksCount++;
+                }
+                start++;
+            }
+            if (start >= count) {
+                return "";
+            }
+            int end = start;
+            while (end < count && buff[end] != LINE_BREAK && buff[end] != EOF) {
+                end++;
+            }
+            int length = Math.max(0, end - start);
+            return length > 0 ? new String(buff, start, length) : "";
         }
 
         private void addFieldNamesForNonHeaderState() {

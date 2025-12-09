@@ -46,6 +46,67 @@ public type Options record {
     boolean enableConstraintValidation = true;  
     # If `true`, when the result is a list it will contain headers as the first row.
     boolean outputWithHeaders = false;
+    # Specifies the fail-safe options for handling errors during processing.
+    # If enabled, metadata is printed to console/files based on the output mode configuration.
+    FailSafeOptions failSafe?;
+};
+
+# Represents the options for fail-safe mechanism during parsing.
+public type FailSafeOptions record {|
+    # Specifies enabling logging errors to the console
+    boolean enableConsoleLogs = true;
+    # Includes logging source data to the console
+    boolean includeSourceDataInConsole = false;
+    # Specifies the output mode for logging errors encountered during parsing
+    FileOutputMode fileOutputMode?;
+|};
+
+# Represents the file output mode for logging errors.
+public type FileOutputMode record {|
+    # The file path where errors will be logged
+    string filePath;
+    # Controls the level of detail included in the error logs.
+    ErrorLogContentType contentType = METADATA;
+    # Configuration for writing to the error file
+    FileWriteOption fileWriteOption = APPEND;
+|};
+
+# Represents the content type for error logging.
+public enum ErrorLogContentType {
+    # Logs only the metadata (timestamp, location, message) without source data rows
+    METADATA,
+    # Logs the source data rows
+    RAW,
+    # Logs both source data rows and metadata along with error messages
+    RAW_AND_METADATA
+};
+
+# Represents an error log entry.
+public type LogOutput record {|
+    # The timestamp of the error occurrence
+    string time?;
+    # The location where the error occurred
+    Location location?;
+    # The error message
+    string message?;
+    # The source data row related to the error
+    string offendingRow?;
+|};
+
+# Represents the location of an error.
+public type Location record {|
+    # The row number where the error occurred
+    int row;
+    # The column number where the error occurred
+    int column;
+|};
+
+# Represents the options for writing data.
+public enum FileWriteOption {
+    # If the file already exists, new logs will be appended to the existing file
+    APPEND,
+    # When the error logging starts, if the file already exists, the file will be overwritten
+    OVERWRITE
 };
 
 # Represents the options for parsing data.

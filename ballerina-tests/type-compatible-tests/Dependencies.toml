@@ -10,7 +10,7 @@ distribution-version = "2201.12.0"
 [[package]]
 org = "ballerina"
 name = "csv_commons"
-version = "0.8.0"
+version = "0.9.0"
 scope = "testOnly"
 modules = [
 	{org = "ballerina", packageName = "csv_commons", moduleName = "csv_commons"}
@@ -19,10 +19,11 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "data.csv"
-version = "0.8.0"
+version = "0.9.0"
 scope = "testOnly"
 dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "log"}
 ]
 modules = [
 	{org = "ballerina", packageName = "data.csv", moduleName = "data.csv"}
@@ -93,6 +94,27 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "log"
+version = "2.14.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "observe"}
+]
+
+[[package]]
+org = "ballerina"
+name = "observe"
+version = "1.6.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
 name = "test"
 version = "0.0.0"
 scope = "testOnly"
@@ -108,7 +130,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "type_compatible_tests"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
 	{org = "ballerina", name = "csv_commons"},
 	{org = "ballerina", name = "data.csv"},

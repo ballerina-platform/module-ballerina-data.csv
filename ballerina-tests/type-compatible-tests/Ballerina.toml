@@ -1,13 +1,13 @@
 [package]
 org = "ballerina"
 name = "type_compatible_tests"
-version = "0.8.0"
+version = "0.9.0"
 
 [[dependency]]
 org = "ballerina"
 name = "csv_commons"
 repository = "local"
-version = "0.8.0"
+version = "0.9.0"
 
 [platform.java21]
 graalvmCompatible = true
