@@ -1,0 +1,215 @@
+// Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+import ballerina/data.csv;
+import ballerina/io;
+import ballerina/test;
+
+// Test 1: Basic streaming yields all rows
+@test:Config
+function testBasicStreamingYieldsAllRows() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25
+2,Bob,30
+3,Charlie,35`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+
+    Person[] result = check from Person p in personStream
+        select p;
+
+    test:assertEquals(result.length(), 3);
+    test:assertEquals(result[0], {id: 1, name: "Alice", age: 25});
+    test:assertEquals(result[1], {id: 2, name: "Bob", age: 30});
+    test:assertEquals(result[2], {id: 3, name: "Charlie", age: 35});
+}
+
+// Test 2: Typed record mapping works
+@test:Config
+function testTypedRecordMapping() returns error? {
+    string csvContent = string `title,author,year
+Clean Code,Robert Martin,2008
+The Pragmatic Programmer,Andy Hunt,1999`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Book, csv:Error?> bookStream = check csv:parseAsStream(byteStream);
+
+    Book[] books = check from Book b in bookStream
+        select b;
+
+    test:assertEquals(books.length(), 2);
+    test:assertEquals(books[0].title, "Clean Code");
+    test:assertEquals(books[0].author, "Robert Martin");
+    test:assertEquals(books[0].year, 2008);
+    test:assertEquals(books[1].title, "The Pragmatic Programmer");
+    test:assertEquals(books[1].author, "Andy Hunt");
+    test:assertEquals(books[1].year, 1999);
+}
+
+// Test 3: Streaming with forEach
+@test:Config
+function testStreamingWithForEach() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25
+2,Bob,30
+3,Charlie,35`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+
+    int count = 0;
+    int totalAge = 0;
+    check personStream.forEach(function(Person p) {
+        count += 1;
+        totalAge += p.age;
+    });
+
+    test:assertEquals(count, 3);
+    test:assertEquals(totalAge, 90);
+}
+
+// Test 4: Fail-safe skips malformed rows without terminating stream
+@test:Config
+function testFailSafeSkipsMalformedRows() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25
+2,Bob,INVALID
+3,Charlie,35`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream, {
+        failSafe: {
+            enableConsoleLog: false
+        }
+    });
+
+    Person[] result = [];
+    error? err = personStream.forEach(function(Person p) {
+        result.push(p);
+    });
+
+    // In fail-safe mode, malformed rows should be skipped
+    // So we should get 2 valid rows
+    test:assertEquals(result.length(), 2);
+    test:assertEquals(result[0].name, "Alice");
+    test:assertEquals(result[1].name, "Charlie");
+}
+
+// Test 5: Empty CSV returns empty stream
+@test:Config
+function testEmptyCsv() returns error? {
+    string csvContent = string `id,name,age`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+
+    Person[] result = check from Person p in personStream
+        select p;
+
+    test:assertEquals(result.length(), 0);
+}
+
+// Test 6: Single row CSV
+@test:Config
+function testSingleRowCsv() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+
+    Person[] result = check from Person p in personStream
+        select p;
+
+    test:assertEquals(result.length(), 1);
+    test:assertEquals(result[0], {id: 1, name: "Alice", age: 25});
+}
+
+// Test 7: Array type output
+@test:Config
+function testArrayTypeOutput() returns error? {
+    string csvContent = string `1,Alice,25
+2,Bob,30`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<anydata[], csv:Error?> arrayStream = check csv:parseAsStream(byteStream, {header: null});
+
+    anydata[][] result = check from anydata[] row in arrayStream
+        select row;
+
+    test:assertEquals(result.length(), 2);
+    test:assertEquals(result[0], ["1", "Alice", "25"]);
+    test:assertEquals(result[1], ["2", "Bob", "30"]);
+}
+
+// Test 8: Custom header options
+@test:Config
+function testCustomHeaderOptions() returns error? {
+    string csvContent = string `1,Alice,25
+2,Bob,30`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream, {
+        header: null,
+        customHeadersIfHeadersAbsent: ["id", "name", "age"]
+    });
+
+    Person[] result = check from Person p in personStream
+        select p;
+
+    test:assertEquals(result.length(), 2);
+    test:assertEquals(result[0].name, "Alice");
+    test:assertEquals(result[1].name, "Bob");
+}
+
+// Test 9: Large-ish CSV (memory efficiency test)
+@test:Config
+function testLargeCsv() returns error? {
+    // Generate a CSV with 1000 rows
+    string[] lines = ["id,name,age"];
+    foreach int i in 1 ... 1000 {
+        lines.push(string `${i},Person${i},${20 + (i % 50)}`);
+    }
+    string csvContent = string:'join("\n", ...lines);
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+
+    int count = 0;
+    check personStream.forEach(function(Person p) {
+        count += 1;
+    });
+
+    test:assertEquals(count, 1000);
+}
+
+// Helper function to create byte stream from string
+function createByteStream(string content) returns stream<byte[], io:Error?> {
+    byte[] bytes = content.toBytes();
+    byte[][] chunks = [];
+    
+    // Split into chunks of ~64 bytes for more realistic streaming
+    int chunkSize = 64;
+    int i = 0;
+    while i < bytes.length() {
+        int end = (i + chunkSize < bytes.length()) ? i + chunkSize : bytes.length();
+        chunks.push(bytes.slice(i, end));
+        i = end;
+    }
+    
+    return chunks.toStream();
+}
