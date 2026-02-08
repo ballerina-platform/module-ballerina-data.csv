@@ -31,9 +31,10 @@ def testCommonTomlFilePlaceHolder = new File("${project.rootDir}/build-config/re
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
 def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.lib.data.csvdata.*:ballerina.*"
-def testPackages = ["union-type-tests", "user-config-tests", "parse-string-record-types-tests", 
-            "parse-string-array-types-tests", "parse-list-types-tests", "parse-record-types-tests", 
-            "type-compatible-tests", "unicode-tests", "constraint-validation-tests", "fail-safe-tests"]
+def testPackages = ["union-type-tests", "user-config-tests", "parse-string-record-types-tests",
+            "parse-string-array-types-tests", "parse-list-types-tests", "parse-record-types-tests",
+            "type-compatible-tests", "unicode-tests", "constraint-validation-tests", "fail-safe-tests",
+            "streaming-tests"]
 def testCommonPackage = "csv-commons"
 
 def stripBallerinaExtensionVersion(String extVersion) {
