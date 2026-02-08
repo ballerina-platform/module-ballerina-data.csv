@@ -248,8 +248,9 @@ public final class CsvParser {
                         sm.handleFailSafeLogging(environment, failSafe, exception,
                                 sm.streamingBuff, sm.streamingBuffCount, isOverwritten);
 
-                        // Reset state, increment rowIndex, and continue parsing
+                        // Reset state, increment rowIndex/lineNumber, and continue parsing
                         sm.rowIndex++;
+                        sm.lineNumber++;
                         StateMachine.resetStreamingStateForNextRow(sm);
                         // Continue the outer loop to parse the next row
                         break;
@@ -1099,7 +1100,6 @@ public final class CsvParser {
         private static void resetStreamingStateForNextRow(StateMachine sm) {
             sm.currentCsvNode = null;
             sm.isCurrentCsvNodeEmpty = true;
-            sm.lineNumber++;
             sm.columnIndex = 0;
             sm.isColumnMaxSizeReached = false;
             sm.clear();

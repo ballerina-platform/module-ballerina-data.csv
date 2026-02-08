@@ -106,6 +106,10 @@ public class BallerinaByteBlockInputStream extends InputStream {
                 final BString value = Arrays.stream(valueRecord.getKeys()).findFirst().get();
                 final BArray arrayValue = valueRecord.getArrayValue(value);
                 currentChunk = arrayValue.getByteArray();
+            } else if (result instanceof BError) {
+                done.set(true);
+                futureResultConsumer.accept(result);
+                currentChunk = new byte[0];
             } else {
                 // Case where Completes with an error
                 done.set(true);
