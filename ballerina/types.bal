@@ -17,6 +17,13 @@
 # Represents an error.
 public type Error error;
 
+# Represents a stream entry containing a parsed CSV record or array.
+# This is used internally by the streaming API.
+public type CsvStreamEntry record {|
+    # The parsed CSV record or array value
+    record {}|anydata[] value;
+|};
+
 # Defines the name of the JSON Object key.
 #
 # + value - The name of the JSON Object key
