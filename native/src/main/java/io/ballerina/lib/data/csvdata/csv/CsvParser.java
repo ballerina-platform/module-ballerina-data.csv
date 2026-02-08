@@ -210,27 +210,26 @@ public final class CsvParser {
             return null;
         }
 
+        // Reset for new row
         sm.currentCsvNode = null;
         sm.isCurrentCsvNodeEmpty = true;
         sm.columnIndex = 0;
         sm.isColumnMaxSizeReached = false;
+        sm.clear();
         AtomicBoolean isOverwritten = new AtomicBoolean(false);
 
         try {
-            boolean rowComplete = false;
-
-            while (!rowComplete && !sm.streamingEof) {
+            while (!sm.streamingEof) {
                 if (sm.index >= sm.streamingBuffCount) {
                     sm.streamingBuffCount = reader.read(sm.streamingBuff);
                     sm.index = 0;
                     if (sm.streamingBuffCount <= 0) {
                         sm.streamingEof = true;
-                        if (!sm.isCurrentCsvNodeEmpty) {
+                        // Handle final row if present
+                        if (!sm.isCurrentCsvNodeEmpty && sm.currentCsvNode != null) {
                             sm.currentState = sm.currentState.transition(sm, new char[]{EOF}, 0, 1);
                             if (sm.currentCsvNode != null) {
-                                Object result = sm.currentCsvNode;
-                                sm.currentCsvNode = null;
-                                return DataUtils.validateConstraints(result, sm.streamingBTypedesc,
+                                return DataUtils.validateConstraints(sm.currentCsvNode, sm.streamingBTypedesc,
                                         config.enableConstraintValidation);
                             }
                         }
@@ -239,16 +238,23 @@ public final class CsvParser {
                 }
 
                 int startRowIndex = sm.rowIndex;
-                while (sm.index < sm.streamingBuffCount && !rowComplete) {
+                while (sm.index < sm.streamingBuffCount) {
                     try {
                         sm.currentState = sm.currentState.transition(sm, sm.streamingBuff, sm.index,
                                 sm.streamingBuffCount);
 
-                        if (sm.rowIndex > startRowIndex || sm.currentState == StateMachine.ROW_END_STATE) {
-                            rowComplete = true;
+                        // Check if row was completed
+                        if (sm.rowIndex > startRowIndex) {
+                            // Row completed - currentCsvNode has the row
                             if (sm.currentCsvNode != null) {
                                 Object result = sm.currentCsvNode;
+                                // Clear for next iteration
                                 sm.currentCsvNode = null;
+                                sm.isCurrentCsvNodeEmpty = true;
+                                sm.lineNumber++;
+                                sm.columnIndex = 0;
+                                sm.isColumnMaxSizeReached = false;
+                                sm.clear();
                                 sm.currentState = StateMachine.ROW_START_STATE;
                                 return DataUtils.validateConstraints(result, sm.streamingBTypedesc,
                                         config.enableConstraintValidation);
@@ -256,16 +262,27 @@ public final class CsvParser {
                             startRowIndex = sm.rowIndex;
                         }
                     } catch (Exception exception) {
+                        // Skip to next line
                         sm.index = sm.getIndexOfNextLine(sm, sm.streamingBuff, sm.streamingBuffCount);
                         BMap<?, ?> failSafe = config.failSafe;
                         if (failSafe == null || !isAllowedFailSafe(exception)) {
                             throw exception;
                         }
+                        // Log error and continue to next row
                         sm.handleFailSafeLogging(environment, failSafe, exception,
                                 sm.streamingBuff, sm.streamingBuffCount, isOverwritten);
-                        StateMachine.updateLineAndColumnIndexes(sm);
+                        
+                        // Reset state and continue parsing
+                        sm.currentCsvNode = null;
+                        sm.isCurrentCsvNodeEmpty = true;
+                        sm.rowIndex++;
+                        sm.lineNumber++;
+                        sm.columnIndex = 0;
+                        sm.isColumnMaxSizeReached = false;
+                        sm.clear();
                         sm.currentState = StateMachine.ROW_START_STATE;
-                        rowComplete = true;
+                        // Continue the outer loop to parse the next row
+                        break;
                     }
                 }
             }
@@ -933,8 +950,16 @@ public final class CsvParser {
                 addRowValue(sm, trim);
             }
             if (!sm.isCurrentCsvNodeEmpty) {
-                finalizeTheRow(sm);
-                updateLineAndColumnIndexes(sm);
+                if (sm.streamingMode) {
+                    // In streaming mode, we don't finalize to rootCsvNode
+                    // Just increment counters and prepare for next row
+                    sm.arraySize++;
+                    sm.currentCsvNodeLength = 0;
+                    sm.rowIndex++;
+                } else {
+                    finalizeTheRow(sm);
+                    updateLineAndColumnIndexes(sm);
+                }
             } else {
                 updateLineAndColumnIndexesWithoutRowIndexes(sm);
             }

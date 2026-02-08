@@ -19,7 +19,7 @@ public type Error error;
 
 # Represents a stream entry containing a parsed CSV record or array.
 # This is used internally by the streaming API.
-public type CsvStreamEntry record {|
+type CsvStreamEntry record {|
     # The parsed CSV record or array value
     record {}|anydata[] value;
 |};

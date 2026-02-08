@@ -69,11 +69,24 @@ public final class CsvStreamIterator {
             return null;
         }
 
+        // Check if there was an error from the underlying stream
+        Object streamError = data.getStreamError();
+        if (streamError != null) {
+            data.setDone(true);
+            return streamError;
+        }
+
         try {
             Object row = data.parseNextRow(env);
 
             if (row == null) {
+                // EOF reached - close resources automatically
                 data.setDone(true);
+                try {
+                    data.close();
+                } catch (IOException e) {
+                    return DiagnosticLog.getCsvError("Error closing CSV stream on EOF: " + e.getMessage());
+                }
                 return null;
             }
 
@@ -83,6 +96,12 @@ public final class CsvStreamIterator {
             return streamEntry;
         } catch (Exception e) {
             data.setDone(true);
+            // Try to close on error
+            try {
+                data.close();
+            } catch (IOException ioException) {
+                // Ignore close error, return original error
+            }
             return DiagnosticLog.getCsvError("Error reading CSV record: " + e.getMessage());
         }
     }
@@ -117,14 +136,22 @@ public final class CsvStreamIterator {
         MethodType nextMethod = DataReaderTask.resolveNextMethod(inputIterator);
         MethodType closeMethod = DataReaderTask.resolveCloseMethod(inputIterator);
 
+        // Create IteratorData first so we can capture errors in it
+        IteratorData data = new IteratorData(env, null, config, elementType, bTypedesc, null);
+        csvStreamObject.addNativeData(ITERATOR_NATIVE_DATA, data);
+
         BallerinaByteBlockInputStream byteStream = new BallerinaByteBlockInputStream(
                 env, inputIterator, nextMethod, closeMethod, obj -> {
+            // Propagate errors from the underlying byte stream
+            if (obj != null) {
+                data.setStreamError(obj);
+            }
         });
 
         Reader reader = new InputStreamReader(byteStream, Charset.forName(encoding));
 
-        IteratorData data = new IteratorData(env, reader, config, elementType, bTypedesc, byteStream);
-        csvStreamObject.addNativeData(ITERATOR_NATIVE_DATA, data);
+        // Update the data with the actual reader and byteStream
+        data.setReaderAndStream(reader, byteStream);
     }
 
     /**
@@ -132,14 +159,15 @@ public final class CsvStreamIterator {
      */
     static class IteratorData {
         private final Environment env;
-        private final Reader reader;
+        private Reader reader;
         private final CsvConfig config;
         private final Type elementType;
         private final BTypedesc bTypedesc;
-        private final BallerinaByteBlockInputStream byteStream;
+        private BallerinaByteBlockInputStream byteStream;
         private CsvParser.StateMachine stateMachine;
         private boolean headersParsed = false;
         private boolean done = false;
+        private Object streamError = null;
 
         IteratorData(Environment env, Reader reader, CsvConfig config,
                      Type elementType, BTypedesc bTypedesc,
@@ -152,12 +180,25 @@ public final class CsvStreamIterator {
             this.byteStream = byteStream;
         }
 
+        void setReaderAndStream(Reader reader, BallerinaByteBlockInputStream byteStream) {
+            this.reader = reader;
+            this.byteStream = byteStream;
+        }
+
         boolean isDone() {
             return done;
         }
 
         void setDone(boolean done) {
             this.done = done;
+        }
+
+        void setStreamError(Object error) {
+            this.streamError = error;
+        }
+
+        Object getStreamError() {
+            return streamError;
         }
 
         Object parseNextRow(Environment env) throws IOException {
@@ -173,6 +214,9 @@ public final class CsvStreamIterator {
         void close() throws IOException {
             if (reader != null) {
                 reader.close();
+            }
+            if (byteStream != null) {
+                byteStream.close();
             }
             if (stateMachine != null) {
                 stateMachine.reset();
