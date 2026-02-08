@@ -15,8 +15,66 @@
 // under the License.
 
 import ballerina/data.csv;
+import ballerina/constraint;
 import ballerina/io;
 import ballerina/test;
+
+type ConstrainedPerson record {
+    @constraint:Int {
+        maxValue: 30
+    }
+    int age;
+    string name;
+};
+
+class TestByteStreamIterator {
+    private int index = 0;
+    private byte[][] chunks;
+    private int errorAtIndex;
+    private boolean closed = false;
+
+    public function init(byte[][] chunks, int errorAtIndex = 0) {
+        self.chunks = chunks;
+        self.errorAtIndex = errorAtIndex;
+    }
+
+    public isolated function next() returns record {|byte[] value;|}?|error {
+        byte[] chunk = [];
+        boolean done = false;
+        error? err = ();
+        lock {
+            self.index += 1;
+            if self.errorAtIndex > 0 && self.index == self.errorAtIndex {
+                err = error("boom");
+            } else if self.index > self.chunks.length() {
+                done = true;
+            } else {
+                byte[] src = self.chunks[self.index - 1];
+                chunk = src.slice(0, src.length());
+            }
+        }
+        if err is error {
+            return err;
+        }
+        if done {
+            return ();
+        }
+        return {value: chunk};
+    }
+
+    public isolated function close() returns error? {
+        lock {
+            self.closed = true;
+        }
+        return ();
+    }
+
+    public isolated function isClosed() returns boolean {
+        lock {
+            return self.closed;
+        }
+    }
+}
 
 // Test 1: Basic streaming yields all rows
 @test:Config
@@ -98,7 +156,7 @@ function testFailSafeSkipsMalformedRows() returns error? {
     });
 
     Person[] result = [];
-    error? err = personStream.forEach(function(Person p) {
+    check personStream.forEach(function(Person p) {
         result.push(p);
     });
 
@@ -215,8 +273,8 @@ function testReadonlyRecordType() returns error? {
     test:assertEquals(result[0], {id: 1, name: "Alice", age: 25});
     test:assertEquals(result[1], {id: 2, name: "Bob", age: 30});
     // Verify it's actually readonly
-    test:assertTrue(result[0].isReadOnly());
-    test:assertTrue(result[1].isReadOnly());
+    test:assertTrue(result[0] is readonly);
+    test:assertTrue(result[1] is readonly);
 }
 
 // Test 11: Union type (first row determines type)
@@ -240,11 +298,71 @@ function testUnionTypeResolution() returns error? {
     test:assertEquals((<Person>result[1]).name, "Bob");
 }
 
+// Test 12: Underlying byte stream error is propagated
+@test:Config
+function testStreamErrorPropagation() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25
+2,Bob,30`;
+
+    byte[][] chunks = createByteChunks(csvContent);
+    TestByteStreamIterator iterator = new (chunks, 2);
+    stream<byte[], error?> byteStream = new (iterator);
+
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    error? err = personStream.forEach(function(Person p) {
+    });
+
+    test:assertTrue(err is csv:Error);
+    if err is error {
+        test:assertTrue(err.message().includes("boom"));
+    }
+}
+
+// Test 13: Constraint validation error surfaces as stream error
+@test:Config
+function testConstraintValidationErrorInStream() returns error? {
+    string csvContent = string `age,name
+40,Alice`;
+
+    byte[][] chunks = createByteChunks(csvContent);
+    stream<byte[], error?> byteStream = new (new TestByteStreamIterator(chunks));
+    stream<ConstrainedPerson, csv:Error?> constrainedStream = check csv:parseAsStream(byteStream);
+
+    error? err = constrainedStream.forEach(function(ConstrainedPerson p) {
+    });
+
+    test:assertTrue(err is csv:Error);
+    if err is error {
+        test:assertTrue(err.message().startsWith("Validation failed"));
+    }
+}
+
+// Test 14: Early close releases underlying byte stream
+@test:Config
+function testEarlyCloseReleasesByteStream() returns error? {
+    string csvContent = string `id,name,age
+1,Alice,25
+2,Bob,30`;
+
+    byte[][] chunks = createByteChunks(csvContent);
+    TestByteStreamIterator iterator = new (chunks);
+    stream<byte[], error?> byteStream = new (iterator);
+
+    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    check personStream.close();
+    test:assertTrue(iterator.isClosed());
+}
+
 // Helper function to create byte stream from string
 function createByteStream(string content) returns stream<byte[], io:Error?> {
+    return createByteChunks(content).toStream();
+}
+
+function createByteChunks(string content) returns byte[][] {
     byte[] bytes = content.toBytes();
     byte[][] chunks = [];
-    
+
     // Split into chunks of ~64 bytes for more realistic streaming
     int chunkSize = 64;
     int i = 0;
@@ -253,6 +371,6 @@ function createByteStream(string content) returns stream<byte[], io:Error?> {
         chunks.push(bytes.slice(i, end));
         i = end;
     }
-    
-    return chunks.toStream();
+
+    return chunks;
 }
