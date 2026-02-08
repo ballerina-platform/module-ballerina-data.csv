@@ -7,6 +7,7 @@ The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate
 - **Versatile CSV Data Input**: Accept CSV data as a string, byte array, or a stream and convert it into a subtype of ballerina records or lists.
 - **CSV to anydata Value transformation**: Transform CSV data into expected type which is subtype of ballerina record arrays or anydata arrays.
 - **Projection Support**: Perform selective conversion of CSV data subsets into ballerina record array or anydata array values through projection.
+- **Memory-Efficient Streaming**: Process large CSV files incrementally using `parseAsStream`, parsing one record at a time without loading the entire file into memory.
 - **Fail-Safe Error Handling**: Continue processing CSV data even when encountering row-level errors and logging errors to the console or file for error tracking and debugging.
 
 ## Usage
@@ -191,6 +192,36 @@ public function main() returns error? {
     io:println(books);
 }
 ```
+
+### Memory-efficient streaming CSV parsing
+
+For processing large CSV files without loading the entire content into memory, use the `parseAsStream` function. This returns a stream that parses records one at a time, making it suitable for memory-constrained environments or very large files.
+
+```ballerina
+import ballerina/data.csv;
+import ballerina/io;
+
+type Book record {
+    string name;
+    string author;
+    int year;
+};
+
+public function main() returns error? {
+    stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("path/to/large_file.csv");
+
+    stream<Book, csv:Error?> bookStream = check csv:parseAsStream(csvByteStream);
+
+    check bookStream.forEach(function(Book book) {
+        io:println("Processing: ", book.name);
+    });
+}
+```
+
+The streaming API supports:
+- Both `record {}` and `anydata[]` element types
+- All parse options available in `parseStream`
+- Fail-safe mode to skip malformed rows and continue processing
 
 ### Controlling the CSV value to record array conversion
 
