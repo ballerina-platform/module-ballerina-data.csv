@@ -109,3 +109,24 @@ public isolated function transform(record {}[] csvRecords,
 # + return - On success, returns value belonging to the given target type, else returns an `csv:Error` value.
 public isolated function parseList(string[][] csvList, ParseListOptions options = {}, typedesc<record {}[]|anydata[][]> t = <>)
      returns t|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
+
+# Parse a CSV byte block stream as a stream of records or arrays.
+# This function processes the CSV data incrementally, yielding one record at a time,
+# making it memory-efficient for large files.
+#
+# ```ballerina
+# stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("example.csv");
+# stream<record {int id; string name;}, csv:Error?> recordStream = check csv:parseAsStream(csvByteStream);
+#
+# check recordStream.forEach(function(record {int id; string name;} rec) {
+#     io:println(rec);
+# });
+# ```
+#
+# + csvByteStream - Source CSV byte block stream
+# + options - Options to be used for filtering in the projection
+# + t - Target type (must be a record type or anydata[])
+# + return - On success, a stream of values belonging to the given target type, else returns an `csv:Error` value.
+public isolated function parseAsStream(stream<byte[], error?> csvByteStream,
+           ParseOptions options = {}, typedesc<record {}|anydata[]> t = <>)
+     returns stream<t, Error?>|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;
