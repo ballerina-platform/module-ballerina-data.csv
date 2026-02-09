@@ -22,7 +22,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "data.csv"
-version = "0.9.0"
+version = "0.10.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -119,7 +119,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "streaming_tests"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "data.csv"},
