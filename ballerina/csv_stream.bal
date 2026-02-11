@@ -32,7 +32,7 @@ class CsvRecordStream {
     #            `()` if the stream has reached the end, or else an `error`
     public isolated function next() returns record {|record {}|anydata[] value;|}|Error? {
         if self.isClosed {
-            return ();
+            return;
         }
         var result = externNextCsvRecord(self);
         // If EOF is reached (result is ()), the native code auto-closes
@@ -48,14 +48,11 @@ class CsvRecordStream {
     #
     # + return - Returns `()` when the closing was successful or an `error`
     public isolated function close() returns Error? {
-        if !self.isClosed {
-            var closeResult = externCloseCsvStream(self);
-            if closeResult is () {
-                self.isClosed = true;
-            }
-            return closeResult;
+        if self.isClosed {
+            return;
         }
-        return ();
+        check externCloseCsvStream(self);
+        self.isClosed = true;
     }
 }
 
