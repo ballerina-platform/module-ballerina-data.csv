@@ -237,9 +237,10 @@ public final class CsvParser {
                             throw exception;
                         }
 
+                        boolean rowIncomplete = sm.rowIndex == startRowIndex;
                         // Only skip to next newline if the row was not completed in this iteration.
                         // If the row was completed (e.g., conversion failed after a full parse), do not skip.
-                        if (sm.rowIndex == startRowIndex) {
+                        if (rowIncomplete) {
                             // Skip to next newline across buffers to fully discard the malformed row
                             while (true) {
                                 while (sm.index < sm.streamingBuffCount
@@ -263,9 +264,11 @@ public final class CsvParser {
                         sm.handleFailSafeLogging(environment, failSafe, exception,
                                 sm.streamingBuff, sm.streamingBuffCount, isOverwritten);
 
-                        // Reset state, increment rowIndex/lineNumber, and continue parsing
-                        sm.rowIndex++;
-                        sm.lineNumber++;
+                        // Reset state, increment row/line only if not already counted, and continue parsing
+                        if (rowIncomplete) {
+                            sm.rowIndex++;
+                            sm.lineNumber++;
+                        }
                         StateMachine.resetStreamingStateForNextRow(sm);
                         // Continue the outer loop to parse the next row
                         break;
