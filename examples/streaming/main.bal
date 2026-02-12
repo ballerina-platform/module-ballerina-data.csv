@@ -33,7 +33,7 @@ public function main() returns error? {
 
     // Parse the stream - this returns a stream of Person records
     // Each record is parsed on-demand, making it memory efficient for large files
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(csvByteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(csvByteStream);
 
     io:println("Processing CSV records one at a time:\n");
 

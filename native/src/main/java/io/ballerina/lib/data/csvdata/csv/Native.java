@@ -133,7 +133,7 @@ public final class Native {
      * @param type    The expected element type descriptor
      * @return A stream of records or an error
      */
-    public static Object parseAsStream(Environment env, BStream csv,
+    public static Object parseToStream(Environment env, BStream csv,
                                        BMap<BString, Object> options, BTypedesc type) {
         try {
             final BObject inputIterator = csv.getIteratorObj();

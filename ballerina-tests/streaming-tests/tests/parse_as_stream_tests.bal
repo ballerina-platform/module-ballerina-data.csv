@@ -85,7 +85,7 @@ function testBasicStreamingYieldsAllRows() returns error? {
 3,Charlie,35`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     Person[] result = check from Person p in personStream
         select p;
@@ -104,7 +104,7 @@ Clean Code,Robert Martin,2008
 The Pragmatic Programmer,Andy Hunt,1999`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Book, csv:Error?> bookStream = check csv:parseAsStream(byteStream);
+    stream<Book, csv:Error?> bookStream = check csv:parseToStream(byteStream);
 
     Book[] books = check from Book b in bookStream
         select b;
@@ -127,7 +127,7 @@ function testStreamingWithForEach() returns error? {
 3,Charlie,35`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     int count = 0;
     int totalAge = 0;
@@ -149,7 +149,7 @@ function testFailSafeSkipsMalformedRows() returns error? {
 3,Charlie,35`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream, {
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream, {
         failSafe: {
             enableConsoleLogs: false
         }
@@ -173,7 +173,7 @@ function testEmptyCsv() returns error? {
     string csvContent = string `id,name,age`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     Person[] result = check from Person p in personStream
         select p;
@@ -188,7 +188,7 @@ function testSingleRowCsv() returns error? {
 1,Alice,25`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     Person[] result = check from Person p in personStream
         select p;
@@ -204,7 +204,7 @@ function testArrayTypeOutput() returns error? {
 2,Bob,30`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<anydata[], csv:Error?> arrayStream = check csv:parseAsStream(byteStream, {header: null});
+    stream<anydata[], csv:Error?> arrayStream = check csv:parseToStream(byteStream, {header: null});
 
     anydata[][] result = check from anydata[] row in arrayStream
         select row;
@@ -222,7 +222,7 @@ function testCustomHeaderOptions() returns error? {
 2,Bob,30`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream, {
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream, {
         header: null,
         customHeadersIfHeadersAbsent: ["id", "name", "age"]
     });
@@ -246,7 +246,7 @@ function testLargeCsv() returns error? {
     string csvContent = string:'join("\n", ...lines);
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     int count = 0;
     check personStream.forEach(function(Person p) {
@@ -264,7 +264,7 @@ function testReadonlyRecordType() returns error? {
 2,Bob,30`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person & readonly, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person & readonly, csv:Error?> personStream = check csv:parseToStream(byteStream);
 
     (Person & readonly)[] result = check from Person & readonly p in personStream
         select p;
@@ -285,7 +285,7 @@ function testUnionTypeResolution() returns error? {
 2,Bob,30`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<Person|Book, csv:Error?> unionStream = check csv:parseAsStream(byteStream);
+    stream<Person|Book, csv:Error?> unionStream = check csv:parseToStream(byteStream);
 
     (Person|Book)[] result = check from Person|Book item in unionStream
         select item;
@@ -309,7 +309,7 @@ function testStreamErrorPropagation() returns error? {
     TestByteStreamIterator iterator = new (chunks, 2);
     stream<byte[], error?> byteStream = new (iterator);
 
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
     error? err = personStream.forEach(function(Person p) {
     });
 
@@ -327,7 +327,7 @@ function testConstraintValidationErrorInStream() returns error? {
 
     byte[][] chunks = createByteChunks(csvContent);
     stream<byte[], error?> byteStream = new (new TestByteStreamIterator(chunks));
-    stream<ConstrainedPerson, csv:Error?> constrainedStream = check csv:parseAsStream(byteStream);
+    stream<ConstrainedPerson, csv:Error?> constrainedStream = check csv:parseToStream(byteStream);
 
     error? err = constrainedStream.forEach(function(ConstrainedPerson p) {
     });
@@ -349,7 +349,7 @@ function testEarlyCloseReleasesByteStream() returns error? {
     TestByteStreamIterator iterator = new (chunks);
     stream<byte[], error?> byteStream = new (iterator);
 
-    stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream);
     check personStream.close();
     test:assertTrue(iterator.isClosed());
 }
@@ -363,7 +363,7 @@ hello,world`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
     // Neither IntRecord nor BoolRecord can match "hello,world"
-    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream);
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseToStream(byteStream);
 
     error? err = unionStream.forEach(function(IntRecord|BoolRecord item) {
     });
@@ -383,7 +383,7 @@ function testMixedUnionTypeResolution() returns error? {
 3,4`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream);
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseToStream(byteStream);
 
     (IntRecord|BoolRecord)[] result = check from IntRecord|BoolRecord item in unionStream
         select item;
@@ -405,7 +405,7 @@ hello,world
 3,4`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream, {
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseToStream(byteStream, {
         failSafe: {
             enableConsoleLogs: false
         }
@@ -429,7 +429,7 @@ function testTupleUnionDataboundFailure() returns error? {
     string csvContent = string `hello,world`;
 
     stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
-    stream<IntTuple|BoolTuple, csv:Error?> tupleStream = check csv:parseAsStream(byteStream, {header: null});
+    stream<IntTuple|BoolTuple, csv:Error?> tupleStream = check csv:parseToStream(byteStream, {header: null});
 
     error? err = tupleStream.forEach(function(IntTuple|BoolTuple item) {
     });

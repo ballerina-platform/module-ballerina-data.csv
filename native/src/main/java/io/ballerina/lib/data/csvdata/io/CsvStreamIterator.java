@@ -144,7 +144,7 @@ public final class CsvStreamIterator {
 
     /**
      * Initializes the iterator with the necessary data for streaming.
-     * This is called from Native.parseAsStream.
+     * This is called from Native.parseToStream.
      */
     public static void initializeIterator(Environment env, BObject csvStreamObject,
                                           BObject inputIterator, CsvConfig config,

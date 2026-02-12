@@ -116,7 +116,7 @@ public isolated function parseList(string[][] csvList, ParseListOptions options 
 #
 # ```ballerina
 # stream<byte[], io:Error?> csvByteStream = check io:fileReadBlocksAsStream("example.csv");
-# stream<record {int id; string name;}, csv:Error?> recordStream = check csv:parseAsStream(csvByteStream);
+# stream<record {int id; string name;}, csv:Error?> recordStream = check csv:parseToStream(csvByteStream);
 #
 # check recordStream.forEach(function(record {int id; string name;} rec) {
 #     io:println(rec);
@@ -127,6 +127,6 @@ public isolated function parseList(string[][] csvList, ParseListOptions options 
 # + options - Options to be used for filtering in the projection
 # + t - Target type (must be a record type or anydata[])
 # + return - On success, a stream of values belonging to the given target type, else returns an `csv:Error` value.
-public isolated function parseAsStream(stream<byte[], error?> csvByteStream,
+public isolated function parseToStream(stream<byte[], error?> csvByteStream,
            ParseOptions options = {}, typedesc<record {}|anydata[]> t = <>)
      returns stream<t, Error?>|Error = @java:Method {'class: "io.ballerina.lib.data.csvdata.csv.Native"} external;

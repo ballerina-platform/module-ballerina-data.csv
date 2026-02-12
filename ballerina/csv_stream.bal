@@ -17,7 +17,7 @@
 import ballerina/jballerina.java;
 
 # Stream iterator class for parsing CSV records incrementally.
-# This class is used internally by the `parseAsStream` function.
+# This class is used internally by the `parseToStream` function.
 class CsvRecordStream {
 
     private boolean isClosed = false;
