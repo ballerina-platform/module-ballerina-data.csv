@@ -167,6 +167,35 @@ function testFailSafeSkipsMalformedRows() returns error? {
     test:assertEquals(result[1].name, "Charlie");
 }
 
+// Test 4b: Fail-safe skips malformed rows that span multiple buffers
+@test:Config
+function testFailSafeSkipsMalformedRowsAcrossBuffers() returns error? {
+    // Make the malformed row longer than the internal 1024-char streaming buffer
+    string longName = repeatString("a", 600) + "\\q" + repeatString("b", 600);
+    string csvContent = string `id,name,age
+1,Alice,25
+2,${longName},30
+3,Charlie,35`;
+
+    byte[][] chunks = createByteChunksWithSize(csvContent, 16);
+    stream<byte[], error?> byteStream = new (new TestByteStreamIterator(chunks));
+    stream<Person, csv:Error?> personStream = check csv:parseToStream(byteStream, {
+        failSafe: {
+            enableConsoleLogs: false
+        }
+    });
+
+    Person[] result = [];
+    check personStream.forEach(function(Person p) {
+        result.push(p);
+    });
+
+    // Malformed row should be skipped, even when it spans multiple chunks
+    test:assertEquals(result.length(), 2);
+    test:assertEquals(result[0].name, "Alice");
+    test:assertEquals(result[1].name, "Charlie");
+}
+
 // Test 5: Empty CSV returns empty stream
 @test:Config
 function testEmptyCsv() returns error? {
@@ -456,4 +485,28 @@ function createByteChunks(string content) returns byte[][] {
     }
 
     return chunks;
+}
+
+function createByteChunksWithSize(string content, int chunkSize) returns byte[][] {
+    byte[] bytes = content.toBytes();
+    byte[][] chunks = [];
+
+    int i = 0;
+    while i < bytes.length() {
+        int end = (i + chunkSize < bytes.length()) ? i + chunkSize : bytes.length();
+        chunks.push(bytes.slice(i, end));
+        i = end;
+    }
+
+    return chunks;
+}
+
+function repeatString(string value, int count) returns string {
+    string result = "";
+    int i = 0;
+    while i < count {
+        result = result + value;
+        i += 1;
+    }
+    return result;
 }

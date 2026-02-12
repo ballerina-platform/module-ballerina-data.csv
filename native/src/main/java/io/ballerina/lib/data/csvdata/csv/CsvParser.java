@@ -237,17 +237,25 @@ public final class CsvParser {
                             throw exception;
                         }
 
-                        // Only skip to next newline if we're in the middle of parsing a row
-                        // If currentCsvNode is not null, the row was fully parsed but conversion failed
-                        // (e.g., union type resolution), so don't skip - just discard the row
-                        if (sm.currentCsvNode == null) {
-                            // Skip to next newline from current position in streaming mode
-                            while (sm.index < sm.streamingBuffCount
-                                    && sm.streamingBuff[sm.index] != StateMachine.LINE_BREAK) {
-                                sm.index++;
-                            }
-                            if (sm.index < sm.streamingBuffCount) {
-                                sm.index++; // Move past the newline
+                        // Only skip to next newline if the row was not completed in this iteration.
+                        // If the row was completed (e.g., conversion failed after a full parse), do not skip.
+                        if (sm.rowIndex == startRowIndex) {
+                            // Skip to next newline across buffers to fully discard the malformed row
+                            while (true) {
+                                while (sm.index < sm.streamingBuffCount
+                                        && sm.streamingBuff[sm.index] != StateMachine.LINE_BREAK) {
+                                    sm.index++;
+                                }
+                                if (sm.index < sm.streamingBuffCount) {
+                                    sm.index++; // Move past the newline
+                                    break;
+                                }
+                                sm.streamingBuffCount = reader.read(sm.streamingBuff);
+                                sm.index = 0;
+                                if (sm.streamingBuffCount <= 0) {
+                                    sm.streamingEof = true;
+                                    break;
+                                }
                             }
                         }
 
