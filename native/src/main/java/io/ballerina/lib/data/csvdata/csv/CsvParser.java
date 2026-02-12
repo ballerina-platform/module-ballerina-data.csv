@@ -232,18 +232,25 @@ public final class CsvParser {
                             startRowIndex = sm.rowIndex;
                         }
                     } catch (Exception exception) {
-                        // Skip to next newline from current position in streaming mode
-                        while (sm.index < sm.streamingBuffCount
-                                && sm.streamingBuff[sm.index] != StateMachine.LINE_BREAK) {
-                            sm.index++;
-                        }
-                        if (sm.index < sm.streamingBuffCount) {
-                            sm.index++; // Move past the newline
-                        }
                         BMap<?, ?> failSafe = config.failSafe;
                         if (failSafe == null || !isAllowedFailSafe(exception)) {
                             throw exception;
                         }
+
+                        // Only skip to next newline if we're in the middle of parsing a row
+                        // If currentCsvNode is not null, the row was fully parsed but conversion failed
+                        // (e.g., union type resolution), so don't skip - just discard the row
+                        if (sm.currentCsvNode == null) {
+                            // Skip to next newline from current position in streaming mode
+                            while (sm.index < sm.streamingBuffCount
+                                    && sm.streamingBuff[sm.index] != StateMachine.LINE_BREAK) {
+                                sm.index++;
+                            }
+                            if (sm.index < sm.streamingBuffCount) {
+                                sm.index++; // Move past the newline
+                            }
+                        }
+
                         // Log error and continue to next row
                         sm.handleFailSafeLogging(environment, failSafe, exception,
                                 sm.streamingBuff, sm.streamingBuffCount, isOverwritten);
