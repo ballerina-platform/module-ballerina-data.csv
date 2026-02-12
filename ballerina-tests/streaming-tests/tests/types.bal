@@ -25,3 +25,18 @@ type Book record {|
     string author;
     int year;
 |};
+
+// Closed record types for union type testing
+type IntRecord record {|
+    int a;
+    int b;
+|};
+
+type BoolRecord record {|
+    boolean a;
+    boolean b;
+|};
+
+// Tuple types for databound failure testing
+type IntTuple [int, int];
+type BoolTuple [boolean, boolean];

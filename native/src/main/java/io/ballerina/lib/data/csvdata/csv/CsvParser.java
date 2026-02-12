@@ -268,8 +268,8 @@ public final class CsvParser {
      * Processes the streaming result, handling readonly wrapping and union type resolution.
      */
     private static Object processStreamingResult(StateMachine sm, Object result, CsvConfig config) {
-        // Handle union type resolution on first row
-        if (sm.originalUnionType != null && !sm.unionTypeResolved) {
+        // Handle union type resolution for every row
+        if (sm.originalUnionType != null) {
             result = resolveUnionTypeAndConvert(sm, result, config);
         }
 
@@ -282,13 +282,14 @@ public final class CsvParser {
     }
 
     /**
-     * Resolves the union type from the first row and converts the result.
-     * Re-initializes the state machine for subsequent rows with the resolved type.
+     * Resolves the union type for the current row and converts the result.
+     * Tries each member type in declaration order, first match wins.
+     * Does not cache the resolved type - each row is resolved independently.
      */
     private static Object resolveUnionTypeAndConvert(StateMachine sm, Object result, CsvConfig config) {
         UnionType unionType = (UnionType) sm.originalUnionType;
 
-        // Try each member type until one succeeds
+        // Try each member type until one succeeds (declaration order, first match wins)
         for (Type memberType : unionType.getMemberTypes()) {
             memberType = TypeUtils.getReferredType(memberType);
             try {
@@ -305,29 +306,6 @@ public final class CsvParser {
                 traverseConfig.customHeadersIfHeadersAbsent = sm.headers;
                 BArray converted = (BArray) CsvTraversal.traverse(singleRowArray, traverseConfig,
                         sm.streamingBTypedesc, arrayType);
-
-                // Success - re-initialize state machine for this type
-                sm.expectedArrayElementType = memberType;
-                sm.unionTypeResolved = true;
-
-                // Re-initialize field mappings for the resolved type
-                sm.fieldHierarchy.clear();
-                sm.fields.clear();
-                sm.updatedRecordFieldNames.clear();
-                sm.fieldNames.clear();
-                sm.initializeForElementType(memberType);
-
-                // Process headers to update fieldHierarchy and fieldNames
-                // (similar to what happens during header parsing)
-                for (String header : sm.headers) {
-                    String fieldName = CsvUtils.getUpdatedHeaders(
-                            sm.updatedRecordFieldNames, header, sm.fields.contains(header));
-                    Field field = sm.fieldHierarchy.get(fieldName);
-                    if (field != null) {
-                        sm.fieldNames.put(fieldName, field);
-                        sm.fieldHierarchy.remove(fieldName);
-                    }
-                }
 
                 return converted.get(0);
             } catch (Exception e) {
@@ -403,7 +381,6 @@ public final class CsvParser {
 
         // Intersection/Union type handling for streaming
         boolean wrapInReadOnly = false;
-        boolean unionTypeResolved = false;
         Type originalUnionType = null;
 
         StateMachine() {
@@ -458,7 +435,6 @@ public final class CsvParser {
             streamingBTypedesc = null;
             // Reset intersection/union fields
             wrapInReadOnly = false;
-            unionTypeResolved = false;
             originalUnionType = null;
         }
 
@@ -721,10 +697,9 @@ public final class CsvParser {
                     throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, elementType);
                 case TypeTags.UNION_TAG:
                     // For union types, store the original type and initialize for map<string>
-                    // The actual type will be resolved on first row
+                    // The actual type will be resolved for each row independently
                     this.originalUnionType = elementType;
-                    this.unionTypeResolved = false;
-                    // Initialize for map<string> to parse first row
+                    // Initialize for map<string> to parse rows, then convert per-row
                     this.expectedArrayElementType = TypeCreator.createMapType(PredefinedTypes.TYPE_STRING);
                     break;
                 default:

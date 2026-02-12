@@ -277,7 +277,7 @@ function testReadonlyRecordType() returns error? {
     test:assertTrue(result[1] is readonly);
 }
 
-// Test 11: Union type (first row determines type)
+// Test 11: Union type resolution (each row resolved independently)
 @test:Config
 function testUnionTypeResolution() returns error? {
     string csvContent = string `id,name,age
@@ -291,7 +291,7 @@ function testUnionTypeResolution() returns error? {
         select item;
 
     test:assertEquals(result.length(), 2);
-    // Should resolve to Person type since it has id, name, age
+    // Each row is resolved independently - both match Person (has id, name, age)
     test:assertTrue(result[0] is Person);
     test:assertTrue(result[1] is Person);
     test:assertEquals((<Person>result[0]).name, "Alice");
@@ -352,6 +352,89 @@ function testEarlyCloseReleasesByteStream() returns error? {
     stream<Person, csv:Error?> personStream = check csv:parseAsStream(byteStream);
     check personStream.close();
     test:assertTrue(iterator.isClosed());
+}
+
+// Test 15: Databound failure - row doesn't match any union member type
+@test:Config
+function testDataboundFailure() returns error? {
+    // Data with string values that can't convert to int or boolean
+    string csvContent = string `a,b
+hello,world`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    // Neither IntRecord nor BoolRecord can match "hello,world"
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream);
+
+    error? err = unionStream.forEach(function(IntRecord|BoolRecord item) {
+    });
+
+    test:assertTrue(err is csv:Error);
+    if err is error {
+        test:assertTrue(err.message().includes("cannot convert"));
+    }
+}
+
+// Test 16: Mixed union type resolution - each row resolved independently
+@test:Config
+function testMixedUnionTypeResolution() returns error? {
+    // First row matches IntRecord, second row also matches IntRecord
+    string csvContent = string `a,b
+1,2
+3,4`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream);
+
+    (IntRecord|BoolRecord)[] result = check from IntRecord|BoolRecord item in unionStream
+        select item;
+
+    test:assertEquals(result.length(), 2);
+    test:assertTrue(result[0] is IntRecord);
+    test:assertTrue(result[1] is IntRecord);
+    test:assertEquals((<IntRecord>result[0]).a, 1);
+    test:assertEquals((<IntRecord>result[1]).a, 3);
+}
+
+// Test 17: Databound failure with failSafe - skips failing rows
+@test:Config
+function testDataboundFailureWithFailSafe() returns error? {
+    // Row 1: matches IntRecord, Row 2: doesn't match either, Row 3: matches IntRecord
+    string csvContent = string `a,b
+1,2
+hello,world
+3,4`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<IntRecord|BoolRecord, csv:Error?> unionStream = check csv:parseAsStream(byteStream, {
+        failSafe: {
+            enableConsoleLogs: false
+        }
+    });
+
+    (IntRecord|BoolRecord)[] result = [];
+    check unionStream.forEach(function(IntRecord|BoolRecord item) {
+        result.push(item);
+    });
+
+    // Row 2 should be skipped, so we get 2 rows
+    test:assertEquals(result.length(), 2);
+    test:assertEquals((<IntRecord>result[0]).a, 1);
+    test:assertEquals((<IntRecord>result[1]).a, 3);
+}
+
+// Test 18: Tuple union type with databound failure
+@test:Config
+function testTupleUnionDataboundFailure() returns error? {
+    // Data that doesn't match either IntTuple or BoolTuple
+    string csvContent = string `hello,world`;
+
+    stream<byte[], io:Error?> byteStream = createByteStream(csvContent);
+    stream<IntTuple|BoolTuple, csv:Error?> tupleStream = check csv:parseAsStream(byteStream, {header: null});
+
+    error? err = tupleStream.forEach(function(IntTuple|BoolTuple item) {
+    });
+
+    test:assertTrue(err is csv:Error);
 }
 
 // Helper function to create byte stream from string
