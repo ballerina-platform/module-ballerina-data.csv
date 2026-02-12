@@ -225,7 +225,7 @@ public function main() returns error? {
 ```
 
 The streaming API supports:
-- Both `record {}` and `anydata[]` element types
+- Sub types of both `record {}` and `anydata[]` element types
 - All parse options available in `parseStream`
 - Fail-safe mode to skip malformed rows and continue processing
 
