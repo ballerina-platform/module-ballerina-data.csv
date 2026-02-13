@@ -26,8 +26,9 @@ import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
@@ -84,8 +85,7 @@ public final class CsvStreamIterator {
 
         try {
             Object row = data.parseNextRow(env);
-
-            if (row instanceof BError) {
+            if (TypeUtils.getReferredType(TypeUtils.getType(row)).getTag() == TypeTags.ERROR_TAG) {
                 data.setDone(true);
                 try {
                     data.close();
