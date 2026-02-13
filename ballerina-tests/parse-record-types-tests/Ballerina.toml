@@ -1,13 +1,13 @@
 [package]
 org = "ballerina"
 name = "parse_record_types_tests"
-version = "0.9.0"
+version = "0.10.0"
 
 [[dependency]]
 org = "ballerina"
 name = "csv_commons"
 repository = "local"
-version = "0.9.0"
+version = "0.10.0"
 
 [platform.java21]
 graalvmCompatible = true

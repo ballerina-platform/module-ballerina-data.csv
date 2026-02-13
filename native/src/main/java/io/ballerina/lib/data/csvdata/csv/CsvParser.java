@@ -38,6 +38,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.TupleType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.TypeTags;
+import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -108,10 +109,235 @@ public final class CsvParser {
     }
 
     /**
+     * Initializes a state machine for streaming mode.
+     * This sets up the state machine to parse headers first, then rows one at a time.
+     */
+    public static StateMachine initializeStateMachine(Environment environment, Reader reader,
+                                                       Type type, CsvConfig config, BTypedesc bTypedesc) {
+        StateMachine sm = new StateMachine();
+        CsvUtils.validateConfigs(config);
+        sm.config = config;
+        sm.streamingMode = true;
+        sm.streamingReader = reader;
+        sm.streamingEnvironment = environment;
+        sm.streamingBTypedesc = bTypedesc;
+
+        sm.initializeFailSafeConfig(config);
+
+        Type referredType = TypeUtils.getReferredType(type);
+        sm.expectedArrayElementType = referredType;
+        sm.initializeForElementType(referredType);
+
+        if (config.header != null) {
+            sm.currentState = StateMachine.HEADER_START_STATE;
+        } else {
+            Object customHeadersIfHeadersAbsent = config.customHeadersIfHeadersAbsent;
+            if (customHeadersIfHeadersAbsent != null) {
+                CsvCreator.addCustomHeadersIfNotNull(sm, customHeadersIfHeadersAbsent);
+            }
+            sm.currentState = StateMachine.ROW_START_STATE;
+            sm.addFieldNamesForNonHeaderState();
+            sm.streamingHeadersParsed = true;
+        }
+
+        return sm;
+    }
+
+    /**
+     * Parses only the headers from the CSV stream.
+     * After this call, the state machine is ready to parse rows.
+     */
+    public static void parseHeaders(StateMachine sm, Reader reader, CsvConfig config) throws IOException {
+        if (sm.streamingHeadersParsed || config.header == null) {
+            sm.streamingHeadersParsed = true;
+            return;
+        }
+
+        try {
+            while (sm.currentState != StateMachine.HEADER_END_STATE && !sm.streamingEof) {
+                if (sm.index >= sm.streamingBuffCount) {
+                    sm.streamingBuffCount = reader.read(sm.streamingBuff);
+                    sm.index = 0;
+                    if (sm.streamingBuffCount <= 0) {
+                        sm.streamingEof = true;
+                        sm.currentState = sm.currentState.transition(sm, new char[]{EOF}, 0, 1);
+                        break;
+                    }
+                }
+
+                while (sm.index < sm.streamingBuffCount) {
+                    sm.currentState = sm.currentState.transition(sm, sm.streamingBuff, sm.index, sm.streamingBuffCount);
+                    if (sm.currentState == StateMachine.HEADER_END_STATE) {
+                        break;
+                    }
+                }
+            }
+            sm.streamingHeadersParsed = true;
+            sm.currentState = StateMachine.ROW_START_STATE;
+        } catch (StateMachine.CsvParserException e) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), sm.line, sm.column);
+        }
+    }
+
+    /**
+     * Parses the next row from the CSV stream.
+     * Returns the parsed row or null if EOF is reached.
+     */
+    public static Object parseNextRow(Environment environment, StateMachine sm, Reader reader, CsvConfig config)
+            throws IOException {
+        if (sm.streamingEof) {
+            return null;
+        }
+
+        // Reset for new row
+        StateMachine.resetStreamingStateForNextRow(sm);
+        AtomicBoolean isOverwritten = new AtomicBoolean(false);
+
+        try {
+            while (!sm.streamingEof) {
+                if (sm.index >= sm.streamingBuffCount) {
+                    sm.streamingBuffCount = reader.read(sm.streamingBuff);
+                    sm.index = 0;
+                    if (sm.streamingBuffCount <= 0) {
+                        sm.streamingEof = true;
+                        // Handle final row if present
+                        if (sm.currentCsvNode != null) {
+                            sm.currentState = sm.currentState.transition(sm, new char[]{EOF}, 0, 1);
+                            if (sm.currentCsvNode != null) {
+                                Object result = processStreamingResult(sm, sm.currentCsvNode, config);
+                                return DataUtils.validateConstraints(result, sm.streamingBTypedesc,
+                                        config.enableConstraintValidation);
+                            }
+                        }
+                        return null;
+                    }
+                }
+
+                int startRowIndex = sm.rowIndex;
+                while (sm.index < sm.streamingBuffCount) {
+                    try {
+                        sm.currentState = sm.currentState.transition(sm, sm.streamingBuff, sm.index,
+                                sm.streamingBuffCount);
+
+                        // Check if row was completed
+                        if (sm.rowIndex > startRowIndex) {
+                            // Row completed - currentCsvNode has the row
+                            if (sm.currentCsvNode != null) {
+                                Object result = processStreamingResult(sm, sm.currentCsvNode, config);
+                                // Reset for next iteration
+                                StateMachine.resetStreamingStateForNextRow(sm);
+                                return DataUtils.validateConstraints(result, sm.streamingBTypedesc,
+                                        config.enableConstraintValidation);
+                            }
+                            startRowIndex = sm.rowIndex;
+                        }
+                    } catch (Exception exception) {
+                        BMap<?, ?> failSafe = config.failSafe;
+                        if (failSafe == null || !isAllowedFailSafe(exception)) {
+                            throw exception;
+                        }
+
+                        boolean rowIncomplete = sm.rowIndex == startRowIndex;
+                        // Only skip to next newline if the row was not completed in this iteration.
+                        // If the row was completed (e.g., conversion failed after a full parse), do not skip.
+                        if (rowIncomplete) {
+                            // Skip to next newline across buffers to fully discard the malformed row
+                            while (true) {
+                                while (sm.index < sm.streamingBuffCount
+                                        && sm.streamingBuff[sm.index] != StateMachine.LINE_BREAK) {
+                                    sm.index++;
+                                }
+                                if (sm.index < sm.streamingBuffCount) {
+                                    sm.index++; // Move past the newline
+                                    break;
+                                }
+                                sm.streamingBuffCount = reader.read(sm.streamingBuff);
+                                sm.index = 0;
+                                if (sm.streamingBuffCount <= 0) {
+                                    sm.streamingEof = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Log error and continue to next row
+                        sm.handleFailSafeLogging(environment, failSafe, exception,
+                                sm.streamingBuff, sm.streamingBuffCount, isOverwritten);
+
+                        // Reset state, increment row/line only if not already counted, and continue parsing
+                        if (rowIncomplete) {
+                            sm.rowIndex++;
+                            sm.lineNumber++;
+                        }
+                        StateMachine.resetStreamingStateForNextRow(sm);
+                        // Continue the outer loop to parse the next row
+                        break;
+                    }
+                }
+            }
+
+            return null;
+        } catch (StateMachine.CsvParserException e) {
+            throw DiagnosticLog.error(DiagnosticErrorCode.INVALID_TOKEN, e.getMessage(), sm.line, sm.column);
+        }
+    }
+
+    /**
+     * Processes the streaming result, handling readonly wrapping and union type resolution.
+     */
+    private static Object processStreamingResult(StateMachine sm, Object result, CsvConfig config) {
+        // Handle union type resolution for every row
+        if (sm.originalUnionType != null) {
+            result = resolveUnionTypeAndConvert(sm, result, config);
+        }
+
+        // Wrap in readonly if needed
+        if (sm.wrapInReadOnly) {
+            result = CsvCreator.constructReadOnlyValue(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Resolves the union type for the current row and converts the result.
+     * Tries each member type in declaration order, first match wins.
+     * Does not cache the resolved type - each row is resolved independently.
+     */
+    private static Object resolveUnionTypeAndConvert(StateMachine sm, Object result, CsvConfig config) {
+        UnionType unionType = (UnionType) sm.originalUnionType;
+
+        // Try each member type until one succeeds (declaration order, first match wins)
+        for (Type memberType : unionType.getMemberTypes()) {
+            memberType = TypeUtils.getReferredType(memberType);
+            try {
+                // Try to convert the parsed row to this member type
+                BArray singleRowArray = ValueCreator.createArrayValue(
+                        TypeCreator.createArrayType(TypeCreator.createMapType(PredefinedTypes.TYPE_STRING)));
+                singleRowArray.append(result);
+
+                Type arrayType = TypeCreator.createArrayType(memberType);
+                // Create a config copy for traversal with string conversion enabled
+                CsvConfig traverseConfig = CsvConfig.createConfigOptionsForUnion(config);
+                traverseConfig.stringConversion = true;
+                // Pass the parsed headers for proper field mapping
+                traverseConfig.customHeadersIfHeadersAbsent = sm.headers;
+                BArray converted = (BArray) CsvTraversal.traverse(singleRowArray, traverseConfig,
+                        sm.streamingBTypedesc, arrayType);
+
+                return converted.get(0);
+            } catch (Exception e) {
+                // Try next member type
+            }
+        }
+
+        throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, sm.originalUnionType);
+    }
+
+    /**
      * Represents the state machine used for CSV parsing.
      */
-
-    static class StateMachine {
+    public static class StateMachine {
         private static final State HEADER_START_STATE = new HeaderStartState();
         private static final State HEADER_END_STATE = new HeaderEndState();
         private static final State ROW_START_STATE = new RowStartState();
@@ -160,6 +386,21 @@ public final class CsvParser {
         boolean enableConsoleLogs = true;
         boolean includeSourceDataInConsole = false;
 
+        // Streaming mode fields
+        State currentState;
+        char[] streamingBuff = new char[1024];
+        int streamingBuffCount = 0;
+        boolean streamingMode = false;
+        boolean streamingHeadersParsed = false;
+        boolean streamingEof = false;
+        Reader streamingReader;
+        Environment streamingEnvironment;
+        BTypedesc streamingBTypedesc;
+
+        // Intersection/Union type handling for streaming
+        boolean wrapInReadOnly = false;
+        Type originalUnionType = null;
+
         StateMachine() {
             reset();
         }
@@ -200,6 +441,19 @@ public final class CsvParser {
             isCarriageTokenPresent = false;
             enableConsoleLogs = false;
             includeSourceDataInConsole = false;
+            // Reset streaming fields
+            currentState = null;
+            streamingBuff = new char[1024];
+            streamingBuffCount = 0;
+            streamingMode = false;
+            streamingHeadersParsed = false;
+            streamingEof = false;
+            streamingReader = null;
+            streamingEnvironment = null;
+            streamingBTypedesc = null;
+            // Reset intersection/union fields
+            wrapInReadOnly = false;
+            originalUnionType = null;
         }
 
         private boolean isWhitespace(char ch, Object lineTerminator) {
@@ -240,11 +494,7 @@ public final class CsvParser {
         public Object execute(Environment environment, Reader reader, Type type,
                               CsvConfig config, BTypedesc bTypedesc) {
             this.config = config;
-            if (config.failSafe != null) {
-                this.enableConsoleLogs = config.failSafe.getBooleanValue(FailSafeUtils.ENABLE_CONSOLE_LOGS);
-                this.includeSourceDataInConsole = config.failSafe.getBooleanValue(
-                        FailSafeUtils.INCLUDE_SOURCE_DATA_IN_CONSOLE);
-            }
+            initializeFailSafeConfig(config);
             Type referredType = TypeUtils.getReferredType(type);
             if (referredType.getTag() == TypeTags.INTERSECTION_TAG) {
                 for (Type constituentType : ((IntersectionType) referredType).getConstituentTypes()) {
@@ -417,8 +667,62 @@ public final class CsvParser {
             return length > 0 ? new String(buff, start, length) : "";
         }
 
-        private void addFieldNamesForNonHeaderState() {
+        void addFieldNamesForNonHeaderState() {
             this.fieldNames.putAll(this.fieldHierarchy);
+        }
+
+        /**
+         * Initializes fail-safe configuration from the config object.
+         */
+        void initializeFailSafeConfig(CsvConfig config) {
+            if (config.failSafe != null) {
+                this.enableConsoleLogs = config.failSafe.getBooleanValue(FailSafeUtils.ENABLE_CONSOLE_LOGS);
+                this.includeSourceDataInConsole = config.failSafe.getBooleanValue(
+                        FailSafeUtils.INCLUDE_SOURCE_DATA_IN_CONSOLE);
+            }
+        }
+
+        /**
+         * Initializes state machine fields based on the expected element type.
+         */
+        void initializeForElementType(Type elementType) {
+            switch (elementType.getTag()) {
+                case TypeTags.RECORD_TYPE_TAG:
+                    RecordType recordType = (RecordType) elementType;
+                    this.restType = recordType.getRestFieldType();
+                    this.fieldHierarchy = new HashMap<>(recordType.getFields());
+                    this.fields = new HashSet<>(recordType.getFields().keySet());
+                    this.updatedRecordFieldNames = CsvUtils
+                            .processNameAnnotationsAndBuildCustomFieldMap(recordType, this.fieldHierarchy);
+                    break;
+                case TypeTags.TUPLE_TAG:
+                    this.restType = ((TupleType) elementType).getRestType();
+                    break;
+                case TypeTags.MAP_TAG:
+                case TypeTags.ARRAY_TAG:
+                    break;
+                case TypeTags.INTERSECTION_TAG:
+                    // Handle readonly intersection types - extract the mutable type
+                    for (Type constituentType : ((IntersectionType) elementType).getConstituentTypes()) {
+                        if (constituentType.getTag() != TypeTags.READONLY_TAG) {
+                            this.wrapInReadOnly = true;
+                            Type mutableType = TypeUtils.getReferredType(constituentType);
+                            this.expectedArrayElementType = mutableType;
+                            initializeForElementType(mutableType);
+                            return;
+                        }
+                    }
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, elementType);
+                case TypeTags.UNION_TAG:
+                    // For union types, store the original type and initialize for map<string>
+                    // The actual type will be resolved for each row independently
+                    this.originalUnionType = elementType;
+                    // Initialize for map<string> to parse rows, then convert per-row
+                    this.expectedArrayElementType = TypeCreator.createMapType(PredefinedTypes.TYPE_STRING);
+                    break;
+                default:
+                    throw DiagnosticLog.error(DiagnosticErrorCode.SOURCE_CANNOT_CONVERT_INTO_EXP_TYPE, elementType);
+            }
         }
 
         private void append(char ch) {
@@ -702,6 +1006,11 @@ public final class CsvParser {
                             state = ROW_END_STATE;
                             break;
                         }
+                        if (sm.streamingMode) {
+                            // In streaming mode, return after each row to allow caller to process it
+                            sm.index = i + 1;
+                            return this;
+                        }
                     } else if (sm.isWhitespace(ch, sm.config.lineTerminator)) {
                         if (sm.isValueStart) {
                             sm.append(ch);
@@ -744,8 +1053,24 @@ public final class CsvParser {
                 addRowValue(sm, trim);
             }
             if (!sm.isCurrentCsvNodeEmpty) {
-                finalizeTheRow(sm);
-                updateLineAndColumnIndexes(sm);
+                if (sm.streamingMode) {
+                    // In streaming mode, we don't finalize to rootCsvNode
+                    // Just increment counters and prepare for next row
+                    sm.arraySize++;
+                    sm.rowIndex++;
+                    // Reset state for the next row (similar to updateLineAndColumnIndexesWithoutRowIndexes)
+                    sm.lineNumber++;
+                    sm.currentCsvNodeLength = 0;
+                    sm.columnIndex = 0;
+                    sm.isColumnMaxSizeReached = false;
+                    sm.clear();
+                    // Keep currentCsvNode intact - it will be returned by parseNextRow
+                    // But mark that we need a new row node for the next row
+                    sm.isCurrentCsvNodeEmpty = true;
+                } else {
+                    finalizeTheRow(sm);
+                    updateLineAndColumnIndexes(sm);
+                }
             } else {
                 updateLineAndColumnIndexesWithoutRowIndexes(sm);
             }
@@ -763,6 +1088,15 @@ public final class CsvParser {
             sm.columnIndex = 0;
             sm.isColumnMaxSizeReached = false;
             sm.clear();
+        }
+
+        private static void resetStreamingStateForNextRow(StateMachine sm) {
+            sm.currentCsvNode = null;
+            sm.isCurrentCsvNodeEmpty = true;
+            sm.columnIndex = 0;
+            sm.isColumnMaxSizeReached = false;
+            sm.clear();
+            sm.currentState = ROW_START_STATE;
         }
 
         private static boolean ignoreRow(long[] skipLines, int lineNumber) {

@@ -18,13 +18,21 @@
 
 package io.ballerina.lib.data.csvdata.csv;
 
+import io.ballerina.lib.data.csvdata.io.CsvStreamIterator;
 import io.ballerina.lib.data.csvdata.io.DataReaderTask;
 import io.ballerina.lib.data.csvdata.utils.Constants;
 import io.ballerina.lib.data.csvdata.utils.CsvConfig;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticErrorCode;
 import io.ballerina.lib.data.csvdata.utils.DiagnosticLog;
+import io.ballerina.lib.data.csvdata.utils.ModuleUtils;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.PredefinedTypes;
+import io.ballerina.runtime.api.types.StreamType;
+import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
@@ -112,6 +120,42 @@ public final class Native {
             return CsvTraversal.traverse(csv, config, type);
         } catch (Exception e) {
             return DiagnosticLog.getCsvError(e.getMessage());
+        }
+    }
+
+    /**
+     * Parses a CSV byte stream and returns a stream of records.
+     * This method processes the CSV data incrementally, yielding one record at a time.
+     *
+     * @param env     The Ballerina runtime environment
+     * @param csv     The input byte stream
+     * @param options The parsing options
+     * @param type    The expected element type descriptor
+     * @return A stream of records or an error
+     */
+    public static Object parseToStream(Environment env, BStream csv,
+                                       BMap<BString, Object> options, BTypedesc type) {
+        try {
+            final BObject inputIterator = csv.getIteratorObj();
+            CsvConfig config = CsvConfig.createParseOptions(options);
+            Type elementType = TypeUtils.getReferredType(type.getDescribingType());
+            String encoding = options.getStringValue(Constants.ConfigConstants.ENCODING).toString();
+
+            BObject csvStreamObject = ValueCreator.createObjectValue(
+                    ModuleUtils.getModule(), "CsvRecordStream");
+
+            CsvStreamIterator.initializeIterator(env, csvStreamObject, inputIterator,
+                    config, elementType, type, encoding);
+
+            StreamType streamType = TypeCreator.createStreamType(
+                    elementType,
+                    TypeCreator.createUnionType(PredefinedTypes.TYPE_ERROR, PredefinedTypes.TYPE_NULL));
+
+            return ValueCreator.createStreamValue(streamType, csvStreamObject);
+        } catch (BError e) {
+            return e;
+        } catch (Exception e) {
+            return DiagnosticLog.getCsvError("Error initializing CSV stream: " + e.getMessage());
         }
     }
 }

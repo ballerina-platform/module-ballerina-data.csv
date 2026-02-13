@@ -3,4 +3,4 @@ id = "data.csv-compiler-plugin"
 class = "io.ballerina.lib.data.csvdata.compiler.CsvDataCompilerPlugin"
 
 [[dependency]]
-path = "../compiler-plugin/build/libs/data.csv-compiler-plugin-0.9.0.jar"
+path = "../compiler-plugin/build/libs/data.csv-compiler-plugin-0.10.0-SNAPSHOT.jar"

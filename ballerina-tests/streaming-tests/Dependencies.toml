@@ -9,11 +9,14 @@ distribution-version = "2201.12.0"
 
 [[package]]
 org = "ballerina"
-name = "csv_commons"
-version = "0.10.0"
+name = "constraint"
+version = "1.7.0"
 scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
 modules = [
-	{org = "ballerina", packageName = "csv_commons", moduleName = "csv_commons"}
+	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
 ]
 
 [[package]]
@@ -37,6 +40,9 @@ scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
+]
+modules = [
+	{org = "ballerina", packageName = "io", moduleName = "io"}
 ]
 
 [[package]]
@@ -112,15 +118,16 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "parse_string_record_types_tests"
+name = "streaming_tests"
 version = "0.10.0"
 dependencies = [
-	{org = "ballerina", name = "csv_commons"},
+	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "data.csv"},
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "test"}
 ]
 modules = [
-	{org = "ballerina", packageName = "parse_string_record_types_tests", moduleName = "parse_string_record_types_tests"}
+	{org = "ballerina", packageName = "streaming_tests", moduleName = "streaming_tests"}
 ]
 
 [[package]]

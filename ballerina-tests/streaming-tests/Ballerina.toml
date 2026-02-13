@@ -1,6 +1,6 @@
 [package]
 org = "ballerina"
-name = "parse_string_record_types_tests"
+name = "streaming_tests"
 version = "0.10.0"
 
 [[dependency]]
