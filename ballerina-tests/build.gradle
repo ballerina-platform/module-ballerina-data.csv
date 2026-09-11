@@ -20,6 +20,13 @@ plugins {
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 description = 'Ballerina - CSV data module Ballerina Tests'
 
@@ -139,11 +146,12 @@ task initializeVariables {
 }
 
 task publishTestCommonPackageToLocal {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlVersions)
     doLast {
         if (!skipTests) {
-            exec {
+            execHelper.execOperations.exec {
                 workingDir "${project.projectDir}/${testCommonPackage}"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                     commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat pack && exit  %%ERRORLEVEL%%"
@@ -151,7 +159,7 @@ task publishTestCommonPackageToLocal {
                     commandLine 'sh', '-c', "${distributionBinPath}/bal pack"
                 }
             }
-            exec {
+            execHelper.execOperations.exec {
                 workingDir "${project.projectDir}/${testCommonPackage}"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                     commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat push --repository=local" +
@@ -165,8 +173,9 @@ task publishTestCommonPackageToLocal {
 }
 
 task commitTomlFiles {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
@@ -178,6 +187,7 @@ task commitTomlFiles {
 }
 
 task ballerinaTest {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlVersions)
     dependsOn(initializeVariables)
@@ -187,7 +197,7 @@ task ballerinaTest {
     doLast {
         testPackages.each { testPackage ->
             if (!skipTests) {
-                exec {
+                execHelper.execOperations.exec {
                     workingDir "${project.projectDir}/${testPackage}"
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -200,7 +210,7 @@ task ballerinaTest {
                     }
                 }
                 if (project.hasProperty('balGraalVMTest')) {
-                    exec {
+                    execHelper.execOperations.exec {
                         workingDir "${project.projectDir}/${testPackage}"
                         environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                         if (Os.isFamily(Os.FAMILY_WINDOWS)) {

@@ -28,6 +28,9 @@ allprojects {
     version = project.version
 
     apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = jacocoVersion
+    }
     apply plugin: 'maven-publish'
 
     repositories {
@@ -99,7 +102,7 @@ release {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn(':data.csv-compiler-plugin:build')
     dependsOn(':data.csv-native:build')
     dependsOn(':data.csv-ballerina:build')
