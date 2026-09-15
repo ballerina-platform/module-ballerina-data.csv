@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
 
+[[#9132] Removed Area/Developer Tools keyword](https://github.com/ballerina-platform/ballerina-library/issues/9132)
+
 ## Added
 
 - [Implement a fail-safe mechanism for CSV parsing](https://github.com/ballerina-platform/ballerina-library/issues/8465)
