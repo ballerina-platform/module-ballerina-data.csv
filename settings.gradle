@@ -37,7 +37,7 @@ pluginManagement {
 }
 
 plugins {
-    id "com.gradle.enterprise" version "3.2"
+    id "com.gradle.develocity" version "3.19.2"
 }
 
 rootProject.name = 'data.csv'
@@ -55,9 +55,9 @@ project(':data.csv-compiler-plugin').projectDir = file('compiler-plugin')
 project(':data.csv-compiler-plugin-tests').projectDir = file('compiler-plugin-test')
 project(':data.csv-ballerina-tests').projectDir = file('ballerina-tests')
 
-gradleEnterprise {
+develocity {
     buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
+        termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
+        termsOfUseAgree = 'yes'
     }
 }
