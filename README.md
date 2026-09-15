@@ -7,7 +7,9 @@
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-data.csv.svg)](https://github.com/ballerina-platform/module-ballerina-data.csv/commits/master)
 [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/data.csv.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fdata.csv)
 
-The Ballerina CSV Data Library is a comprehensive toolkit designed to facilitate the handling and manipulation of CSV data within Ballerina applications. It streamlines the process of converting CSV data to native Ballerina data types, enabling developers to work with CSV content seamlessly and efficiently.
+## Overview
+
+This module provides APIs to convert CSV data — as a string, byte array, or stream — into native Ballerina records or lists, and to transform Ballerina data back into CSV format, with support for large-file streaming and fail-safe error handling.
 
 ## Features
 
@@ -318,7 +320,7 @@ Execute the commands below to build from source.
 
 ## Contributing to Ballerina
 
-As an open source project, Ballerina welcomes contributions from the community.
+As an open-source project, Ballerina welcomes contributions from the community.
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
