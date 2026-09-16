@@ -3,5 +3,5 @@ org = "ballerina"
 name = "@package.name@"
 version = "@toml.version@"
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true

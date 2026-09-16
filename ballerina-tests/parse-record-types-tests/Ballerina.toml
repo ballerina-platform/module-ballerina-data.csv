@@ -9,7 +9,7 @@ name = "csv_commons"
 repository = "local"
 version = "1.0.0"
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true
 
 [build-options]
