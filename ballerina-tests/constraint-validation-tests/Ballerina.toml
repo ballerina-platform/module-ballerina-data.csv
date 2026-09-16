@@ -1,13 +1,13 @@
 [package]
 org = "ballerina"
 name = "constraint_validation_tests"
-version = "0.8.2"
+version = "1.0.0"
 
 [[dependency]]
 org = "ballerina"
 name = "csv_commons"
 repository = "local"
-version = "0.8.2"
+version = "1.0.0"
 
 [platform.java21]
 graalvmCompatible = true
