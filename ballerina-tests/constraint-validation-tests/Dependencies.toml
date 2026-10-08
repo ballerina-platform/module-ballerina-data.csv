@@ -120,7 +120,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.7.4"
+version = "1.8.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
