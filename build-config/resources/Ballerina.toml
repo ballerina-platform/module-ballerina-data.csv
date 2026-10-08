@@ -5,6 +5,7 @@ version = "@toml.version@"
 authors = ["Ballerina"]
 keywords = ["csv", "Type/Library", "Area/Built-in", "Name/CSV"]
 repository = "https://github.com/ballerina-platform/module-ballerina-data.csv"
+icon = "icon.png"
 license = ["Apache-2.0"]
 distribution = "2201.14.0"
 export = ["data.csv"]
