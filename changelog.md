@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [[#9274] Add package icon for the stdlib packages missing a logo in the Integration Store](https://github.com/ballerina-platform/ballerina-library/issues/9274)
+- [[#9301] Regroup standard library packages under new Area categories](https://github.com/ballerina-platform/ballerina-library/issues/9301)
 
 ### Changed
 - [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
