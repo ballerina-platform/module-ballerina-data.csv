@@ -17,7 +17,7 @@ graalvmCompatible = true
 groupId = "io.ballerina.lib"
 artifactId = "data.csv-native"
 version = "1.0.1"
-path = "../native/build/libs/data.csv-native-1.0.1-SNAPSHOT.jar"
+path = "../native/build/libs/data.csv-native-1.0.1.jar"
 
 [[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
