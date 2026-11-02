@@ -1048,7 +1048,7 @@ public final class CsvParser {
             if (trim) {
                 value = value.trim();
             }
-            if (!(value.isBlank() && sm.currentCsvNodeLength == 0)
+            if (!(trim && value.isBlank() && sm.currentCsvNodeLength == 0)
                     && !sm.isColumnMaxSizeReached && !sm.isRowMaxSizeReached) {
                 addRowValue(sm, trim);
             }
@@ -1288,7 +1288,7 @@ public final class CsvParser {
                         handleEndOfTheRow(sm, false);
                         return ROW_END_STATE;
                     }
-                    if (ch == Constants.LineTerminator.CR) {
+                    if (ch == Constants.LineTerminator.CR && sm.isQuoteClosed) {
                         sm.isCarriageTokenPresent = true;
                         continue;
                     } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
@@ -1354,7 +1354,7 @@ public final class CsvParser {
                         handleEndOfTheRow(sm);
                         return ROW_END_STATE;
                     }
-                    if (ch == Constants.LineTerminator.CR) {
+                    if (ch == Constants.LineTerminator.CR && sm.isQuoteClosed) {
                         sm.isCarriageTokenPresent = true;
                         continue;
                     } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
