@@ -54,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.ballerina.lib.data.csvdata.utils.FailSafeUtils.isAllowedFailSafe;
 
@@ -125,7 +124,6 @@ public final class CsvTraversal {
         boolean isFirstRowIsHeader = false;
         boolean isFirstRowInserted = false;
         Environment environment = null;
-        AtomicBoolean isOverwritten = new AtomicBoolean(false);
         int currentRowIndex = 0;
         boolean enableConsoleLogs = true;
         boolean includeSourceDataInConsole = false;
@@ -150,7 +148,6 @@ public final class CsvTraversal {
             isFirstRowIsHeader = false;
             isFirstRowInserted = false;
             environment = null;
-            isOverwritten.set(false);
             currentRowIndex = 0;
             enableConsoleLogs = false;
             includeSourceDataInConsole = false;
@@ -899,7 +896,7 @@ public final class CsvTraversal {
         private void handleFailSafeLogging(BMap<?, ?> failSafe, Exception exception, Object offendingRowData) {
             String offendingRow = offendingRowData != null ? offendingRowData.toString() : "";
             FailSafeUtils.handleFailSafeLogging(environment, failSafe, exception, offendingRow,
-                    this.currentRowIndex, 0, isOverwritten,
+                    this.currentRowIndex, 0, config.isLogFileOverwritten,
                     this.enableConsoleLogs, this.includeSourceDataInConsole);
         }
     }

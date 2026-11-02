@@ -4,6 +4,8 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /*
  * Configuration for CSV operations.
  *
@@ -31,6 +33,8 @@ public class CsvConfig {
     public long headerRows = 0;
     public Object customHeaders = null;
     public BMap<?, ?> failSafe;
+    // Derived configurations share the overwrite state of one CSV operation.
+    public AtomicBoolean isLogFileOverwritten = new AtomicBoolean(false);
 
     private CsvConfig(CsvConfig config) {
         this.allowDataProjection = false;
@@ -43,6 +47,7 @@ public class CsvConfig {
         this.comment = config.comment;
         this.locale = config.locale;
         this.failSafe = config.failSafe;
+        this.isLogFileOverwritten = config.isLogFileOverwritten;
     }
 
     public static CsvConfig createParseListOptions(BMap<BString, Object> options) {
