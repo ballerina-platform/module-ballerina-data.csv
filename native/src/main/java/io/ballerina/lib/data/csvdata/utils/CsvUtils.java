@@ -286,10 +286,9 @@ public class CsvUtils {
             Object[] lineTerminators = array.getValues();
             for (Object lineTerminator: lineTerminators) {
                 Optional<Boolean> value = handleLineTerminator(lineTerminator, c, isCarriageTokenPresent);
-                if (value.isEmpty()) {
-                    continue;
+                if (value.isPresent() && value.get()) {
+                    return true;
                 }
-                return value.get();
             }
             return false;
         }
@@ -306,7 +305,7 @@ public class CsvUtils {
         if (lineTerminator == null || c != Constants.LineTerminator.LF) {
             return Optional.empty();
         }
-        if (lineTerminator.equals(Constants.LineTerminator.CRLF)) {
+        if (Constants.LineTerminator.CRLF.equals(lineTerminator.toString())) {
             return Optional.of(isCarriageTokenPresent);
         }
         return Optional.of(true);

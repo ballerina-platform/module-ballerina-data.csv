@@ -777,7 +777,7 @@ public final class CsvParser {
                         sm.isCarriageTokenPresent = true;
                         continue;
                     } else if (!(sm.isCarriageTokenPresent && ch == Constants.LineTerminator.LF)) {
-                        sm.isCarriageTokenPresent = true;
+                        sm.isCarriageTokenPresent = false;
                     }
 
                     if (sm.lineNumber < headerStartRowNumber) {
