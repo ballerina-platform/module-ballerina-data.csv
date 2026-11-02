@@ -191,7 +191,7 @@ public final class CsvParser {
 
         // Reset for new row
         StateMachine.resetStreamingStateForNextRow(sm);
-        AtomicBoolean isOverwritten = new AtomicBoolean(false);
+        AtomicBoolean isOverwritten = config.isLogFileOverwritten;
 
         try {
             while (!sm.streamingEof) {
@@ -580,7 +580,7 @@ public final class CsvParser {
             try {
                 char[] buff = new char[1024];
                 int count;
-                AtomicBoolean isOverwritten = new AtomicBoolean(false);
+                AtomicBoolean isOverwritten = config.isLogFileOverwritten;
                 while ((count = reader.read(buff)) > 0) {
                     this.index = 0;
                     while (this.index < count) {
