@@ -478,3 +478,12 @@ function testParseStringArrayAsExpectedTypeWithOutputHeaders() {
         ["true", "false"]
     ]);
 }
+
+@test:Config
+function testParseFloatWithPositiveExponent() returns error? {
+    string input = "amount\n1E5\n1E+5";
+    float[][] amounts = check csv:parseString(input);
+    float[][] expected = [[100000.0], [100000.0]];
+
+    test:assertEquals(amounts, expected);
+}
