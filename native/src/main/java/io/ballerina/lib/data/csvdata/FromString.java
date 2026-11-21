@@ -350,7 +350,12 @@ public final class FromString {
     }
 
     private static Number parseNumberValue(String numberString, CsvConfig config) throws ParseException {
-        NumberFormat numberFormat = NumberFormat.getInstance(getLocale(config.locale).locale());
+        Locale locale = getLocale(config.locale).locale();
+        NumberFormat numberFormat = NumberFormat.getInstance(locale);
+        if (numberString.indexOf('+') > 0) {
+            String exponentSeparator = DecimalFormatSymbols.getInstance(locale).getExponentSeparator();
+            numberString = numberString.replace(exponentSeparator + "+", exponentSeparator);
+        }
         return numberFormat.parse(numberString);
     }
 
